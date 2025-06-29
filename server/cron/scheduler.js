@@ -2,7 +2,7 @@ import { schedule } from 'node-cron';
 import simulateProduction from './jobs/simulateProduction.js';
 
 function startSchedulers() {
-    schedule('*/1 * * * *', async () => {
+    schedule('*/2 * * * *', async () => {
         console.log(`[START] Production Job - ${new Date().toISOString()}`);
         try {
             await simulateProduction();
