@@ -29,3 +29,4 @@
     - knex: secure and easy to use query builder to interact with pg
     - http-status-codes: api status codes and standardized reasons
     - winston: for logging
+    - node-cron: for scheduled functions
