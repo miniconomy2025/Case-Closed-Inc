@@ -28,4 +28,5 @@
     - dotenv: for accessing environment variables
     - knex: secure and easy to use query builder to interact with pg
     - http-status-codes: api status codes and standardized reasons
+    - joi: used for input data validation
     - winston: for logging
