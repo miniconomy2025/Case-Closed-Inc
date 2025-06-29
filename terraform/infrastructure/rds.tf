@@ -21,7 +21,7 @@ resource "aws_db_subnet_group" "db_subnet_group" {
 
 # RDS PostgreSQL Instance
 resource "aws_db_instance" "postgres" {
-  identifier              = "case-supplier-db"
+  identifier              = "case-closed-db"
   engine                  = "postgres"
   instance_class          = "db.t3.micro"
   allocated_storage       = 20

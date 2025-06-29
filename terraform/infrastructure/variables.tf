@@ -35,7 +35,7 @@ variable "availability_zone_b" {
 
 variable "db_name" {
     type = string
-    default = "casesupplier"
+    default = "case_closed_db"
 }
 
 variable "db_username" {

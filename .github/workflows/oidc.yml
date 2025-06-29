@@ -172,4 +172,4 @@ jobs:
                        
       - name: Run Flyway Migrations
         run: |
-          docker run --rm --volume ${{ github.workspace }}/flyway/migrations:/flyway/sql:ro redgate/flyway -url="jdbc:postgresql://$POSTGRES_HOST/casesupplier" -user="$POSTGRES_USER" -password="$POSTGRES_PASS" migrate
+          docker run --rm --volume ${{ github.workspace }}/flyway/migrations:/flyway/sql:ro redgate/flyway -url="jdbc:postgresql://$POSTGRES_HOST/case_closed_db" -user="$POSTGRES_USER" -password="$POSTGRES_PASS" migrate
