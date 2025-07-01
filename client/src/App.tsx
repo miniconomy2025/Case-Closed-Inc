@@ -22,6 +22,7 @@ const NAVIGATION: Navigation = [
 
 const BRANDING = {
   title: 'Case-Closed-Inc',
+  logo: <img src="./dashboardlogo.png" alt="Case-Closed-Logo" />,
 };
 
 export default function App() {
