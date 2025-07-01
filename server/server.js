@@ -5,6 +5,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import { caseRouter } from './routers/caseRouter.js';
 import deliveryRoutes from './routers/deliveryRoutes.js';
+import simulationRoutes from './routers/simulationRoutes.js';
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
@@ -16,6 +17,7 @@ app.use(express.json());
 // routes
 app.use('/api/cases', caseRouter);
 app.use('/api', deliveryRoutes)
+app.use('/api', simulationRoutes);
 
 // global error handler
 app.use(errorHandler);
