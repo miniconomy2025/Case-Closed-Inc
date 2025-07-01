@@ -4,6 +4,7 @@ import errorHandler from './middlewares/errorHandler.js';
 
 import { runMigrations } from './db/knex.js';
 import { caseRouter } from './routers/caseRouter.js';
+import { reportRouter } from './routers/reportRouter.js';
 import deliveryRoutes from './routers/deliveryRoutes.js';
 import simulationRoutes from './routers/simulationRoutes.js';
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // TODO look at putting all these in a index.js and export then just use app.use('/api', routes);
 // routes
 app.use('/api/cases', caseRouter);
+app.use('/api/reports', reportRouter)
 app.use('/api', deliveryRoutes)
 app.use('/api', simulationRoutes);
 
