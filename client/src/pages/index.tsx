@@ -1,5 +1,3 @@
-import Typography from '@mui/material/Typography';
+export { default as DashboardPage } from "./dashboard";
+export { default as OrdersPage } from "./orders";
 
-export default function DashboardPage() {
-  return <Typography>Welcome to Toolpad!</Typography>;
-}

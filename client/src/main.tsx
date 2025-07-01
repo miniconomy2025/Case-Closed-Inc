@@ -2,8 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import App from './App';
-import DashboardPage from './pages';
-import OrdersPage from './pages/orders';
+import { DashboardPage, OrdersPage } from './pages';
 import Layout from './layouts/dashboard';
 
 const router = createBrowserRouter([
