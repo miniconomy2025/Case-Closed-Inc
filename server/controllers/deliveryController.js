@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import { db } from "../db/knex.js";
+import { getOrderByShipmentReference, receivedDelivery } from '../daos/incomingOrdersDao.js';
+import { increaseMaterialStock } from '../daos/materialDao.js';
+import { increaseNumberOfMachines } from '../daos/machineryDao.js';
 
 /**
  * Handles deliveries from the bulk logistics team
@@ -13,9 +15,7 @@ export const handleDelivery = async (req, res, next) => {
     try {
         const shipmentReference = req.params.id;
 
-        const order = await db('incoming_orders')
-            .where({ shipment_reference: shipmentReference })
-            .first();
+        const order = await getOrderByShipmentReference(shipmentReference);
 
         if (!order) {
             return res
@@ -36,16 +36,13 @@ export const handleDelivery = async (req, res, next) => {
             case 'material':
 
                 // Increase material stock
-                await db('materials')
-                    .where({ id: order.material_id })
-                    .increment('stock_kg', order.quantity_kg);
+                await increaseMaterialStock(order.material_id, order.quantity_kg);
                 break;
 
             case 'machinery':
 
                 // Increase number of machines
-                await db('machinery')
-                    .increment('amount', order.amount);
+                await increaseNumberOfMachines(order.amount);
                 break;
 
             default:
@@ -55,9 +52,7 @@ export const handleDelivery = async (req, res, next) => {
         };
 
         // Mark the delivery as received
-        await db('incoming_orders')
-            .where({ shipment_reference: shipmentReference })
-            .update({ received_at: new Date() });
+        await receivedDelivery(shipmentReference);
 
         return res
             .status(StatusCodes.OK)
