@@ -30,3 +30,4 @@
     - http-status-codes: api status codes and standardized reasons
     - winston: for logging
     - node-cron: for scheduled functions
+    - joi: used for input data validation

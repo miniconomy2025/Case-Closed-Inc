@@ -1,8 +1,9 @@
 import express from 'express';
-import { runMigrations } from './db/knex.js';
-import { StatusCodes } from 'http-status-codes';
-import errorHandler from './middlewares/errorHandler.js';
 import logger from './utils/logger.js';
+import errorHandler from './middlewares/errorHandler.js';
+
+import { runMigrations } from './db/knex.js';
+import { caseRouter } from './routers/caseRouter.js';
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
@@ -10,11 +11,8 @@ const HOST = process.env.API_HOST || "localhost";
 const app = express();
 app.use(express.json());
 
-// example route
-app.get('/', (req, res) => {
-  logger.info('Root route accessed');
-  res.status(StatusCodes.OK).json({ message: 'Case Closed Inc.' });
-});
+// routes
+app.use('/api/cases', caseRouter);
 
 // global error handler
 app.use(errorHandler);
