@@ -2,7 +2,7 @@ import express from 'express';
 import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
-import routes from './routers/index.js';
+import routes from './routes/index.js';
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
