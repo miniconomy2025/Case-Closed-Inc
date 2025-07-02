@@ -29,8 +29,14 @@ export async function decrementStockByName(name, quantity) {
         .update({ total_units: newTotal });
 }
 
-export async function increaseStockUnitsByTypeId(typeId, amount) {
-    return await db(STOCK_TABLE_NAME)
+export async function increaseStockUnitsByTypeId(typeId, units, trx = db) {
+    await trx(STOCK_TABLE_NAME)
         .where({ stock_type_id: typeId })
-        .increment('total_units', amount);
+        .increment('total_units', units);
 };
+
+export async function decreaseStockUnitsByTypeId(typeId, units, trx = db) {
+    await trx(STOCK_TABLE_NAME)
+        .where({ stock_type_id: typeId })
+        .decrement('total_units', units);
+}

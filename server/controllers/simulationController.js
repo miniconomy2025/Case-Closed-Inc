@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import cron from 'node-cron';
-import simulateProduction from '../cron/jobs/simulateProductionTest.js';
+import simulateProduction from '../cron/jobs/simulateProduction.js';
 
 let schedule = null;
 
