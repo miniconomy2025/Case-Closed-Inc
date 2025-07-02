@@ -1,5 +1,5 @@
-import { increaseStockUnitsByTypeId } from "../../daos/stockDao";
-import { getStockTypeIdByName } from "../../daos/stockTypesDao";
+import { increaseStockUnitsByTypeId } from '../../daos/stockDao.js';
+import { getStockTypeIdByName } from '../../daos/stockTypesDao.js';
 
 async function simulateProduction() {
     console.log('Producing 1 case:')
