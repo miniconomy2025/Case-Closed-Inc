@@ -1,38 +1,40 @@
 export async function up(knex) {
   return knex.raw(`
-    -- insert raw materials
-    INSERT INTO "materials" ("name", "stock_kg")
-    VALUES 
-      ('aluminium', 0),
-      ('plastic', 0);
-
     -- insert order statuses
     INSERT INTO "order_statuses" ("name")
     VALUES 
-      ('waiting_payment'),
-      ('waiting_collection'),
-      ('collected');
+      ('payment_pending'),
+      ('pickup_pending'),
+      ('order_complete');
 
-    -- insert cases types
-    INSERT INTO "cases" ("name", "price", "stock_units", "material_id")
-    VALUES 
-      ('aluminum_case', 100.0, 0, (SELECT id FROM "materials" WHERE name = 'aluminium')),
-      ('plastic_case', 50.0, 0, (SELECT id FROM "materials" WHERE name = 'plastic'));
+    -- insert stock types
+    INSERT INTO "stock_types" ("name")
+    VALUES
+      ('aluminium'),
+      ('plastic'),
+      ('machine'),
+      ('case');
+
+    -- insert order types
+    INSERT INTO "order_types" ("name")
+    VALUES
+      ('material_order'),
+      ('machine_order');
   `);
-};
+}
 
 export async function down(knex) {
   return knex.raw(`
-    -- delete cases
-    DELETE FROM "cases"
-    WHERE "name" IN ('aluminum case', 'plastic case');
+    -- delete order types
+    DELETE FROM "order_types"
+    WHERE "name" IN ('material_order', 'machine_order');
+
+    -- delete stock types
+    DELETE FROM "stock_types"
+    WHERE "name" IN ('aluminium', 'plastic', 'machine', 'case');
 
     -- delete order statuses
     DELETE FROM "order_statuses"
-    WHERE "name" IN ('waiting_payment', 'waiting_collection', 'collected');
-
-    -- delete raw materials
-    DELETE FROM "materials"
-    WHERE "name" IN ('aluminium', 'plastic');
+    WHERE "name" IN ('payment_pending', 'pickup_pending', 'order_complete');
   `);
-};
+}

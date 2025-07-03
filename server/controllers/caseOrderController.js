@@ -1,0 +1,138 @@
+import { getCaseOrderById, createCaseOrder, updateCaseOrderStatus } from "../daos/caseOrdersDao.js";
+import { StatusCodes, getReasonPhrase } from 'http-status-codes';
+import { getAvailableCaseStock } from "../daos/stockDao.js";
+import { getOrderStatusByName, getOrderStatusById } from "../daos/orderStatusesDao.js";
+import { decrementStockByName } from "../daos/stockDao.js";
+
+/**
+ * Check the status of a given case order.
+ */
+export const getCaseOrder = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const order = await getCaseOrderById(id);
+        let status, response;
+
+        if (order) {
+            const orderStatus = await getOrderStatusById(order.order_status_id)
+
+            status = StatusCodes.OK;
+            response = {
+                ...order,
+                status: orderStatus ? orderStatus.name : null,
+            };
+
+        } else {
+            status = StatusCodes.NOT_FOUND;
+            response = { error: getReasonPhrase(StatusCodes.NOT_FOUND) };
+        }
+
+        res.status(status).json(response);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Create a new case order if there is enough available stock.
+ */
+export const postCaseOrder = async (req, res, next) => {
+    try {
+        const { quantity } = req.body;
+
+        const orderStatus = await getOrderStatusByName('payment_pending');
+        const stockStatus = await getAvailableCaseStock();
+        const pricePerCase = 100.0; // calculate this based on raw material prices
+
+        let status, response;
+
+        const available = stockStatus.available_units;
+
+        if (quantity > available) {
+            status = StatusCodes.BAD_REQUEST
+            response = { error: 'Insufficient stock. Please try again later.' }
+        } else {
+            // create order
+            const total_price = pricePerCase * quantity;
+            const ordered_at = new Date();
+
+            const newOrder = await createCaseOrder({
+                order_status_id: orderStatus.id,
+                quantity,
+                total_price,
+                ordered_at,
+            });
+
+            status = StatusCodes.CREATED;
+            response = newOrder;
+        }
+
+        res.status(status).json(response);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Update order status to 'pickup_pending' when payment is received.
+ */
+export const markOrderPaid = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const order = await getCaseOrderById(id);
+    let status, response;
+
+    if (!order) {
+      status = StatusCodes.NOT_FOUND;
+      response = { error: getReasonPhrase(StatusCodes.NOT_FOUND) };
+    } else {
+      const pickupPendingStatus = await getOrderStatusByName('pickup_pending');
+      await updateCaseOrderStatus(id, pickupPendingStatus.id);
+
+      status = StatusCodes.OK;
+      response = { message: 'Order status updated to pickup_pending' };
+    }
+
+    res.status(status).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update order status to 'order_complete' when pickup is confirmed and reduce stock.
+ */
+export const markOrderPickedUp = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const order = await getCaseOrderById(id);
+    let status, response;
+
+    if (!order) {
+      status = StatusCodes.NOT_FOUND;
+      response = { error: getReasonPhrase(StatusCodes.NOT_FOUND) };
+    } else {
+      const pickupPendingStatus = await getOrderStatusByName('pickup_pending');
+
+      if (order.order_status_id !== pickupPendingStatus.id) {
+        status = StatusCodes.BAD_REQUEST;
+        response = { error: 'Payment has not been received for order.' };
+      } else {
+        // revoke stock after pickup
+        await decrementStockByName('case', order.quantity);
+
+        const completeStatus = await getOrderStatusByName('order_complete');
+        await updateCaseOrderStatus(id, completeStatus.id);
+
+        status = StatusCodes.OK;
+        response = { message: 'Order status updated to order_complete and stock reduced.' };
+      }
+    }
+
+    res.status(status).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
