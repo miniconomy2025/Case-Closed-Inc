@@ -1,11 +1,16 @@
 import { 
     getBalanceFromBank,
     getTransactionsFromBank,
-    getOrdersByType, 
-    getMaterialAmounts,
-    getCasesProduced,
-    getShipmentsByStatus,
+    getOrderCounts, 
+    getStockCount,
+    getAllShipments,
+    getSalesReport
 } from "../daos/reportDao.js";
+
+import {
+    getAvailableCaseStock
+} from "../daos/stockDao.js";
+
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 
 export const getBalance = async (req, res, next) => {
@@ -24,8 +29,7 @@ export const getBalance = async (req, res, next) => {
 
 export const getOrders = async (req, res, next) => {
   try {
-    const { type } = req.query;
-    const orders = await getOrdersByType(type);
+    const orders = await getOrderCounts();
 
     if(orders){
         res.status(StatusCodes.OK).json(orders);
@@ -37,9 +41,9 @@ export const getOrders = async (req, res, next) => {
   }
 };
 
-export const getMaterials = async (req, res, next) => {
+export const getStock = async (req, res, next) => {
   try {
-    const materials = await getMaterialAmounts()
+    const materials = await getStockCount()
 
     if(materials){
         res.status(StatusCodes.OK).json(materials);
@@ -68,7 +72,7 @@ export const getTransactions = async (req, res, next) => {
 
 export const getCases = async (req, res, next) => {
   try {
-    const cases = await getCasesProduced()
+    const cases = await getAvailableCaseStock()
 
     if(cases){
         res.status(StatusCodes.OK).json(cases);
@@ -83,13 +87,26 @@ export const getCases = async (req, res, next) => {
 
 export const getShipments = async (req, res, next) => {
   try {
-    const { status } = req.query;
-    const shipments = await getShipmentsByStatus(status);
+    const shipments = await getAllShipments();
 
     if(shipments){
         res.status(StatusCodes.OK).json(shipments);
     }else {
         res.status(StatusCodes.NOT_FOUND).json({message: "No shipments of that type"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSales = async (req, res, next) => {
+  try {
+    const sales = await getSalesReport();
+
+    if(sales){
+        res.status(StatusCodes.OK).json(sales);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No sales of that type"})
     }    
   } catch (error) {
     next(error);
