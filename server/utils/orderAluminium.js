@@ -4,6 +4,7 @@ import { payForOrder } from "./payForOrder";
 // You may want to store these in config/env
 const RECYCLER_API_BASE = "http://<recycler-api-url>"; // Replace with actual URL
 const SUPPLIER_ID = 1; // Replace with your actual supplier/company ID
+const LOGISTICS_API_BASE = "http://<logistics-api-url>"; // Replace with actual URL
 
 export async function orderAluminiumIfAvailable(requiredQuantityKg) {
   try {
@@ -52,11 +53,58 @@ export async function orderAluminiumIfAvailable(requiredQuantityKg) {
         `Payment for aluminium order #${orderRes.data.orderNumber}`,
         orderRes.data.orderNumber
       );
+
+      const pickupRes = await requestPickup(
+        SUPPLIER_ID,
+        SUPPLIER_ID,
+        orderRes.data.orderNumber,
+        [
+          {
+            name: "aluminium",
+            quantity: requiredQuantityKg,
+            measurementType: "kg",
+          },
+        ]
+      );
+
+      if (
+        pickupRes &&
+        pickupRes.paymentRefNumber &&
+        pickupRes.amount &&
+        pickupRes.logisticsAccountNumber
+      ) {
+        await payForOrder(
+          pickupRes.logisticsAccountNumber,
+          pickupRes.amount,
+          `Logistics payment for pickup ref #${pickupRes.paymentRefNumber}`
+        );
+      }
     }
 
     return orderRes.data;
   } catch (err) {
     console.error("Error ordering aluminium:", err.message);
+    return null;
+  }
+}
+
+export async function requestPickup(
+  originCompanyId,
+  destinationCompanyId,
+  originalExternalOrderId,
+  items
+) {
+  try {
+    const res = await axios.post(`${LOGISTICS_API_BASE}/pickup-request`, {
+      originCompanyId,
+      destinationCompanyID: destinationCompanyId,
+      originalExternalOrderId,
+      items,
+    });
+    console.log("Pickup request created:", res.data);
+    return res.data; // Should include paymentRefNumber, amount, logisticsAccountNumber
+  } catch (err) {
+    console.error("Error creating pickup request:", err.message);
     return null;
   }
 }
