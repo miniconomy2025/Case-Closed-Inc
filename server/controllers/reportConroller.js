@@ -2,7 +2,7 @@ import {
     getBalanceFromBank,
     getTransactionsFromBank,
     getOrderCounts, 
-    getStockCount,
+    getMaterialStockCount,
     getAllShipments,
     getSalesReport
 } from "../daos/reportDao.js";
@@ -43,7 +43,7 @@ export const getOrders = async (req, res, next) => {
 
 export const getStock = async (req, res, next) => {
   try {
-    const materials = await getStockCount()
+    const materials = await getMaterialStockCount()
 
     if(materials){
         res.status(StatusCodes.OK).json(materials);
