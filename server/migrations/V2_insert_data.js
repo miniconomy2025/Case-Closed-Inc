@@ -39,7 +39,7 @@ export async function up(knex) {
 
     -- insert external order items
     INSERT INTO "external_order_items" (
-      "stock_type_id", "order_id", "ordered_units", "total_cost"
+      "stock_type_id", "order_id", "ordered_units", "per_unit_cost"
     ) VALUES
       (1, 1, 100, 1000.00),
       (2, 1, 50, 200.50),
