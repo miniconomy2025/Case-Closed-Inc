@@ -25,7 +25,7 @@ const startServer = async () => {
       logger.info(`Server running on http://${HOST}:${PORT}`);
     });
 
-    // startSchedulers();
+    startSchedulers();
 
   } catch (err) {
     logger.error('Migrations failed', { error: err });

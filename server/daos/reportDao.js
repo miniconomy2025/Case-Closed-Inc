@@ -7,8 +7,14 @@ const SALES_REPORT = 'get_sales_report()';
 
 export async function getBalanceFromBank() {
     // TODO: make call to bank to get actua balance for now this bad mock data
-    return {balance: 10000000}
+    return {balance: 1000000}
 }
+
+export async function getLoanTotalFromBank() {
+    // TODO: make call to bank to get actua loan for now this bad mock data
+    return {loan: 500000000}
+}
+
 
 export async function getOrderCounts() {
     const { rows } = await db.raw(`SELECT * FROM ${CASE_ORDER_COUNTS};`);
@@ -16,10 +22,13 @@ export async function getOrderCounts() {
 }
 
 
-export async function getStockCount() {
-    return await db(CASES_STOCK_VIEW)
+export async function getMaterialStockCount() {
+    // TODO: hard coded stock id
+    const stock = await db(CASES_STOCK_VIEW)
                 .whereNot({stock_id: 4})
                 .select('stock_name', 'available_units');
+
+    return Object.fromEntries(stock.map(({ stock_name, available_units }) => [stock_name, parseInt(available_units)]));
 }
 
 export async function getTransactionsFromBank() {

@@ -5,7 +5,8 @@ export async function up(knex) {
     VALUES 
       ('payment_pending'),
       ('pickup_pending'),
-      ('order_complete');
+      ('order_complete'),
+      ('order_cancelled');
 
     -- insert stock types
     INSERT INTO "stock_types" ("name")
@@ -81,6 +82,6 @@ export async function down(knex) {
 
     -- delete order statuses
     DELETE FROM "order_statuses"
-    WHERE "name" IN ('payment_pending', 'pickup_pending', 'order_complete');
+    WHERE "name" IN ('payment_pending', 'pickup_pending', 'order_complete', 'order_cancelled');
   `);
 }

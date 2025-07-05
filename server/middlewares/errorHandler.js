@@ -6,7 +6,9 @@ const errorHandler = (err, req, res, next) => {
   const status = err.status || err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
 
   if (status === StatusCodes.INTERNAL_SERVER_ERROR) {
-      logger.error(`${err.message} — ${req.method} ${req.originalUrl} — Status: ${status}`);
+    logger.error(`Error: ${err.message}\nStack: ${err.stack}\n— ${req.method} ${req.originalUrl} — Status: ${status}`);
+  } else {
+    logger.warn(`${err.message} — ${req.method} ${req.originalUrl} — Status: ${status}`);
   }
 
   res.status(status).json({ error: getReasonPhrase(status) });

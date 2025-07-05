@@ -1,5 +1,5 @@
 import axios from "axios";
-import { payForOrder } from "./payForOrder";
+import { payForOrder } from "./payForOrder.js";
 
 // You may want to store these in config/env
 const RECYCLER_API_BASE = "http://<recycler-api-url>"; // Replace with actual URL
