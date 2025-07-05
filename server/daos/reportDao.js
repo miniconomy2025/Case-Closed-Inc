@@ -23,6 +23,7 @@ export async function getOrderCounts() {
 
 
 export async function getMaterialStockCount() {
+    // TODO: hard coded stock id
     const stock = await db(CASES_STOCK_VIEW)
                 .whereNot({stock_id: 4})
                 .select('stock_name', 'available_units');

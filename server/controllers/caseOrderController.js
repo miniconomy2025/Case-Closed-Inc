@@ -34,6 +34,42 @@ export const getCaseOrder = async (req, res, next) => {
 };
 
 /**
+ * Canel a case order if it has not been paid yet
+ */
+export const cancelUnpaidOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const order = await getCaseOrderById(id);
+    let status, response;
+
+    if (!order) {
+      status = StatusCodes.NOT_FOUND;
+      response = { error: getReasonPhrase(StatusCodes.NOT_FOUND) };
+    } else {
+      const paymentPendingStatus = await getOrderStatusByName('payment_pending');
+
+      if (order.order_status_id !== paymentPendingStatus.id) {
+        status = StatusCodes.BAD_REQUEST;
+        response = { error: 'This order can no longer be cancelled.' };
+      } else {
+        // change order status to cancelled
+        const cancelledStatus = await getOrderStatusByName('order_cancelled');
+        await updateCaseOrderStatus(id, cancelledStatus.id);
+
+        status = StatusCodes.NO_CONTENT;
+        response = { };
+      }
+    }
+
+    res.status(status).json(response);
+  } catch (error) {
+    console.log(error)
+    next(error);
+  }
+};
+
+/**
  * Create a new case order if there is enough available stock.
  */
 export const postCaseOrder = async (req, res, next) => {

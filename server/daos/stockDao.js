@@ -4,7 +4,8 @@ const STOCK_TABLE_NAME = 'stock'
 const TYPES_TABLE_NAME = 'stock_types'
 const CASES_STOCK_VIEW = 'case_stock_status'
 
-export async function getAvailableCaseStock() {
+export async function getAvailableCaseStock() { 
+    //TODO: remove hard coded stock id
     return await db(CASES_STOCK_VIEW).where({ stock_id: 4 }).first();
 }
 
