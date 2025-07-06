@@ -55,7 +55,7 @@ resource "aws_cloudfront_origin_access_control" "s3_oac" {
 
 # CloudFront Distribution for Frontend Only
 resource "aws_cloudfront_distribution" "frontend" {
-  aliases = ["case-supplier.projects.bbdgrad.com"]
+  # aliases = ["case-supplier.projects.bbdgrad.com"]
   # S3 Origin for static website
   origin {
     domain_name              = aws_s3_bucket.case_supplier_s3_bucket_instance.bucket_regional_domain_name
