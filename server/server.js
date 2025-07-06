@@ -6,6 +6,8 @@ import routes from './routes/index.js';
 import startSchedulers from './cron/scheduler.js';
 import cors from 'cors';
 
+import { BankClient } from './clients/index.js'; // TODO: Remove
+
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
 
@@ -28,6 +30,16 @@ const startServer = async () => {
     });
 
     startSchedulers();
+
+    // example of using the bank client TODO: REMOVE
+    const createAccount = await BankClient.createAccount();
+    console.log('Account created:' , createAccount.accountNumber);
+
+    const loanResult = await BankClient.takeLoan(5000);
+    console.log('Loan taken:', loanResult);
+
+    const getBalance = await BankClient.getBalance();
+    console.log('Bank balance:', getBalance.balance);
 
   } catch (err) {
     logger.error('Migrations failed', { error: err });
