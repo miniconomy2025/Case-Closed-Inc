@@ -3,3 +3,5 @@ logs/
 .env
 
 dist/
+*.crt
+*.key
