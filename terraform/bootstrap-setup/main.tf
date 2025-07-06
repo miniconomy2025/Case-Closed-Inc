@@ -146,7 +146,9 @@ resource "aws_iam_policy" "infrastructure_policy" {
           # s3 full access
           "s3:*",
           #logs full access
-          "logs:*"
+          "logs:*",
+          #cloudfront
+          "cloudfront:*"
         ]
         Resource = "*"
       }

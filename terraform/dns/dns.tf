@@ -10,8 +10,8 @@
 
 # # Frontend CNAME
 # resource "azurerm_dns_cname_record" "case_supplier_frontend" {
-#   name                = "case-supplier"
-# #   record              = "dpoavifu2v2b1.cloudfront.net"
+#   name                = "case-supplier-frontend"
+# #   record              = "d2hhphmbxli2xz.cloudfront.net"
    
 #   zone_name           = data.azurerm_dns_zone.grad_projects_dns_zone.name
 #   resource_group_name = "the-hive"
