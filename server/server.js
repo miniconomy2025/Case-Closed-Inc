@@ -4,12 +4,14 @@ import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import routes from './routes/index.js';
 import startSchedulers from './cron/scheduler.js';
+import cors from 'cors';
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // routes
 app.use('/api', routes);
