@@ -85,6 +85,8 @@ jobs:
           RAW_DB_HOST="${{ needs.terraform.outputs.dbhost }}"
           CLEAN_DB_HOST=$(echo "$RAW_DB_HOST" | cut -d':' -f1)
           echo "POSTGRES_HOST=$CLEAN_DB_HOST" >> $GITHUB_ENV
+          EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
+          echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
           
       # === Install Dependencies ===
       - name: Install Root Dependencies
@@ -122,7 +124,7 @@ jobs:
           host: ${{ needs.terraform.outputs.ec2host }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: POSTGRES_USER,POSTGRES_PASS, POSTGRES_HOST
+          envs: POSTGRES_USER,POSTGRES_PASS, POSTGRES_HOST, API_HOST
           port: 22
           script: |
             set -e
@@ -150,7 +152,8 @@ jobs:
             DB_NAME=casesupplierdb
             DB_PORT=5432
             ENV=production
-            PORT=3000
+            API_PORT=3000
+            API_HOST=$API_HOST
             EOF
 
             # Restart the app with PM2
