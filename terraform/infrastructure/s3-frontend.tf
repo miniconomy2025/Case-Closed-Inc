@@ -53,8 +53,8 @@ resource "aws_s3_bucket_policy" "bucket-policy" {
         Effect = "Allow"
         Action = ["s3:GetObject"]
         Resource = [
-          "arn:aws:s3:::www.case-supplier-s3-cloudfront-distribution-bucket",
-          "arn:aws:s3:::www.case-supplier-s3-cloudfront-distribution-bucket/*"
+          "arn:aws:s3:::${data.aws_s3_bucket.selected-bucket.id}",
+          "arn:aws:s3:::${data.aws_s3_bucket.selected-bucket.id}/*"
         ]
         Principal = "*"
       }
