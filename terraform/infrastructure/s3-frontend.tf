@@ -6,20 +6,36 @@ resource "aws_s3_bucket" "case_supplier_s3_bucket_instance" {
   }
 }
 
-resource "aws_s3_bucket_website_configuration" "website_config" {
-  bucket = aws_s3_bucket.case_supplier_s3_bucket.id
+data "aws_s3_bucket" "selected-bucket" {
+  bucket = aws_s3_bucket.case_supplier_s3_bucket_instance.bucket
+}
 
-  index_document {
-    suffix = "index.html"
-  }
+resource "aws_s3_bucket_acl" "bucket-acl" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+  acl    = "public-read"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
+}
 
-  error_document {
-    key = "404.html"
+resource "aws_s3_bucket_versioning" "versioning_example" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "public_access" {
-  bucket = aws_s3_bucket.case_supplier_s3_bucket.id
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+
+  depends_on = [aws_s3_bucket_public_access_block.example]
+}
+
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
@@ -27,29 +43,35 @@ resource "aws_s3_bucket_public_access_block" "public_access" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_acl" "bucket_acl" {
-  depends_on = [aws_s3_bucket_public_access_block.public_access]
-  bucket     = aws_s3_bucket.case_supplier_s3_bucket.id
-  acl        = "public-read"
-}
-
-resource "aws_s3_bucket_policy" "public_read" {
-  bucket = aws_s3_bucket.case_supplier_s3_bucket.id
-
+resource "aws_s3_bucket_policy" "bucket-policy" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.case_supplier_s3_bucket.arn}/*"
+        Sid    = "AllowPublicRead"
+        Effect = "Allow"
+        Action = ["s3:GetObject"]
+        Resource = [
+          "arn:aws:s3:::www.case-supplier-s3-cloudfront-distribution-bucket",
+          "arn:aws:s3:::www.case-supplier-s3-cloudfront-distribution-bucket/*"
+        ]
+        Principal = "*"
       }
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.example]
 }
 
+resource "aws_s3_bucket_website_configuration" "website-config" {
+  bucket = data.aws_s3_bucket.selected-bucket.bucket
 
-output "s3_website_url" {
-  value = aws_s3_bucket_website_configuration.website_config.website_endpoint
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
 }
