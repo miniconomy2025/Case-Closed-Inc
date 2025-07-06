@@ -45,3 +45,4 @@ output "ec2_ip" {
   value       = aws_eip.case_supplier_ec2_eip.public_ip
   description = "Public IP of EC2 API server"
 }
+
