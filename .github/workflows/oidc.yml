@@ -87,13 +87,6 @@ jobs:
           echo "POSTGRES_HOST=$CLEAN_DB_HOST" >> $GITHUB_ENV
           EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
           echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
-          # GET SSL Certs from SSM
-          echo "SSL_CERT<<EOF" >> $GITHUB_ENV
-          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          echo "SSL_KEY<<EOF" >> $GITHUB_ENV
-          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
       # === Install Dependencies ===
       - name: Install Root Dependencies
         run: npm install
