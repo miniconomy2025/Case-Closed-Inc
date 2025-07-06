@@ -94,12 +94,12 @@ jobs:
       # === Package Deployment Artifacts ===
       - name: Create Deployment Package
         run: |
-          mkdir -p ../server
-          cp -r ./dist ../server/
-          cp ./package.json ./package-lock.json ../server/
-          tar -czf ../deploy.tar.gz -C .. server
-          ls -la ../server
-          rm -rf ../server
+          mkdir -p ../build-server
+          cp -r ./dist ../build-server/
+          cp ./package.json ./package-lock.json ../build-server/
+          tar -czf ../deploy.tar.gz -C .. build-server
+          ls -la ../build-server
+          rm -rf ../build-server
 
       # === Transfer Package to EC2 ===
       - name: Copy Files to EC2
