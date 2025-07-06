@@ -69,7 +69,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   # Default behavior - serve static files from S3
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${aws_s3_bucket.case_supplier_s3_bucket_instance.id}"
 
@@ -146,6 +146,7 @@ resource "aws_s3_bucket_policy" "client_bucket_policy" {
   
   depends_on = [aws_cloudfront_distribution.frontend]
 }
+
 
 # Outputs
 output "s3_bucket_name" {
