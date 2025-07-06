@@ -3,7 +3,7 @@ import {
   aluminiumStockIsLow,
   plasticStockIsLow,
 } from "../../utils/checkRawMaterialStock.js";
-import { orderRawMaterials } from "../../utils/checkAvailableMaterialsFromRecycler.js";
+import { orderRawMaterials } from "../../utils/orderRawMaterials.js";
 const ALUMINIUM_ORDER_QUANTITY = 50;
 const PLASTIC_ORDER_QUANTITY = 50;
 

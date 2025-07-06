@@ -92,7 +92,7 @@ export default class DecisionEngine {
         }else {
             console.log('Do not buy machine')
         }
-
+                                           
         if(await this.repayLoan(state)){
             console.log('Need to repay loan')
         }else {
