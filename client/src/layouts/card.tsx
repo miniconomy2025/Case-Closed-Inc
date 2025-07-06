@@ -1,0 +1,30 @@
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
+type GenericCardProps = {
+    cardTitle: string;
+    cardColour: string;
+}
+
+
+export default function GenericCard(props: GenericCardProps) {
+    const { cardTitle, cardColour } = props
+    return (
+            <Card sx={{bgcolor: cardColour, borderRadius:2}}>
+            <CardContent>
+                <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
+                    {cardTitle}
+                </Typography>
+                <Typography variant="h5" component="div">
+                   test content
+                </Typography>
+            </CardContent>
+            <CardActions>
+                <Button size="small">Expand</Button>
+            </CardActions>
+        </Card>
+    );
+}
