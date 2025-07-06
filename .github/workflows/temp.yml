@@ -38,7 +38,7 @@ jobs:
       - name: Upload SSL Certs and Configure Nginx
         uses: appleboy/ssh-action@v1.0.0
         with:
-            host: ${{ needs.terraform.outputs.ec2host }}
+            host: 13.246.82.211
             username: ${{ secrets.EC2_USER }}
             key: ${{ secrets.EC2_SSH_KEY }}
             port: 22
@@ -55,7 +55,7 @@ jobs:
                 sudo tee /etc/ssl/casesupplier/casesupplier_key.pem > /dev/null <<'KEY_EOF'
                 $(cat /tmp/ssl_key.pem)
                 KEY_EOF
-                
+
                 # Set proper permissions
                 sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
                 sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
