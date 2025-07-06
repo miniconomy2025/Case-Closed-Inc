@@ -13,6 +13,7 @@ resource "aws_instance" "case_supplier_ec2_instance" {
 
       # Update the instance
       sudo yum update -y
+      sudo yum install postgresql15
 
       # Install Node.js 22 from NodeSource
       curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
