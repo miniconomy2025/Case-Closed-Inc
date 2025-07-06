@@ -3,8 +3,40 @@ import GenericCard from "../layouts/card";
 import Grid from "@mui/material/Grid";
 import { Box } from "@mui/material";
 import { dashboardCardSchema } from "./constants";
+import api from "../utils/httpClient";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
+  const [dashboardState, setDashboardState] = useState({});
+  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [bankBalance, bankTransactions, shipments, stock, cases, sales] = await Promise.all([
+          api.get("/bank/balance"),
+          api.get("/bank/transactions"),
+          api.get("/logistics/shipments"),
+          api.get("/stock"),
+          api.get("/cases"),
+          api.get("/sales"),
+        ]);
+        setDashboardState({ bankBalance, bankTransactions, shipments, stock, cases, sales });
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    console.log(dashboardState)
+  }, [dashboardState])
 
   return (
     <>
