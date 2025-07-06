@@ -3,10 +3,7 @@ env:
   AWS_REGION: af-south-1
 
 on:
-  push:
-    branches:
-      - developments
-      - pipeline-setups
+  workflow_dispatch:
 
 jobs:
   terraform:

@@ -1,10 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import cron from 'node-cron';
+
 import SimulateProduction from '../cron/jobs/simulateProduction.js';
 import DecisionEngine from '../cron/jobs/decisionEngine.js';
 import CancelUnpaidOrdersJob from '../cron/jobs/canelUnpaidOrders.js';
 import logger from "../utils/logger.js";
-
+import { decrementStockByName } from '../daos/stockDao.js';
 
 let schedule = null;
 
@@ -165,3 +166,29 @@ export const handleSimulationEnd = async (req, res, next) => {
 //     next(error);
 //   };
 // };
+
+export const handleSimulationEvent = async (req, res, next) => {
+    try {
+        const eventType = req.body.eventType ?? 'machine_break';
+        
+        switch (eventType) {
+            case 'machine_break':
+                logger.info('Handling removal of machines due to break event');
+                const quantity = req.body.quantity ?? 1;
+                await decrementStockByName('machine', quantity);
+                break;
+            default:
+                logger.warn('Unknown simulation event type');
+                return res
+                    .status(StatusCodes.BAD_REQUEST)
+                    .json({ message: 'Unknown simulation event type' });
+        };
+
+        return res
+            .status(StatusCodes.OK)
+            .json({ message: 'Successfully handled simulation event' });
+    } catch(error) {
+        next(error);
+    };
+};
+
