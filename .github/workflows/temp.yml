@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy-api:
-    name: Build & Deploy to EC2
+  setup-nginx:
+    name: Deploy Certs to EC2
     runs-on: ubuntu-latest
 
     steps:
@@ -25,22 +25,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-        
-     # === Package Deployment Artifacts ===
-
-
       - name: Get SSL Certs from SSM
         run: |
             mkdir -p ./tmp
             aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
             aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
 
-      - name: Create Deployment Package
+      - name: Create Certs Package
         run: |
             tar -czf ./certs.tar.gz -C ./tmp .
-
-
-          
+  
       # === Transfer Package to EC2 ===
       - name: Copy Files to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -51,30 +45,64 @@ jobs:
           port: 22
           source: "certs.tar.gz"
           target: "/home/ec2-user/"
-      
-      
-      
-            # === Deploy on EC2 ===
-    #   - name: Upload SSL Certs and Configure Nginx
-    #     uses: appleboy/ssh-action@v1.0.0
-    #     with:
-    #         host: 13.246.82.211
-    #         username: ${{ secrets.EC2_USER }}
-    #         key: ${{ secrets.EC2_SSH_KEY }}
-    #         port: 22
-    #         script: |
-    #             set -e        
-    #             sudo mkdir -p /etc/ssl/casesupplier/
+           
+     # === Deploy on EC2 ===
+      - name: Upload SSL Certs and Configure Nginx
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+            host: 13.246.82.211
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: |
+                set -e
+                PACKAGE="/home/ec2-user/certs.tar.gz"
+                TEMP_DIR="/home/ec2-user/tmp"
 
-    #             sudo bash -c "cat > /etc/ssl/casesupplier/casesupplier_cert.crt" << EOF
-    #             ${{ steps.ssm.outputs.ssl_cert }}
-    #             EOF
+                # Clean and extract certs
+                rm -rf $TEMP_DIR
+                mkdir -p $TEMP_DIR
+                tar -xzf $PACKAGE -C $TEMP_DIR
+                rm -f $PACKAGE
 
-    #             sudo bash -c "cat > /etc/ssl/casesupplier/casesupplier_key.pem" << EOF
-    #             ${{ steps.ssm.outputs.ssl_key }}
-    #             EOF
+                # Move certs to secure location
+                sudo mkdir -p /etc/ssl/casesupplier
+                sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
+                sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
 
-    #             sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
-    #             sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+                # Set permissions
+                sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
+                sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+
+                # Configure Nginx SSL proxy
+                sudo tee /etc/nginx/sites-enabled/default > /dev/null <<'NGINX_CONF'
+                server {
+                    listen 80;
+                    server_name _;
+                    return 301 https://$host$request_uri;
+                }
+
+                server {
+                    listen 443 ssl;
+                    server_name _;
+
+                    ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
+                    ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
+
+                    location / {
+                        proxy_pass http://localhost:3000;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection 'upgrade';
+                        proxy_set_header Host $host;
+                        proxy_cache_bypass $http_upgrade;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+                }
+                NGINX_CONF
+                # Test and reload Nginx
+                sudo nginx -t && sudo systemctl reload nginx
 
             
