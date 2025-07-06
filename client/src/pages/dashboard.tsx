@@ -36,7 +36,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     console.log(dashboardState)
-  }, [dashboardState])
+    console.log(error)
+    console.log(loading)
+  }, [dashboardState, error, loading])
 
   return (
     <>

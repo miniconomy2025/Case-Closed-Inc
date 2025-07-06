@@ -1,3 +1,13 @@
+locals {
+  common_tags = {
+    environment = "prod"
+    project     = "case-supplier-api"
+    owner       = "AWS-Group-3"
+    created_by  = "terraform"
+    managed_by  = "GitHub Actions"
+  }
+}
+
 resource "azurerm_dns_cname_record" "case_supplier_web" {
   name                = "case-supplier"
   record              = "cloudfront-distribution.cloudfront.net"  # TODO: replace with cloudfront url
