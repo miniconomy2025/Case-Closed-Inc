@@ -1,4 +1,6 @@
 name: Deployment Pipeline
+env:
+  AWS_REGION: af-south-1
 
 on:
   workflow_dispatch:
@@ -25,10 +27,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init
