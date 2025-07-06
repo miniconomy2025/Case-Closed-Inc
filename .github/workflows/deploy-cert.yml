@@ -1,6 +1,4 @@
-name: Deployment Certs
-env:
-  AWS_REGION: af-south-1
+name: Deploy Certs and Configure Nginx
 
 on:
   workflow_dispatch:

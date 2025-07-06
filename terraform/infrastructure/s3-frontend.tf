@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "case_supplier_s3_bucket_instance" {
-  bucket = "case-supplier-s3-cloudfront-distribution-bucket" # must be globally unique
+  bucket = "case-supplier-s3-cloudfront-distribution-bucket"
   
   tags = {
     Name = "case_supplier_s3_bucket_instance"
