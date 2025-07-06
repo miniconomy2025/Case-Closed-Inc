@@ -81,7 +81,10 @@ jobs:
         run: |
           echo "POSTGRES_USER=$(aws ssm get-parameter --name '/db_config/db_username' --query 'Parameter.Value' --output text)" >> $GITHUB_ENV
           echo "POSTGRES_PASS=$(aws ssm get-parameter --name '/db_config/db_password' --query 'Parameter.Value' --output text)" >> $GITHUB_ENV
-          echo "POSTGRES_HOST=${{ needs.terraform.outputs.dbhost }}" >> $GITHUB_ENV
+          # Strip port from Terraform output
+          RAW_DB_HOST="${{ needs.terraform.outputs.dbhost }}"
+          CLEAN_DB_HOST=$(echo "$RAW_DB_HOST" | cut -d':' -f1)
+          echo "POSTGRES_HOST=$CLEAN_DB_HOST" >> $GITHUB_ENV
           
       # === Install Dependencies ===
       - name: Install Root Dependencies
