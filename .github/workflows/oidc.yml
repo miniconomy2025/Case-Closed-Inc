@@ -90,7 +90,14 @@ jobs:
           # GET SSL Certs from SSM
           aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./casesupplier_cert.crt
           aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./casesupplier_key.pem
-
+      - name: Check SSL cert files exist
+        run: |
+          if [[ -f "./casesupplier_cert.crt" && -f "./casesupplier_key.pem" ]]; then
+            echo "SSL cert files found."
+          else
+            echo "ERROR: SSL cert files not found!"
+            exit 1
+          fi
       # ===  Upload SSL Certs to EC2 ===
       - name: Upload SSL Certs to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -107,7 +114,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
-          username: ec2-user
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
