@@ -1,5 +1,5 @@
 import knex from "knex";
-import knexConfig from "../knexfile.cjs";
+import knexConfig from "../knexfile.js";
 import logger from "../utils/logger.js";
 
 export const runMigrations = async () => {
