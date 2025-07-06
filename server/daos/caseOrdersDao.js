@@ -1,4 +1,5 @@
 import { db } from "../db/knex.js";
+import { getOrderStatusByName } from "./orderStatusesDao.js";
 
 const TABLE_NAME = 'case_orders'
 
@@ -17,4 +18,28 @@ export async function updateCaseOrderStatus(orderId, orderStatusId) {
     return await db(TABLE_NAME)
         .where({ id: orderId })
         .update({ order_status_id: orderStatusId });
+}
+
+export async function getCasePrice(plastic = 4, aluminium = 7, markup = 1.3) {
+  const result = await db.raw(
+    `SELECT * FROM calculate_case_price(?, ?, ?)`,
+    [plastic, aluminium, markup]
+  );
+  return result.rows?.[0] ?? null;
+}
+
+export async function getUnpaidOrdersOlderThan(days) {
+  const pendingStatus = await getOrderStatusByName('payment_pending');
+
+  if (!pendingStatus) {
+    throw new Error(`Order status 'payment_pending' not found`);
+  }
+
+  const dateLimit = new Date();
+  dateLimit.setDate(dateLimit.getDate() - days);
+
+  return await db(TABLE_NAME)
+    .where('order_status_id', pendingStatus.id)
+    .andWhere('ordered_at', '<', dateLimit)
+    .select('*');
 }

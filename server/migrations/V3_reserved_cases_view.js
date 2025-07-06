@@ -3,6 +3,7 @@ export async function up(knex) {
     CREATE OR REPLACE VIEW "case_stock_status" AS
     SELECT
       s.id AS stock_id,
+      st.name AS stock_name,
       s.total_units,
       COALESCE(SUM(co.quantity), 0) AS reserved_units,
       (s.total_units - COALESCE(SUM(co.quantity), 0)) AS available_units
@@ -12,7 +13,7 @@ export async function up(knex) {
       AND co.order_status_id IN (
         SELECT id FROM order_statuses WHERE name LIKE '%pending'
       )
-    GROUP BY s.id, s.total_units;
+    GROUP BY s.id, st.name, s.total_units;
   `);
 }
 
