@@ -3,7 +3,7 @@ import {
   aluminiumStockIsLow,
   plasticStockIsLow,
 } from "../../utils/checkRawMaterialStock.js";
-import { orderRawMaterials } from "../../utils/orderRawMaterials.js";
+import { placeOrderWithSupplier } from "../../adapers/orderRawMaterialsAdapter.js";
 const ALUMINIUM_ORDER_QUANTITY = 50;
 const PLASTIC_ORDER_QUANTITY = 50;
 
@@ -39,7 +39,7 @@ async function runRawMaterialsOrdering() {
         .map((i) => `${i.quantity} ${i.name}`)
         .join(", ")}`
     );
-    await orderRawMaterials(items); // Implement this function to handle the combined order
+    await placeOrderWithSupplier(items);
   } catch (err) {
     logger.error("Error in raw materials ordering cron job:", err);
   }

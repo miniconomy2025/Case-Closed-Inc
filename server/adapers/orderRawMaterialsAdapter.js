@@ -1,22 +1,22 @@
 import axios from "axios";
-import logger from "./logger.js";
+import logger from "../utils/logger.js";
 
-// Replace with your actual API base URL
-const RECYCLER_API_BASE = "http://localhost:3000"; // Example
-const BANK_API_BASE = "http://localhost:8080"; // Example
-const LOGISTICS_API_BASE = "http://localhost:4000"; // Example
-const SUPPLIER_ID = 1; // Example supplier ID
-const OUR_COMPANY_ID = 2; // Example: our company ID
-const SUPPLIER_ACCOUNT_NUMBER = "9876543210"; // Example account number
-const TO_BANK_NAME = "commercial-bank"; // Example bank name
-const LOGISTICS_ACCOUNT_NUMBER = "1122334455"; // Example logistics bank account
-const LOGISTICS_PAYMENT_AMOUNT = 100; // Change this as needed
+// Configs (move to config file if needed)
+const RECYCLER_API_BASE = "http://localhost:3000";
+const BANK_API_BASE = "http://localhost:8080";
+const LOGISTICS_API_BASE = "http://localhost:4000";
+const SUPPLIER_ID = 1;
+const OUR_COMPANY_ID = 2;
+const SUPPLIER_ACCOUNT_NUMBER = "9876543210";
+const TO_BANK_NAME = "commercial-bank";
+const LOGISTICS_ACCOUNT_NUMBER = "1122334455";
+const LOGISTICS_PAYMENT_AMOUNT = 100;
 
 /**
- * Orders raw materials from the recycler, pays for them, requests pickup, and pays logistics.
+ * Facade for placing a raw materials order, paying, and handling logistics.
  * @param {Array} items - Array of { name, quantity, measurementType }
  */
-export async function orderRawMaterials(items) {
+export async function placeOrderWithSupplier(items) {
   try {
     // 1. Get available materials from the recycler API
     // const res = await axios.get(`${RECYCLER_API_BASE}/materials`);
@@ -149,6 +149,6 @@ export async function orderRawMaterials(items) {
       }
     }
   } catch (err) {
-    logger.error("Error ordering raw materials:", err.message);
+    logger.error("Error in orderRawMaterialsAdapter:", err.message);
   }
 }
