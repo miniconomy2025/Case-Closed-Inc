@@ -6,13 +6,14 @@ import Typography from '@mui/material/Typography';
 
 type GenericCardProps = {
     cardTitle: string;
+    cardColour: string;
 }
 
 
 export default function GenericCard(props: GenericCardProps) {
-    const { cardTitle } = props
+    const { cardTitle, cardColour } = props
     return (
-        <Card>
+            <Card sx={{bgcolor: cardColour, borderRadius:2}}>
             <CardContent>
                 <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
                     {cardTitle}
@@ -22,7 +23,7 @@ export default function GenericCard(props: GenericCardProps) {
                 </Typography>
             </CardContent>
             <CardActions>
-                <Button size="small">Click Me</Button>
+                <Button size="small">Expand</Button>
             </CardActions>
         </Card>
     );
