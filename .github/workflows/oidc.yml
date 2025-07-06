@@ -137,7 +137,7 @@ jobs:
             rm -f $PACKAGE
 
             # Install production dependencies
-            cd server
+            cd build-server
             npm i
 
             cat <<EOF > dist/.env
