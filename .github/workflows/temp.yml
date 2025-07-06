@@ -33,31 +33,42 @@ jobs:
           # GET SSL Certs from SSM
             aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > /tmp/ssl_cert.crt
             aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > /tmp/ssl_key.pem
-
-      # === Deploy on EC2 ===
-      - name: Upload SSL Certs and Configure Nginx
-        uses: appleboy/ssh-action@v1.0.0
+      
+      - name: Upload SSL Certs to EC2
+        uses: appleboy/scp-action@v0.1.4
         with:
             host: 13.246.82.211
             username: ${{ secrets.EC2_USER }}
             key: ${{ secrets.EC2_SSH_KEY }}
             port: 22
-            script: |
-                set -e        
-                sudo mkdir -p /etc/ssl/casesupplier/
+            source: |
+                /tmp/ssl_cert.crt
+                /tmp/ssl_key.pem
+            target: /etc/ssl/casesupplier/
+      
+      
+      
+            # === Deploy on EC2 ===
+    #   - name: Upload SSL Certs and Configure Nginx
+    #     uses: appleboy/ssh-action@v1.0.0
+    #     with:
+    #         host: 13.246.82.211
+    #         username: ${{ secrets.EC2_USER }}
+    #         key: ${{ secrets.EC2_SSH_KEY }}
+    #         port: 22
+    #         script: |
+    #             set -e        
+    #             sudo mkdir -p /etc/ssl/casesupplier/
 
-                # Create certificate file
-                sudo tee /etc/ssl/casesupplier/casesupplier_cert.crt > /dev/null <<'CERT_EOF'
-                $(cat /tmp/ssl_cert.crt)
-                CERT_EOF
-                
-                # Create key file
-                sudo tee /etc/ssl/casesupplier/casesupplier_key.pem > /dev/null <<'KEY_EOF'
-                $(cat /tmp/ssl_key.pem)
-                KEY_EOF
+    #             sudo bash -c "cat > /etc/ssl/casesupplier/casesupplier_cert.crt" << EOF
+    #             ${{ steps.ssm.outputs.ssl_cert }}
+    #             EOF
 
-                # Set proper permissions
-                sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
-                sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+    #             sudo bash -c "cat > /etc/ssl/casesupplier/casesupplier_key.pem" << EOF
+    #             ${{ steps.ssm.outputs.ssl_key }}
+    #             EOF
+
+    #             sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
+    #             sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
 
             
