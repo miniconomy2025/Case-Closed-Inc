@@ -99,8 +99,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: |
-            ./casesupplier_cert.crt
-            ./casesupplier_key.pem
+            ./server/casesupplier_cert.crt
+            ./server/casesupplier_key.pem
           target: /etc/ssl/casesupplier/
 
       - name: Configure SSL-enabled Nginx
