@@ -17,6 +17,12 @@ const LOGISTICS_PAYMENT_AMOUNT = 100;
  * @param {Array} items - Array of { name, quantity, measurementType }
  */
 export async function placeOrderWithSupplier(items) {
+  // TODO: First check if we already placed an order for these materials, if orders are pending, return
+
+  if (true) {
+    logger.info("Skipping order placement, material order pending.");
+    return;
+  }
   try {
     // 1. Get available materials from the recycler API
     // const res = await axios.get(`${RECYCLER_API_BASE}/materials`);

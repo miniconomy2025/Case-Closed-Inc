@@ -4,6 +4,7 @@ import {
   plasticStockIsLow,
 } from "../../utils/checkRawMaterialStock.js";
 import { placeOrderWithSupplier } from "../../adapers/orderRawMaterialsAdapter.js";
+
 const ALUMINIUM_ORDER_QUANTITY = 50;
 const PLASTIC_ORDER_QUANTITY = 50;
 
