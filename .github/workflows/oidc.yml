@@ -99,8 +99,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: |
-            casesupplier_cert.crt
-            casesupplier_key.pem
+            ./casesupplier_cert.crt
+            ./casesupplier_key.pem
           target: /etc/ssl/casesupplier/
 
       - name: Configure SSL-enabled Nginx
