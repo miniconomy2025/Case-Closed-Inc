@@ -88,8 +88,8 @@ jobs:
           EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
           echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
           # GET SSL Certs from SSM
-          aws ssm get-parameter --name "/ssl/crt" --with-decryption --query "Parameter.Value" --output text > ./casesupplier_cert.crt
-          aws ssm get-parameter --name "/ssl/privkey_pem" --with-decryption --query "Parameter.Value" --output text > ./casesupplier_key.pem
+          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./casesupplier_cert.crt
+          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./casesupplier_key.pem
 
       # ===  Upload SSL Certs to EC2 ===
       - name: Upload SSL Certs to EC2
