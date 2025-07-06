@@ -88,60 +88,12 @@ jobs:
           EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
           echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
           # GET SSL Certs from SSM
-          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./casesupplier_cert.crt
-          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./casesupplier_key.pem
-      # ===  Upload SSL Certs to EC2 ===
-      - name: Upload SSL Certs to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ needs.terraform.outputs.ec2host }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: |
-            ./server/casesupplier_cert.crt
-            ./server/casesupplier_key.pem
-          target: /etc/ssl/casesupplier/
-
-      - name: Configure SSL-enabled Nginx
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ needs.terraform.outputs.ec2host }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            # Update Nginx config with SSL
-            sudo tee /etc/nginx/sites-enabled/default > /dev/null <<'NGINX_CONF'
-              server {
-                  listen 80;
-                  server_name _;
-                  return 301 https://$host$request_uri;
-              }
-
-              server {
-                  listen 443 ssl;
-                  server_name _;
-
-                  ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
-                  ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
-
-              location / {
-                      proxy_pass http://localhost:3000;
-                      proxy_http_version 1.1;
-                      proxy_set_header Upgrade $http_upgrade;
-                      proxy_set_header Connection 'upgrade';
-                      proxy_set_header Host $host;
-                      proxy_cache_bypass $http_upgrade;
-                      proxy_set_header X-Real-IP $remote_addr;
-                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                      proxy_set_header X-Forwarded-Proto $scheme;
-                }
-            }
-            NGINX_CONF
-
-            # Test & reload
-            sudo nginx -t && sudo systemctl reload nginx
+          echo "SSL_CERT<<EOF" >> $GITHUB_ENV
+          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "SSL_KEY<<EOF" >> $GITHUB_ENV
+          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       # === Install Dependencies ===
       - name: Install Root Dependencies
         run: npm install
@@ -218,4 +170,7 @@ jobs:
             # Save PM2 process list and enable on reboot and reload nginx
             pm2 save
             sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
-            sudo systemctl reload nginx
+            
+            # Create SSL directory
+            sudo mkdir -p ../../etc/ssl/casesupplier/
+            

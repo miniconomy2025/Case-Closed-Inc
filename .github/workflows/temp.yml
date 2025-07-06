@@ -1,0 +1,63 @@
+name: Deployment Pipeline
+env:
+  AWS_REGION: af-south-1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-api:
+    name: Build & Deploy to EC2
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      # === Code Checkout ===
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Parameters
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get SSM Parameters + TF Outputs
+        run: |
+          # GET SSL Certs from SSM
+            aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > /tmp/ssl_cert.crt
+            aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > /tmp/ssl_key.pem
+
+      # === Deploy on EC2 ===
+      - name: Upload SSL Certs and Configure Nginx
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+            host: ${{ needs.terraform.outputs.ec2host }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: |
+                set -e        
+                sudo mkdir -p /etc/ssl/casesupplier/
+
+                # Create certificate file
+                sudo tee /etc/ssl/casesupplier/casesupplier_cert.crt > /dev/null <<'CERT_EOF'
+                $(cat /tmp/ssl_cert.crt)
+                CERT_EOF
+                
+                # Create key file
+                sudo tee /etc/ssl/casesupplier/casesupplier_key.pem > /dev/null <<'KEY_EOF'
+                $(cat /tmp/ssl_key.pem)
+                KEY_EOF
+                
+                # Set proper permissions
+                sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
+                sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+
+            
