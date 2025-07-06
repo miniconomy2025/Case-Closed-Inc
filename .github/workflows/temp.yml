@@ -75,7 +75,7 @@ jobs:
                 sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
 
                 # Configure Nginx SSL proxy
-                sudo tee /etc/nginx/sites-enabled/default > /dev/null <<'NGINX_CONF'
+                sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
                 server {
                     listen 80;
                     server_name _;
