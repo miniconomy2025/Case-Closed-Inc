@@ -1,6 +1,6 @@
 # EC2 Instance
 resource "aws_instance" "case_supplier_ec2_instance" {   
-  ami                         = "ami-0b7e05c6022fc830b"
+  ami                         = "ami-0722f955ef0cb4675"
   instance_type               = "t3.micro"
   key_name                    = "case-supplier-key"
   associate_public_ip_address = true
