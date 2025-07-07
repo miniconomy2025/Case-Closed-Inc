@@ -1,8 +1,10 @@
 import axios from 'axios';
+import mtlsAgent from './mtlsAgent.js'
 
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL,
   timeout: 5000,
+  httpsAgent: mtlsAgent || undefined,
 });
 
 const BankClient = {
