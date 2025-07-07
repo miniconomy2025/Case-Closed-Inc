@@ -1,6 +1,6 @@
 # EC2 Instance
 resource "aws_instance" "case_supplier_ec2_instance" {   
-  ami                         = "ami-0b7e05c6022fc830b"
+  ami                         = "ami-0722f955ef0cb4675"
   instance_type               = "t3.micro"
   key_name                    = "case-supplier-key"
   associate_public_ip_address = true
@@ -13,6 +13,7 @@ resource "aws_instance" "case_supplier_ec2_instance" {
 
       # Update the instance
       sudo yum update -y
+      sudo yum install postgresql15
 
       # Install Node.js 22 from NodeSource
       curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
@@ -45,3 +46,4 @@ output "ec2_ip" {
   value       = aws_eip.case_supplier_ec2_eip.public_ip
   description = "Public IP of EC2 API server"
 }
+
