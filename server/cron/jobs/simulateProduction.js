@@ -3,7 +3,7 @@ import { getStockTypeIdByName } from '../../daos/stockTypesDao.js';
 import { db } from '../../db/knex.js';
 
 const PRODUCTION_CAPACITY_PER_MACHINE = 20; // TODO - update with value given by the hand
-const CASES_PER_BATCH = 10; // TODO - update with value given by the hand
+const CASES_PER_BATCH = 1; // TODO - update with value given by the hand
 const PLASTIC_PER_BATCH = 4;
 const ALUMINIUM_PER_BATCH = 7;
 const PLASTIC_PER_CASE = PLASTIC_PER_BATCH / CASES_PER_BATCH;
