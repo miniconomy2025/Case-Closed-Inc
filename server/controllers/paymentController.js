@@ -18,7 +18,7 @@ export const handlePayment = async (req, res, next) => {
 
         order = await getCaseOrderById(referenceId);
 
-        if (order.total_price === order.amount_paid) {
+        if (order.total_price <= order.amount_paid) {
 
             const pickupPendingStatus = await getOrderStatusByName('pickup_pending');
 
