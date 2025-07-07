@@ -51,11 +51,26 @@ class SimulationTimer {
     }
 
     getDate(){
-        return `${this.dayOfMonth}/${this.month}/${this.year}`
+        const day = String(this.dayOfMonth).padStart(2, '0');
+        const month = String(this.month).padStart(2, '0');
+        const year = this.year;
+
+        const date = `${year}-${month}-${day}`;
+        return date;
     }
 
     getDaysOfSimulation(){
         return this.daysSinceStart;
+    }
+
+    getDaysPassed(startDate){
+        const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+        const [currentYear, currentMonth, currentDay] = this.getDate().split('-').map(Number);
+
+        const totalDaysStart = (startYear * 360) + ((startMonth - 1) * 30) + (startDay - 1);
+        const totalDaysCurrent = (currentYear * 360) + ((currentMonth - 1) * 30) + (currentDay - 1);
+
+        return totalDaysCurrent - totalDaysStart;
     }
 
     async run(){
@@ -63,7 +78,7 @@ class SimulationTimer {
             this.interval = setInterval(() => {
                 this.startOfDay();
                 logger.info(`[Date]: ${this.getDate()}`);
-            }, 120000) // 2 mins: 120000
+            }, 500) // 2 mins: 120000
         }
     }
 
