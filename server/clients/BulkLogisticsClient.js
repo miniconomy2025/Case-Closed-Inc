@@ -3,6 +3,7 @@ import axios from 'axios';
 const logisticsApi = axios.create({
   baseURL: process.env.BULK_LOGISTICS_API_URL,
   timeout: 5000,
+  httpsAgent: mtlsAgent || undefined,
 });
 
 const BulkLogisticsClient = {
