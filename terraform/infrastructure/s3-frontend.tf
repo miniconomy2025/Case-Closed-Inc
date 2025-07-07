@@ -55,7 +55,7 @@ resource "aws_cloudfront_origin_access_control" "s3_oac" {
 
 # CloudFront Distribution for Frontend Only
 resource "aws_cloudfront_distribution" "frontend" {
-  # aliases = ["case-supplier.projects.bbdgrad.com"]
+   aliases = ["case-supplier.projects.bbdgrad.com"]
   # S3 Origin for static website
   origin {
     domain_name              = aws_s3_bucket.case_supplier_s3_bucket_instance.bucket_regional_domain_name
@@ -97,10 +97,10 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    # cloudfront_default_certificate = true
     # Use default certificate for now - add custom domain later
-    # acm_certificate_arn = aws_acm_certificate.main.arn
-    # ssl_support_method  = "sni-only"
+    acm_certificate_arn = aws_acm_certificate.main.arn
+    ssl_support_method  = "sni-only"
   }
 
   # Custom error pages for SPA routing
