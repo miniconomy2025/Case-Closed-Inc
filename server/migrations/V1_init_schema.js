@@ -5,6 +5,7 @@ export async function up(knex) {
       "order_status_id" int NOT NULL,
       "quantity" int NOT NULL,
       "total_price" float NOT NULL,
+      "amount_paid" float NOT NULL,
       "ordered_at" timestamp NOT NULL
     );
 
