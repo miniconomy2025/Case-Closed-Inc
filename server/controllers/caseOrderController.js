@@ -1,4 +1,4 @@
-import { getCaseOrderById, createCaseOrder, updateCaseOrderStatus } from "../daos/caseOrdersDao.js";
+import { getCaseOrderById, createCaseOrder, updateCaseOrderStatus, getCasePrice } from "../daos/caseOrdersDao.js";
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 import { getAvailableCaseStock } from "../daos/stockDao.js";
 import { getOrderStatusByName, getOrderStatusById } from "../daos/orderStatusesDao.js";
@@ -84,7 +84,8 @@ export const postCaseOrder = async (req, res, next) => {
 
         const orderStatus = await getOrderStatusByName('payment_pending');
         const stockStatus = await getAvailableCaseStock();
-        const pricePerCase = 100.0; // calculate this based on raw material prices
+        const { selling_price: sellingPrice } = await getCasePrice();
+        const pricePerCase = Math.round(sellingPrice);
 
         let status, response;
 
