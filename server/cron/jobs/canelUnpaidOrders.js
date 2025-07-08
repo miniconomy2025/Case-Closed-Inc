@@ -1,7 +1,7 @@
 import { getUnpaidOrdersOlderThan, updateCaseOrderStatus } from "../../daos/caseOrdersDao.js";
 import { getOrderStatusByName } from "../../daos/orderStatusesDao.js";
 import logger from "../../utils/logger.js";
-import { BankClient } from '../clients/index.js';
+import { BankClient } from '../../clients/index.js';
 
 export default class CancelUnpaidOrdersJob {
     async run() {
