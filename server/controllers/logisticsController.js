@@ -19,7 +19,7 @@ export const handleLogistics = async (req, res, next) => {
             .json({ error: 'Unexpected number of items' });
         }
 
-        const { name, quantity } = items[0]; // we only ever order a single item as per our business logic
+        const { name, quantity } = items[0]; // as per business logic this should always have a length of 1
 
         switch (type) {
             case 'DELIVERY':
