@@ -4,7 +4,6 @@ import {
   getOrderCounts,
   getMaterialStockCount,
 } from "../../daos/reportDao.js";
-import { placeOrderWithSupplier } from "../../adapers/orderRawMaterialsAdapter.js";
 import { getAvailableCaseStock } from "../../daos/stockDao.js";
 
 export default class DecisionEngine {
@@ -76,31 +75,18 @@ export default class DecisionEngine {
 
   async run() {
     const state = await this.getState();
-    const materialsToOrder = [];
-    // TODO: Integrate with systems
+
     if (await this.buyMaterial(state, "plastic")) {
       console.log("Plastic stock low! Need to buy");
-      materialsToOrder.push({
-        name: "plastic",
-        quantity: 5, // TODO: Check bank balance
-        measurementType: "kg",
-      });
     } else {
       console.log("Plastic stock good!");
     }
 
     if (await this.buyMaterial(state, "aluminium")) {
       console.log("Aluminium stock low! Need to buy");
-
-      materialsToOrder.push({
-        name: "aluminium",
-        quantity: 5, // TODO: Check bank balance
-        measurementType: "kg",
-      });
     } else {
       console.log("Aluminium stock good!");
     }
-    await placeOrderWithSupplier(materialsToOrder);
 
     if (await this.buyMachine(state)) {
       console.log("Can buy machine");
