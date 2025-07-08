@@ -3,6 +3,7 @@ import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 import { getAvailableCaseStock } from "../daos/stockDao.js";
 import { getOrderStatusByName, getOrderStatusById } from "../daos/orderStatusesDao.js";
 import { decrementStockByName } from "../daos/stockDao.js";
+import { BankClient } from '../clients/index.js';
 
 /**
  * Check the status of a given case order.
@@ -56,6 +57,11 @@ export const cancelUnpaidOrder = async (req, res, next) => {
         // change order status to cancelled
         const cancelledStatus = await getOrderStatusByName('order_cancelled');
         await updateCaseOrderStatus(id, cancelledStatus.id);
+
+        // refund amount paid
+        if (order.amount_paid > 0 && order.account_number) {
+          await BankClient.makePayment(order.account_number, order.amount_paid * 0.8, `Order cancelled, refunding 80% of order ID: ${id}`)
+        }
 
         status = StatusCodes.NO_CONTENT;
         response = { };

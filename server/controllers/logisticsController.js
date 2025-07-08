@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { getExternalOrderWithItems } from '../daos/externalOrdersDao.js';
-import { decrementStockByName, incrementStockByName } from '../daos/stockDao.js';
+
+import { decrementStockByName, deliverStockByName, incrementStockByName } from '../daos/stockDao.js';
 import { getCaseOrderById, updateCaseOrderStatus, incrementQuantityDelivered } from '../daos/caseOrdersDao.js';
 import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
 
@@ -29,8 +30,7 @@ export const handleLogistics = async (req, res, next) => {
                         .status(StatusCodes.NOT_FOUND)
                         .json({ error: 'Delivery order not found' });
                 };
-                console.log(deliveryOrder);
-                await incrementStockByName(deliveryOrder.stock_type_name, quantity);
+                await deliverStockByName(deliveryOrder.stock_type_name, quantity);
                 return res
                     .status(StatusCodes.OK)
                     .json({ message: 'Successfully received external order' });

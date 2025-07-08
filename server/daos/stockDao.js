@@ -48,3 +48,19 @@ export async function decreaseStockUnitsByTypeId(typeId, units, trx = db) {
         .where({ stock_type_id: typeId })
         .decrement('total_units', units);
 }
+
+export async function deliverStockByName(name, deliveredQuantity) {
+    const stock = await getStockByName(name);
+
+    const updatedOrderedUnits = Math.max(stock.ordered_units - deliveredQuantity, 0);
+
+    await db(STOCK_TABLE_NAME)
+        .where({ id: stock.id })
+        .update({
+            ordered_units: updatedOrderedUnits,
+        });
+
+    await db(STOCK_TABLE_NAME)
+        .where({ id: stock.id })
+        .increment('total_units', deliveredQuantity);
+}

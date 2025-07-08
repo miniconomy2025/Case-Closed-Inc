@@ -17,11 +17,11 @@ export async function up(knex) {
       ('case');
 
     -- insert stock
-    INSERT INTO "stock" ("stock_type_id", "total_units") VALUES
-      (1, 500),   -- aluminium
-      (2, 300),   -- plastic
-      (3, 10),    -- machine
-      (4, 120);   -- case
+    INSERT INTO "stock" ("stock_type_id", "total_units", "ordered_units") VALUES
+      (1, 500, 100),   -- aluminium
+      (2, 300, 0),   -- plastic
+      (3, 10, 0),    -- machine
+      (4, 120, 0);   -- case
 
     -- insert order types
     INSERT INTO "order_types" ("name")
