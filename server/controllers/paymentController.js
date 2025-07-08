@@ -1,10 +1,12 @@
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
-import { getCaseOrderById, incrementAmountPaid, updateCaseOrderStatus } from '../daos/caseOrdersDao.js';
+import { getCaseOrderById, updateCaseOrderStatus, updateOrderPaymentAndAccount } from '../daos/caseOrdersDao.js';
+import BankClient from '../clients/BankClient.js';
+import MockBankClient from '../clients/MockBankClient.js';
 
 export const handlePayment = async (req, res, next) => {
     try {
-        const { referenceId, amount } = req.body; // can add account number but we don't really care who pays for a persons order ...
+        const { referenceId, accountNumber, amount } = req.body;
 
         let order = await getCaseOrderById(referenceId);
 
@@ -14,7 +16,17 @@ export const handlePayment = async (req, res, next) => {
                 .json({ error: getReasonPhrase(StatusCodes.NOT_FOUND) });
         };
 
-        await incrementAmountPaid(referenceId, amount);
+        const cancelledStatus = await getOrderStatusByName('order_cancelled');
+
+        // TODO switch mock service
+        if (order.order_status_id === cancelledStatus) {
+            await MockBankClient.makePayment(accountNumber, amount * 0.8, `Order already cancelled, refunding 80% of order ID: ${referenceId}`);
+            return res
+                .status(StatusCodes.OK)
+                .json({ message: 'Refund on cancelled order' });
+        };
+
+        await updateOrderPaymentAndAccount(referenceId, amount, accountNumber);
 
         order = await getCaseOrderById(referenceId);
 
