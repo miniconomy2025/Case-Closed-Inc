@@ -6,6 +6,7 @@ import DecisionEngine from '../cron/jobs/decisionEngine.js';
 import CancelUnpaidOrdersJob from '../cron/jobs/canelUnpaidOrders.js';
 import logger from "../utils/logger.js";
 import { decrementStockByName } from '../daos/stockDao.js';
+import apiUrls from '../utils/companyUrls.js';
 
 let schedule = null;
 
@@ -104,14 +105,30 @@ export default simulationTimer;
 export const handleSimulationStart = async (req, res, next) => {
   try {
     logger.info('=================== Simulation Started ===================')
-    // Open bank account
-    // Call Commercial Bank
-    const accountNumber = 'TESTACC1';
+
+    const { accountNumber } = await fetch(`${apiUrls.bank}/account`, {
+        method: 'POST'
+    });
+
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
     // Get loan
-    const loanTotal = 1000000;
-    logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
+    const { success, loanNumber } = await fetch(`${apiUrls.bank}/loan`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            amount: 1000000  // Need to decide on the starting amount
+        })
+    });
+
+    if(success){
+        logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
+    }else{
+        logger.info(`[SimulationStart]: Bank Rejected Loan: ${loanTotal}`);
+    }
+    
 
     // Buy machine from THoH
     const machines = 5;
