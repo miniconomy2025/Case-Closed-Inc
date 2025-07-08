@@ -8,6 +8,13 @@ export const runMigrations = async () => {
   try {
     await dbMigrate.migrate.latest();
     logger.info("Migrations ran successfully");
+  } catch (err) {
+    logger.error("Error running migrations", {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+    throw err;
   } finally {
     await dbMigrate.destroy();
   }

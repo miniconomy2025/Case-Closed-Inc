@@ -3,6 +3,7 @@ import axios from 'axios';
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL,
   timeout: 5000,
+  httpsAgent: mtlsAgent || undefined,
 });
 
 const BankClient = {
