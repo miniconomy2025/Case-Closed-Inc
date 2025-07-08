@@ -9,6 +9,8 @@ import {
     getAvailableCaseStock
 } from "../../daos/stockDao.js"
 
+import logger from "../../utils/logger.js";
+
 export default class DecisionEngine {
 
     constructor() {
@@ -76,27 +78,34 @@ export default class DecisionEngine {
 
         // TODO: Integrate with systems
         if(await this.buyMaterial(state, 'plastic')){
-            console.log('Plastic stock low! Need to buy')
+            
+            logger.info('[DecisionEngine]: Plastic stock low! Need to buy')
         }else {
-            console.log('Plastic stock good!')
+            
+            logger.info('[DecisionEngine]: Plastic stock good!')
         }
 
         if(await this.buyMaterial(state, 'aluminium')){
-            console.log('Aluminium stock low! Need to buy')
+            
+            logger.info('[DecisionEngine]: Aluminium stock low! Need to buy')
         }else {
-            console.log('Aluminium stock good!')
+            
+            logger.info('[DecisionEngine]: Aluminium stock good!')
         }
 
         if(await this.buyMachine(state)){
-            console.log('Can buy machine')
+            logger.info('[DecisionEngine]: Can buy machine')
         }else {
-            console.log('Do not buy machine')
+            
+            logger.info('[DecisionEngine]: Do not buy machine')
         }
 
         if(await this.repayLoan(state)){
-            console.log('Need to repay loan')
+            
+            logger.info('[DecisionEngine]: Need to repay loan')
         }else {
-            console.log('No need to repay loan')
+            
+            logger.info('[DecisionEngine]: No need to repay loan')
         }
     }
 

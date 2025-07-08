@@ -29,7 +29,7 @@ const startServer = async () => {
       logger.info(`Server running on http://${HOST}:${PORT}`);
     });
 
-    startSchedulers();
+    // startSchedulers();
 
     // example of using the bank client TODO: REMOVE
     const createAccount = await BankClient.createAccount();
