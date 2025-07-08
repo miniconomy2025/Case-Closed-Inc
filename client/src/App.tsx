@@ -27,8 +27,10 @@ const BRANDING = {
 
 export default function App() {
   return (
-    <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
+    <div style={{backgroundColor:'#f0f0fa'}}>
+      <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
       <Outlet />
     </ReactRouterAppProvider>
+    </div>
   );
 }

@@ -30,6 +30,13 @@ export async function decrementStockByName(name, quantity) {
         .update({ total_units: newTotal });
 }
 
+export async function incrementStockByName(name, quantity) {
+    const stock = await getStockByName(name);
+    await db(STOCK_TABLE_NAME)
+        .where({ id: stock.id })
+        .increment('total_units', quantity);
+};
+
 export async function increaseStockUnitsByTypeId(typeId, units, trx = db) {
     await trx(STOCK_TABLE_NAME)
         .where({ stock_type_id: typeId })
