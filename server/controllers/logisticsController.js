@@ -11,7 +11,15 @@ import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
  */
 export const handleLogistics = async (req, res, next) => {
     try {
-        const { id, type, quantity } = req.body; 
+        const { id, type, items } = req.body; 
+
+        if (!items || items.length !== 1) {
+        return res
+            .status(StatusCodes.BAD_REQUEST)
+            .json({ error: 'Unexpected number of items' });
+        }
+
+        const { name, quantity } = items[0]; // we only ever order a single item as per our business logic
 
         switch (type) {
             case 'DELIVERY':
