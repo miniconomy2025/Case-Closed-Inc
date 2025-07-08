@@ -46,7 +46,7 @@ export async function up(knex) {
       "stock_type_id" int NOT NULL,
       "order_id" int NOT NULL,
       "ordered_units" int NOT NULL,
-      "per_unit_cost" float NOT NULL
+      "per_unit_cost" float NOT NULL 
     );
 
     ALTER TABLE "case_orders" 
