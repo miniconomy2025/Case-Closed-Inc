@@ -60,7 +60,7 @@ export const cancelUnpaidOrder = async (req, res, next) => {
 
         // refund amount paid
         if (order.amount_paid > 0 && order.account_number) {
-          await BankClient.makePayment(order.account_number, order.amount_paid * 0.8, `Order cancelled, refunding 80% of order ID: ${referenceId}`)
+          await BankClient.makePayment(order.account_number, order.amount_paid * 0.8, `Order cancelled, refunding 80% of order ID: ${id}`)
         }
 
         status = StatusCodes.NO_CONTENT;
