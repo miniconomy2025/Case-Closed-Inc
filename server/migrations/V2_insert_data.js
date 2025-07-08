@@ -49,11 +49,11 @@ export async function up(knex) {
 
     -- insert case orders
     INSERT INTO "case_orders" (
-      "order_status_id", "quantity", "total_price", "ordered_at"
+      "order_status_id", "quantity", "total_price", "amount_paid", "ordered_at"
     ) VALUES
-      (1, 10, 150.00, '2025-07-01 08:00:00'),
-      (2, 25, 375.00, '2025-07-02 12:00:00'),
-      (3, 5, 75.00, '2025-07-03 14:30:00');
+      (1, 10, 150.00, 0, '2025-07-01 08:00:00'),
+      (2, 25, 375.00, 0, '2025-07-02 12:00:00'),
+      (3, 5, 75.00, 0, '2025-07-03 14:30:00');
   `);
 }
 

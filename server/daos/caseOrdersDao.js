@@ -43,3 +43,22 @@ export async function getUnpaidOrdersOlderThan(days) {
     .andWhere('ordered_at', '<', dateLimit)
     .select('*');
 }
+
+export const incrementAmountPaid = async (orderId, amount) => {
+  return db(TABLE_NAME)
+    .where({ id: orderId })
+    .increment('amount_paid', amount);
+};
+
+export const updateOrderAccountNumber = async (orderId, accountNumber) => {
+  return db(TABLE_NAME)
+    .where({ id: orderId })
+    .update({ account_number: accountNumber });
+};
+
+export const updateOrderPaymentAndAccount = async (orderId, amount, accountNumber) => {
+  return db(TABLE_NAME)
+    .where({ id: orderId })
+    .update({ account_number: accountNumber })
+    .increment('amount_paid', amount);
+};

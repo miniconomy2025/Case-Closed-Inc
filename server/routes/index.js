@@ -4,7 +4,8 @@ import logisticsRoutes from './logisticsRoutes.js';
 import simulationRoutes from './simulationRoutes.js';
 import reportRoutes from './reportRoutes.js';
 import caseRoutes from './caseRoutes.js';
-import caseOrderRouter from './caseOrderRoutes.js'
+import caseOrderRouter from './caseOrderRoutes.js';
+import paymentRoutes from './paymentRoutes.js';
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.use('/simulation', simulationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/cases', caseRoutes);
 router.use('/orders', caseOrderRouter);
+router.use('/payment', paymentRoutes);
 
 export default router;
