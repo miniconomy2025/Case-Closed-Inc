@@ -53,7 +53,8 @@ export const incrementAmountPaid = async (orderId, amount) => {
 export const incrementQuantityDelivered = async (orderId, quantity) => {
   return db(TABLE_NAME)
     .where({ id: orderId })
-    .increment('quantity_delivered', quantity);
+    .increment('quantity_delivered', quantity)
+    .first();
 };
 
 export const updateOrderAccountNumber = async (orderId, accountNumber) => {
