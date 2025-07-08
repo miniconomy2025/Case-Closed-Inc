@@ -76,6 +76,12 @@ export const postCaseOrder = async (req, res, next) => {
     try {
         const { quantity } = req.body;
 
+        if (quantity % 1000 !== 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                error: 'Orders must be placed in multiples of 1000 units.',
+            });
+        };
+
         const orderStatus = await getOrderStatusByName('payment_pending');
         const stockStatus = await getAvailableCaseStock();
         const pricePerCase = 100.0; // calculate this based on raw material prices
