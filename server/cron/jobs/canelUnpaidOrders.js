@@ -1,6 +1,7 @@
 import { getUnpaidOrdersOlderThan, updateCaseOrderStatus } from "../../daos/caseOrdersDao.js";
 import { getOrderStatusByName } from "../../daos/orderStatusesDao.js";
 import logger from "../../utils/logger.js";
+import { BankClient } from '../clients/index.js';
 
 export default class CancelUnpaidOrdersJob {
     async run() {
@@ -15,6 +16,12 @@ export default class CancelUnpaidOrdersJob {
 
                 for (const order of unpaidOrders) {
                     await updateCaseOrderStatus(order.id, cancelledStatus.id);
+
+                    // refund amount paid
+                    if (order.amount_paid > 0 && order.account_number) {
+                        await BankClient.makePayment(order.account_number, order.amount_paid * 0.8, `Order cancelled, refunding 80% of order ID: ${id}`)
+                    }
+
                     logger.info(`[CancelUnpaidOrdersJob]: Order ${order.id} cancelled.`);
                 }
             }
