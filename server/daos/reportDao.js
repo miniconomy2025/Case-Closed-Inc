@@ -8,14 +8,14 @@ const CASE_ORDER_COUNTS = 'count_case_orders()';
 const SALES_REPORT = 'get_sales_report()';
 
 export async function getBalanceFromBank() {
-    const { balance } = await fetch(`${apiUrls}/account/me/balance`, {
+    const { balance } = await fetch(`${apiUrls.bank}/account/me/balance`, {
         method: "GET"
     })
     return balance;
 }
 
 export async function getLoanTotalFromBank() {
-    const loans  = await fetch(`${apiUrls}/loan`, {
+    const loans  = await fetch(`${apiUrls.bank}/loan`, {
         method: "GET"
     })
 
