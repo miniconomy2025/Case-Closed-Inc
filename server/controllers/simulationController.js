@@ -11,6 +11,7 @@ import { getAccountNumber, updateAccountNumber } from '../daos/bankDetailsDao.js
 
 import OrderRawMaterialsClient from '../clients/OrderRawMaterialsClient.js';
 import OrderMachineClient from '../clients/OrderMachineClient.js'
+import BankClient from '../clients/BankClient.js';
 
 let schedule = null;
 
@@ -110,9 +111,7 @@ export const handleSimulationStart = async (req, res, next) => {
   try {
     logger.info('=================== Simulation Started ===================')
 
-    const { accountNumber } = await fetch(`${apiUrls.bank}/account`, {
-        method: 'POST'
-    });
+    const { accountNumber } = await BankClient.createAccount();
     // Open bank account
     // Call Commercial Bank
     await updateAccountNumber(accountNumber);
@@ -120,15 +119,7 @@ export const handleSimulationStart = async (req, res, next) => {
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
     // Get loan
-    const { success, loanNumber } = await fetch(`${apiUrls.bank}/loan`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            amount: 1000000  // Need to decide on the starting amount
-        })
-    });
+    const { success, loanNumber } = await BankClient.takeLoan({amount: 1000000});
 
     if(success){
         logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
@@ -138,26 +129,26 @@ export const handleSimulationStart = async (req, res, next) => {
     
 
     // Buy machine from THoH
-    OrderMachineClient.processMachineOrderFlow({
-        machineName: 'CaseMaker',
+    const { machines } = await OrderMachineClient.processMachineOrderFlow({
+        machineName: 'case_machine',
         quantity: 20
     })
-    logger.info(`[SimulationStart]: Bought ${machines} machines`);
+    logger.info(`[SimulationStart]: Bought 20 machines`);
     
     // Buy materials from THoH
     const plastcic = 10000;
     const aluminium = 10000;
 
-    OrderRawMaterialsClient.processOrderFlow({
+    await OrderRawMaterialsClient.processOrderFlow({
         name: 'plastic',
         quantity: plastcic
     });
 
-    OrderRawMaterialsClient.processOrderFlow({
+    await OrderRawMaterialsClient.processOrderFlow({
         name: 'aluminium',
         quantity: aluminium
     })
-    
+
     logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
     simulationTimer.startOfDay();
