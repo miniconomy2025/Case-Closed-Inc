@@ -1,5 +1,4 @@
 import express from 'express';
-import collectionRoutes from './collectionRoutes.js';
 import logisticsRoutes from './logisticsRoutes.js';
 import simulationRoutes from './simulationRoutes.js';
 import reportRoutes from './reportRoutes.js';
@@ -9,7 +8,6 @@ import paymentRoutes from './paymentRoutes.js';
 
 const router = express.Router();
 
-router.use('/collection', collectionRoutes);
 router.use('/logistics', logisticsRoutes);
 router.use('/simulation', simulationRoutes);
 router.use('/reports', reportRoutes);
