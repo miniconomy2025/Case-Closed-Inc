@@ -5,6 +5,7 @@ import { getOrderStatusByName, getOrderStatusById } from "../daos/orderStatusesD
 import { decrementStockByName } from "../daos/stockDao.js";
 import { BankClient } from '../clients/index.js';
 import { getAccountNumber } from "../daos/bankDetailsDao.js";
+import simulationTimer from "./simulationController.js"
 
 /**
  * Check the status of a given case order.
@@ -104,7 +105,7 @@ export const postCaseOrder = async (req, res, next) => {
         } else {
             // create order
             const total_price = pricePerCase * quantity;
-            const ordered_at = new Date();
+            const ordered_at = simulationTimer.getDate();
 
             const { account_number } = await getAccountNumber();
 
