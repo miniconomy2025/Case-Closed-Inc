@@ -133,7 +133,7 @@ app.post('/machines', (req, res) => {
 });
 
 // Purchase raw material
-app.post('/purchase-raw-material', (req, res) => {
+app.post('/raw-materials', (req, res) => {
     try {
         const { materialName, weightQuantity } = req.body;
 

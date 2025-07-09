@@ -120,7 +120,7 @@ export const handleSimulationStart = async (req, res, next) => {
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
     // Get loan
-    const { success, loanNumber } = await BankClient.takeLoan({amount: 1000000});
+    const { success, loanNumber } = await BankClient.takeLoan(1000000);
 
     if(success){
         logger.info(`[SimulationStart]: Recieved Loan: 1000000`);

@@ -20,8 +20,8 @@ const ThohClient = {
 
   async createRawMaterialsOrder(materialName, weightQuantity) {
     const requestData = {
-      materialName,
-      weightQuantity,
+      materialName: materialName,
+      weightQuantity: weightQuantity,
     };
 
     const res = await rawMaterialsApi.post('/raw-materials', requestData);
@@ -35,7 +35,6 @@ const ThohClient = {
     };
 
     const res = await rawMaterialsApi.post('/machines', requestData);
-    console.log('I am okay')
     return res.data;
   },
 
