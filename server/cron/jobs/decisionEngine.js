@@ -21,7 +21,6 @@ export default class DecisionEngine {
       machineMin: 10,
       caseProductionBuffer: 100,
       demandThreshold: 0.5,
-      minCash: 50000,
     };
   }
 
@@ -35,8 +34,8 @@ export default class DecisionEngine {
       plastic: materialStock.plastic,
       aluminium: materialStock.aluminium,
       machine: materialStock.machine,
-      casesAvailable: parseInt(caseStock.reserved_units),
-      casesReserved: parseInt(caseStock.available_units),
+      casesAvailable: parseInt(caseStock.available_units),
+      casesReserved: parseInt(caseStock.reserved_units),
     };
 
     return {
@@ -51,33 +50,13 @@ export default class DecisionEngine {
     const demandRatio = inventory.casesAvailable / inventory.casesReserved;
     const minThreshold = this.thresholds[`${material}Min`];
 
-    return (
-      inventory[material] < minThreshold &&
-      demandRatio < this.thresholds.demandThreshold &&
-      balance > this.thresholds.minCash
-    );
+    return inventory[material] < minThreshold && demandRatio < this.thresholds.demandThreshold;
   }
 
   async buyMachine(state) {
     const { balance, inventory } = state;
 
-    return (
-      inventory.machine < this.thresholds.machineMin &&
-      balance > this.thresholds.minCash * 1.5
-    );
-  }
-
-  async repayLoan(state) {
-    const { balance, loan, inventory } = state;
-
-    const hasSurplusInventory =
-      inventory.plastic > this.thresholds.plasticMin &&
-      inventory.aluminium > this.thresholds.aluminiumMin;
-
-    return (
-      loan > 0 &&
-      (balance > this.thresholds.minCash * 1.5 || hasSurplusInventory)
-    );
+    return inventory.machine < this.thresholds.machineMin;
   }
 
   async run() {
@@ -112,12 +91,6 @@ export default class DecisionEngine {
         });
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
-    }
-
-    if (await this.repayLoan(state)) {
-      logger.info("[DecisionEngine]: Need to repay loan");
-    } else {
-      logger.info("[DecisionEngine]: No need to repay loan");
     }
   }
 }
