@@ -6,7 +6,12 @@ import DecisionEngine from '../cron/jobs/decisionEngine.js';
 import CancelUnpaidOrdersJob from '../cron/jobs/canelUnpaidOrders.js';
 import logger from "../utils/logger.js";
 import { decrementStockByName } from '../daos/stockDao.js';
+import apiUrls from '../utils/companyUrls.js';
 import { getAccountNumber, updateAccountNumber } from '../daos/bankDetailsDao.js';
+
+import OrderRawMaterialsClient from '../clients/OrderRawMaterialsClient.js';
+import OrderMachineClient from '../clients/OrderMachineClient.js'
+import BankClient from '../clients/BankClient.js';
 
 let schedule = null;
 
@@ -105,24 +110,46 @@ export default simulationTimer;
 export const handleSimulationStart = async (req, res, next) => {
   try {
     logger.info('=================== Simulation Started ===================')
+
+    const { accountNumber } = await BankClient.createAccount();
     // Open bank account
     // Call Commercial Bank
-    const accountNumber = '123451234512';
     await updateAccountNumber(accountNumber);
+    const { setUrlSuccess } = await BankClient.setNotificationUrl({notificationUrl: '/api/payment'});
 
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
     // Get loan
-    const loanTotal = 1000000;
-    logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
+    const { success, loanNumber } = await BankClient.takeLoan({amount: 1000000});
+
+    if(success){
+        logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
+    }else{
+        logger.info(`[SimulationStart]: Bank Rejected Loan: ${loanTotal}`);
+    }
+    
 
     // Buy machine from THoH
-    const machines = 5;
-    logger.info(`[SimulationStart]: Bought ${machines} machines`);
+    const { machines } = await OrderMachineClient.processMachineOrderFlow({
+        machineName: 'case_machine',
+        quantity: 20
+    })
+    logger.info(`[SimulationStart]: Bought 20 machines`);
     
     // Buy materials from THoH
-    const plastcic = 1000;
-    const aluminium = 500;
+    const plastcic = 10000;
+    const aluminium = 10000;
+
+    await OrderRawMaterialsClient.processOrderFlow({
+        name: 'plastic',
+        quantity: plastcic
+    });
+
+    await OrderRawMaterialsClient.processOrderFlow({
+        name: 'aluminium',
+        quantity: aluminium
+    })
+
     logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
     simulationTimer.startOfDay();
@@ -150,37 +177,3 @@ export const handleSimulationEnd = async (req, res, next) => {
         next(error);
     }
 }
-
-
-// export const handleSimulationStart = async (req, res, next) => {
-//   try {
-    
-//     // Get initial starting time from the Hand
-//     // TODO - apply time stamp to start schedulers then
-    
-//     // Open bank account with commercial bank
-//     // TODO /account/create - returns bank account number which we should probably store
-    
-//     if (schedule) return res.status(400).json({ message: 'Job already running' });
-
-//     const INTERVAL_SECONDS = 10; // 120 for 2 min per day
-//     const SIMULATION_EPOCH = Math.floor(Date.now() / 1000) - 5; // req.body.simulationEpoch
-//     const now = Math.floor(Date.now() / 1000);
-//     const timeSinceEpoch = now - SIMULATION_EPOCH;
-//     const secondsSinceLastTrigger = timeSinceEpoch % INTERVAL_SECONDS;
-//     const delaySeconds = INTERVAL_SECONDS - secondsSinceLastTrigger;
-
-//     schedule = cron.schedule(`*/${INTERVAL_SECONDS} * * * * *`, simulateProduction, { scheduled: false });
-
-//     setTimeout(() => {
-//       schedule.start();
-//     }, delaySeconds * 1000);
-
-//     return res
-//         .status(StatusCodes.OK)
-//         .json({ message: 'Successfully started simulation' });
-
-//   } catch (error) {
-//     next(error);
-//   };
-// };

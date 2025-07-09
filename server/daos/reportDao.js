@@ -1,4 +1,6 @@
 import { db } from "../db/knex.js";
+import apiUrls from "../utils/companyUrls.js";
+import simulationTimer from "../controllers/simulationController.js";
 
 const CASES_STOCK_VIEW = 'case_stock_status';
 const EXTERNAL_ORDER_COUNTS = 'count_external_orders_by_received_status()';
@@ -6,13 +8,19 @@ const CASE_ORDER_COUNTS = 'count_case_orders()';
 const SALES_REPORT = 'get_sales_report()';
 
 export async function getBalanceFromBank() {
-    // TODO: make call to bank to get actua balance for now this bad mock data
-    return {balance: 1000000}
+    const { balance } = await fetch(`${apiUrls}/account/me/balance`, {
+        method: "GET"
+    })
+    return balance;
 }
 
 export async function getLoanTotalFromBank() {
-    // TODO: make call to bank to get actua loan for now this bad mock data
-    return {loan: 500000000}
+    const loans  = await fetch(`${apiUrls}/loan`, {
+        method: "GET"
+    })
+
+    const allLoans = loans.reduce((sum, item) => sum + item.outstanding_amount, 0);
+    return allLoans;
 }
 
 
@@ -32,17 +40,10 @@ export async function getMaterialStockCount() {
 }
 
 export async function getTransactionsFromBank() {
-    // TODO: make call to bank to get transaction history
-    return [
-        {
-            id: 11,
-            amount: 10000
-        },
-        {
-            id: 10,
-            amount: 50         
-        }
-    ];
+    const transactions = await fetch(`${apiUrls}/transaction?from=2050-01-01&to=${simulationTimer.getDate()}`, {
+        method: "GET"
+    })
+    return transactions;
 }
 
 
