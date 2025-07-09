@@ -6,6 +6,7 @@ import DecisionEngine from '../cron/jobs/decisionEngine.js';
 import CancelUnpaidOrdersJob from '../cron/jobs/canelUnpaidOrders.js';
 import logger from "../utils/logger.js";
 import { decrementStockByName } from '../daos/stockDao.js';
+import { getAccountNumber, updateAccountNumber } from '../daos/bankDetailsDao.js';
 
 let schedule = null;
 
@@ -106,7 +107,9 @@ export const handleSimulationStart = async (req, res, next) => {
     logger.info('=================== Simulation Started ===================')
     // Open bank account
     // Call Commercial Bank
-    const accountNumber = 'TESTACC1';
+    const accountNumber = '123451234512';
+    await updateAccountNumber(accountNumber);
+
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
     // Get loan
