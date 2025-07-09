@@ -6,7 +6,9 @@ import {
     getShipments,
     getTransactions,
     getCases,
-    getSales
+    getSales,
+    getCaseOrdersReport,
+    getCaseOrdersStatsReport
 } from '../controllers/reportConroller.js'
 
 const router = express.Router();
@@ -17,5 +19,7 @@ router.get('/logistics/shipments', getShipments);
 router.get('/orders', getOrders);
 router.get('/stock', getStock);
 router.get('/cases', getCases);
-router.get('/sales', getSales)
+router.get('/sales', getSales);
+router.get('/case/orders', getCaseOrdersReport);
+router.get('/case/orders/stats', getCaseOrdersStatsReport);
 export default router;
