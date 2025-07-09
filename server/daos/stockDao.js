@@ -28,7 +28,22 @@ export async function decrementStockByName(name, quantity) {
     await db(STOCK_TABLE_NAME)
         .where({ id: stock.id })
         .update({ total_units: newTotal });
-}
+};
+
+export async function decrementStockByNameFlexible(name, quantity) {
+    const stock = await getStockByName(name);
+
+    const available = stock.total_units;
+    const decrementBy = Math.min(quantity, available);
+
+    if (decrementBy === 0) {
+        throw new Error(`No stock available for "${name}".`);
+    }
+
+    await db(STOCK_TABLE_NAME)
+        .where({ id: stock.id })
+        .update({ total_units: available - decrementBy });
+};
 
 export async function incrementStockByName(name, quantity) {
     const stock = await getStockByName(name);
