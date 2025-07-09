@@ -115,6 +115,7 @@ export const handleSimulationStart = async (req, res, next) => {
     // Open bank account
     // Call Commercial Bank
     await updateAccountNumber(accountNumber);
+    const { setUrlSuccess } = await BankClient.setNotificationUrl({notificationUrl: '/api/payment'});
 
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
