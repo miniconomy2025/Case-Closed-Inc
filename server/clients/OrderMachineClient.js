@@ -4,7 +4,7 @@ import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
 import { updateShipmentReference } from '../daos/externalOrdersDao.js';
 
-const OrderMachineCLient = {
+const OrderMachineClient = {
   async processOrderFlow(quantity) {
     try {
       // get machine price
@@ -72,4 +72,4 @@ const OrderMachineCLient = {
   },
 };
 
-export default OrderRawMaterialsClient;
+export default OrderMachineClient;
