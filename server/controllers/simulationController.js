@@ -9,6 +9,9 @@ import { decrementStockByName } from '../daos/stockDao.js';
 import apiUrls from '../utils/companyUrls.js';
 import { getAccountNumber, updateAccountNumber } from '../daos/bankDetailsDao.js';
 
+import OrderRawMaterialsClient from '../clients/OrderRawMaterialsClient.js';
+import OrderMachineClient from '../clients/OrderMachineClient.js'
+
 let schedule = null;
 
 class SimulationTimer {
@@ -135,12 +138,26 @@ export const handleSimulationStart = async (req, res, next) => {
     
 
     // Buy machine from THoH
-    const machines = 5;
+    OrderMachineClient.processMachineOrderFlow({
+        machineName: 'CaseMaker',
+        quantity: 20
+    })
     logger.info(`[SimulationStart]: Bought ${machines} machines`);
     
     // Buy materials from THoH
-    const plastcic = 1000;
-    const aluminium = 500;
+    const plastcic = 10000;
+    const aluminium = 10000;
+
+    OrderRawMaterialsClient.processOrderFlow({
+        name: 'plastic',
+        quantity: plastcic
+    });
+
+    OrderRawMaterialsClient.processOrderFlow({
+        name: 'aluminium',
+        quantity: aluminium
+    })
+    
     logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
     simulationTimer.startOfDay();
