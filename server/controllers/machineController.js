@@ -14,10 +14,10 @@ export const handleMachineFailure = async (req, res, next) => {
                 .json({ message: 'Successfully handled simulation machine break event' });
         };
 
-        logger.warn('Unknown simulation event type');
+        logger.warn('Unknown machine name');
         return res
             .status(StatusCodes.BAD_REQUEST)
-            .json({ message: 'Unknown simulation event type' });
+            .json({ message: 'Unknown machine name' });
  
     } catch(error) {
         next(error);
