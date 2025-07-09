@@ -17,7 +17,7 @@ function getCurrentUnixTimestamp() {
 
 
 // Get machines for sale
-app.get('/simulation/machines', (req, res) => {
+app.get('/machines', (req, res) => {
     const machines = [
         {
             machineName: "case_machine",
@@ -35,7 +35,7 @@ app.get('/simulation/machines', (req, res) => {
 });
 
 // Get raw materials for sale
-app.get('/simulation/raw-materials', (req, res) => {
+app.get('/raw-materials', (req, res) => {
     const materials = [
         {
             rawMaterialName: "plastic",
@@ -53,7 +53,7 @@ app.get('/simulation/raw-materials', (req, res) => {
 });
 
 // Purchase machine
-app.post('/simulation/purchase-machine', (req, res) => {
+app.post('/machines', (req, res) => {
     try {
         const { machineName, quantity } = req.body;
 
@@ -114,7 +114,7 @@ app.post('/simulation/purchase-machine', (req, res) => {
             orderId: orderId,
             machineName: machineName,
             quantity: quantity,
-            price: totalPrice,
+            totalPrice: totalPrice,
             weight: totalWeight,
             machineDetails: {
                 requiredMaterials: "plastic,aluminium",
@@ -133,7 +133,7 @@ app.post('/simulation/purchase-machine', (req, res) => {
 });
 
 // Purchase raw material
-app.post('/simulation/purchase-raw-material', (req, res) => {
+app.post('/purchase-raw-material', (req, res) => {
     try {
         const { materialName, weightQuantity } = req.body;
 
@@ -210,7 +210,7 @@ app.post('/simulation/purchase-raw-material', (req, res) => {
 });
 
 // Get order details (optional endpoint for debugging)
-app.get('/simulation/order/:orderId', (req, res) => {
+app.get('/order/:orderId', (req, res) => {
     const orderId = parseInt(req.params.orderId);
     const order = orders[orderId];
 

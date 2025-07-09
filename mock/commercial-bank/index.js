@@ -126,6 +126,7 @@ app.get('/account/me/frozen', getAccountNumber, (req, res) => {
 // Create Transaction (Payment)
 app.post('/transaction', getAccountNumber, (req, res) => {
     const fromAccount = req.accountNumber;
+    console.log(req.body);
     const { to_account_number, to_bank_name, amount, description } = req.body;
 
     if (!to_account_number || !amount || amount <= 0) {

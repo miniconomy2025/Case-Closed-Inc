@@ -85,10 +85,7 @@ export default class DecisionEngine {
 
     if (await this.buyMachine(state)) {
       logger.info("[DecisionEngine]: Can buy machine");
-        OrderMachineClient.processMachineOrderFlow({
-            machineName: 'CaseMaker',
-            quantity: 10
-        });
+        OrderMachineClient.processOrderFlow(10);
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
     }

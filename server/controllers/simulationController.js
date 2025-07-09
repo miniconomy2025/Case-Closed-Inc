@@ -130,10 +130,7 @@ export const handleSimulationStart = async (req, res, next) => {
     
 
     // Buy machine from THoH
-    const machines  = await OrderMachineClient.processMachineOrderFlow({
-        machineName: 'case_machine',
-        quantity: 20
-    });
+    await OrderMachineClient.processOrderFlow(20);
 
     logger.info(`[SimulationStart]: Bought 20 machines`);
     

@@ -78,11 +78,13 @@ const BankClient = {
   },
 
   async makePayment(toAccountNumber, amount, description) {
+    console.log(amount);
     const res = await bankApi.post('/transaction', {
+      accountNumber: (await this.getMyAccount()).accountNumber,
       to_account_number: toAccountNumber,
       to_bank_name: 'commercial-bank',
-      amount,
-      description,
+      amount: amount,
+      description: description,
     });
     return {
       success: res.data.success,
