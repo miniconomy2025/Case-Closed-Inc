@@ -1,5 +1,7 @@
 import { db } from '../db/knex.js';
 
+const EXTERNAL_ORDERS_TABLE = 'external_orders';
+
 export const getExternalOrderWithItems = async (orderReference) => {
     return db('external_orders as eo')
         .select(
@@ -13,4 +15,10 @@ export const getExternalOrderWithItems = async (orderReference) => {
         .leftJoin('stock_types as st', 'eoi.stock_type_id', 'st.id')
         .where('eo.order_reference', orderReference)
         .first();
+};
+
+export async function updateShipmentReference(orderReference, shipmentReference) {
+    return await db(EXTERNAL_ORDERS_TABLE)
+        .where({ order_reference: orderReference })
+        .update({ shipment_reference: shipmentReference });
 };
