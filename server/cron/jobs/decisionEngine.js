@@ -9,15 +9,19 @@ import { getAvailableCaseStock } from "../../daos/stockDao.js";
 
 import logger from "../../utils/logger.js";
 
+import OrderRawMaterialsClient from "../../clients/OrderRawMaterialsClient.js";
+import OrderMachineClient from "../../clients/OrderMachineClient.js";
+
+
 export default class DecisionEngine {
   constructor() {
     this.thresholds = {
       plasticMin: 1000,
       aluminiumMin: 1000,
-      machineMin: 2,
-      caseProductionBuffer: 50,
+      machineMin: 10,
+      caseProductionBuffer: 100,
       demandThreshold: 0.5,
-      minCash: 5000,
+      minCash: 50000,
     };
   }
 
@@ -81,19 +85,31 @@ export default class DecisionEngine {
 
     // TODO: Integrate with systems
     if (await this.buyMaterial(state, "plastic")) {
-      logger.info("[DecisionEngine]: Plastic stock low! Need to buy");
+      logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
+        OrderRawMaterialsClient.processOrderFlow({
+            name: 'plastic',
+            quantity: 1000
+        })
     } else {
       logger.info("[DecisionEngine]: Plastic stock good!");
     }
 
     if (await this.buyMaterial(state, "aluminium")) {
-      logger.info("[DecisionEngine]: Aluminium stock low! Need to buy");
+      logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
+        OrderRawMaterialsClient.processOrderFlow({
+            name: 'aluminium',
+            quantity: 1000
+        })
     } else {
       logger.info("[DecisionEngine]: Aluminium stock good!");
     }
 
     if (await this.buyMachine(state)) {
       logger.info("[DecisionEngine]: Can buy machine");
+        OrderMachineClient.processMachineOrderFlow({
+            machineName: 'CaseMaker',
+            quantity: 10
+        });
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
     }
