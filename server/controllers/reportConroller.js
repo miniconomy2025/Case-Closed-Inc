@@ -4,7 +4,9 @@ import {
     getOrderCounts, 
     getMaterialStockCount,
     getAllShipments,
-    getSalesReport
+    getSalesReport,
+    getCaseOrders,
+    getOrderStats
 } from "../daos/reportDao.js";
 
 import {
@@ -112,3 +114,33 @@ export const getSales = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getCaseOrdersReport = async (req, res, next) => {
+    try {
+    const caseOrders = await getCaseOrders();
+
+    if(caseOrders){
+        res.status(StatusCodes.OK).json(caseOrders);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No orders found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+
+}
+
+export const getCaseOrdersStatsReport = async (req, res, next) => {
+    try {
+    const caseOrdersStats = await getOrderStats();
+
+    if(caseOrdersStats){
+        res.status(StatusCodes.OK).json(caseOrdersStats);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No orders stats found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+
+}
