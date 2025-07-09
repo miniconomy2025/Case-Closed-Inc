@@ -11,6 +11,7 @@ import logger from "../../utils/logger.js";
 
 import OrderRawMaterialsClient from "../../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../../clients/OrderMachineClient.js";
+import BankClient from "../../clients/BankClient.js";
 
 
 export default class DecisionEngine {
@@ -21,12 +22,12 @@ export default class DecisionEngine {
       machineMin: 10,
       caseProductionBuffer: 100,
       demandThreshold: 0.5,
+      excessCashThreshold: 100000
     };
   }
 
   async getState() {
-    const { balance } = await getBalanceFromBank();
-    const { loan } = await getLoanTotalFromBank();
+    const { balance } = await BankClient.getBalance();
     const materialStock = await getMaterialStockCount();
     const caseStock = await getAvailableCaseStock();
 
@@ -40,7 +41,6 @@ export default class DecisionEngine {
 
     return {
       balance,
-      loan,
       inventory,
     };
   }
@@ -50,13 +50,13 @@ export default class DecisionEngine {
     const demandRatio = inventory.casesAvailable / inventory.casesReserved;
     const minThreshold = this.thresholds[`${material}Min`];
 
-    return inventory[material] < minThreshold && demandRatio < this.thresholds.demandThreshold;
+    return (inventory[material] < minThreshold && demandRatio < this.thresholds.demandThreshold) || ( balance > this.thresholds.excessCashThreshold);
   }
 
   async buyMachine(state) {
     const { balance, inventory } = state;
 
-    return inventory.machine < this.thresholds.machineMin;
+    return (inventory.machine < this.thresholds.machineMin) || (balance > this.thresholds.excessCashThreshold);
   }
 
   async run() {
