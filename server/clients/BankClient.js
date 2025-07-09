@@ -2,7 +2,7 @@ import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 
 const bankApi = axios.create({
-  baseURL: process.env.BANK_API_URL,
+  baseURL: process.env.BANK_API_URL || "http://localhost:3000/",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
 });

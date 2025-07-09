@@ -68,7 +68,7 @@ export default class DecisionEngine {
         OrderRawMaterialsClient.processOrderFlow({
             name: 'plastic',
             quantity: 1000
-        })
+        });
     } else {
       logger.info("[DecisionEngine]: Plastic stock good!");
     }
@@ -78,7 +78,7 @@ export default class DecisionEngine {
         OrderRawMaterialsClient.processOrderFlow({
             name: 'aluminium',
             quantity: 1000
-        })
+        });
     } else {
       logger.info("[DecisionEngine]: Aluminium stock good!");
     }

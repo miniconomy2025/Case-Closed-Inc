@@ -32,35 +32,35 @@ const startServer = async () => {
     // startSchedulers();
 
     // example of using the bank client TODO: REMOVE
-    const createAccount = await BankClient.createAccount();
-    console.log('Account created:', createAccount.accountNumber);
+    // const createAccount = await BankClient.createAccount();
+    // console.log('Account created:', createAccount.accountNumber);
 
-    const loanResult = await BankClient.takeLoan(5000);
-    console.log('Loan taken:', loanResult);
+    // const loanResult = await BankClient.takeLoan(5000);
+    // console.log('Loan taken:', loanResult);
 
-    const getBalance = await BankClient.getBalance();
-    console.log('Bank balance:', getBalance.balance);
+    // const getBalance = await BankClient.getBalance();
+    // console.log('Bank balance:', getBalance.balance);
 
-    // logistics client example use
-    const pickupRequest = await BulkLogistics.createPickupRequest(
-      'order-123',
-      'recycler',
-      [
-        {
-          name: 'aluminium',
-          quantity: 5,
-          measurementType: 'UNIT',
-        },
-      ]
-    );
+    // // logistics client example use
+    // const pickupRequest = await BulkLogistics.createPickupRequest(
+    //   'order-123',
+    //   'recycler',
+    //   [
+    //     {
+    //       name: 'aluminium',
+    //       quantity: 5,
+    //       measurementType: 'UNIT',
+    //     },
+    //   ]
+    // );
 
-    console.log('Pickup created:\n', JSON.stringify(pickupRequest, null, 2));
+    // console.log('Pickup created:\n', JSON.stringify(pickupRequest, null, 2));
 
-    const retrieved = await BulkLogistics.getPickupRequest(pickupRequest.pickupRequestId);
-    console.log('Retrieved:\n', JSON.stringify(retrieved, null, 2));
+    // const retrieved = await BulkLogistics.getPickupRequest(pickupRequest.pickupRequestId);
+    // console.log('Retrieved:\n', JSON.stringify(retrieved, null, 2));
 
-    const allCompanyRequests = await BulkLogistics.getPickupRequestsForCompany();
-    console.log('All our requests:\n', JSON.stringify(allCompanyRequests, null, 2));
+    // const allCompanyRequests = await BulkLogistics.getPickupRequestsForCompany();
+    // console.log('All our requests:\n', JSON.stringify(allCompanyRequests, null, 2));
 
   } catch (err) {
     logger.error('Migrations failed', { error: err });

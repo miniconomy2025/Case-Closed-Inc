@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const thohApi = axios.create({
-  baseURL: process.env.THOH_API_URL || "http://localhost:5000",
+  baseURL: process.env.THOH_API_URL || "http://localhost:3002",
   timeout: 5000,
 });
 

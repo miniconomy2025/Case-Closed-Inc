@@ -85,7 +85,7 @@ class SimulationTimer {
             this.interval = setInterval(() => {
                 this.startOfDay();
                 logger.info(`[Date]: ${this.getDate()}`);
-            }, 500) // 2 mins: 120000
+            }, 120000); // 2 mins: 120000
         }
     }
 
@@ -123,17 +123,18 @@ export const handleSimulationStart = async (req, res, next) => {
     const { success, loanNumber } = await BankClient.takeLoan({amount: 1000000});
 
     if(success){
-        logger.info(`[SimulationStart]: Recieved Loan: ${loanTotal}`);
+        logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
     }else{
-        logger.info(`[SimulationStart]: Bank Rejected Loan: ${loanTotal}`);
+        logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
     }
     
 
     // Buy machine from THoH
-    const { machines } = await OrderMachineClient.processMachineOrderFlow({
+    const machines  = await OrderMachineClient.processMachineOrderFlow({
         machineName: 'case_machine',
         quantity: 20
-    })
+    });
+
     logger.info(`[SimulationStart]: Bought 20 machines`);
     
     // Buy materials from THoH
@@ -148,7 +149,7 @@ export const handleSimulationStart = async (req, res, next) => {
     await OrderRawMaterialsClient.processOrderFlow({
         name: 'aluminium',
         quantity: aluminium
-    })
+    });
 
     logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
