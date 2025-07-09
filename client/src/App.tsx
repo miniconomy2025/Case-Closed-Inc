@@ -15,8 +15,7 @@ const NAVIGATION: Navigation = [
   },
   {
     segment: 'orders',
-    title: 'Orders',
-    icon: <ShoppingCartIcon />,
+    title: '📱 Case Orders',
   },
 ];
 
