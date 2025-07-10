@@ -41,6 +41,7 @@ const OrderRawMaterialsClient = {
 
       // TODO future enhancement: calculate affordable quantity
       if (totalCost > balance) {
+        console.log(`To expensive to place order for ${name}: ${quantity}`)
         return;
       }
 
@@ -60,8 +61,8 @@ const OrderRawMaterialsClient = {
       );
 
       // pay for pickup request
-      const pickupPayment = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${pickupPayment}`);
+      const { status, transactionNumber } = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
+      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       await updateShipmentReference(rawOrder.orderId, pickupRequest.pickupRequestId)
   
