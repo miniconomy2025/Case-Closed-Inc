@@ -9,9 +9,9 @@ let knexEnv = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    ssl: process.env.ENV === "production" ? {
-      rejectUnauthorized: false
-    } : false,
+    // ssl: process.env.ENV === "production" ? {
+    //   rejectUnauthorized: false
+    // } : false,
   },
   migrations: {
     directory: "./migrations",
