@@ -2,7 +2,7 @@ import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 
 const bankApi = axios.create({
-  baseURL: process.env.BANK_API_URL,
+  baseURL: process.env.BANK_API_URL || "http://localhost:3000/",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
 });
@@ -79,10 +79,11 @@ const BankClient = {
 
   async makePayment(toAccountNumber, amount, description) {
     const res = await bankApi.post('/transaction', {
+      accountNumber: (await this.getMyAccount()).accountNumber,
       to_account_number: toAccountNumber,
       to_bank_name: 'commercial-bank',
-      amount,
-      description,
+      amount: amount,
+      description: description,
     });
     return {
       success: res.data.success,

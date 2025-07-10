@@ -2,7 +2,7 @@ import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 
 const logisticsApi = axios.create({
-  baseURL: process.env.BULK_LOGISTICS_API_URL,
+  baseURL: process.env.BULK_LOGISTICS_API_URL || "http://localhost:3001/",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
 });

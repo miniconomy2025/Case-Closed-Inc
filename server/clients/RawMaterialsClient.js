@@ -2,7 +2,7 @@ import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 
 const rawMaterialsApi = axios.create({
-  baseURL: process.env.RAW_MATERIALS_API_URL,
+  baseURL: process.env.RAW_MATERIALS_API_URL || "http://localhost:3002/",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
 });
@@ -20,8 +20,8 @@ const ThohClient = {
 
   async createRawMaterialsOrder(materialName, weightQuantity) {
     const requestData = {
-      materialName,
-      weightQuantity,
+      materialName: materialName,
+      weightQuantity: weightQuantity,
     };
 
     const res = await rawMaterialsApi.post('/raw-materials', requestData);
@@ -30,8 +30,8 @@ const ThohClient = {
 
   async createMachineOrder(quantity) {
     const requestData = {
-      materialName: "case_machine",
-      quantity,
+      machineName: "case_machine",
+      quantity: quantity,
     };
 
     const res = await rawMaterialsApi.post('/machines', requestData);
