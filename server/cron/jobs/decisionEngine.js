@@ -65,7 +65,7 @@ export default class DecisionEngine {
     // TODO: Integrate with systems
     if (await this.buyMaterial(state, "plastic")) {
       logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
-        OrderRawMaterialsClient.processOrderFlow({
+        await OrderRawMaterialsClient.processOrderFlow({
             name: 'plastic',
             quantity: 1000
         });
@@ -75,7 +75,7 @@ export default class DecisionEngine {
 
     if (await this.buyMaterial(state, "aluminium")) {
       logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
-        OrderRawMaterialsClient.processOrderFlow({
+        await OrderRawMaterialsClient.processOrderFlow({
             name: 'aluminium',
             quantity: 1000
         });
@@ -85,7 +85,7 @@ export default class DecisionEngine {
 
     if (await this.buyMachine(state)) {
       logger.info("[DecisionEngine]: Can buy machine");
-        OrderMachineClient.processOrderFlow(10);
+        await OrderMachineClient.processOrderFlow(10);
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
     }
