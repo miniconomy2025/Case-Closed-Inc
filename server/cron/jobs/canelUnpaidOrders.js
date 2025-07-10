@@ -1,20 +1,28 @@
-import { getUnpaidOrdersOlderThan, updateCaseOrderStatus } from "../../daos/caseOrdersDao.js";
+import { getPendingOrders, updateCaseOrderStatus } from "../../daos/caseOrdersDao.js";
 import { getOrderStatusByName } from "../../daos/orderStatusesDao.js";
 import logger from "../../utils/logger.js";
 import { BankClient } from '../../clients/index.js';
+import simulationTimer from "../../controllers/simulationController.js";
 
 export default class CancelUnpaidOrdersJob {
     async run() {
         try {
-            const unpaidOrders = await getUnpaidOrdersOlderThan(7);
+            const unpaidOrders = await getPendingOrders();
+            const expiredOrders = [];
 
-            if (!unpaidOrders || unpaidOrders.length === 0) {
+            for (const order in unpaidOrders) {
+                if (simulationTimer.getDaysPassed(order.ordered_at) > 7) {
+                    expiredOrders.push(order);
+                }
+            }
+
+            if (expiredOrders.length === 0) {
                 logger.info(`[CancelUnpaidOrdersJob]: No unpaid orders older than 7 days.`);
 
             } else {
                 const cancelledStatus = await getOrderStatusByName('order_cancelled');
 
-                for (const order of unpaidOrders) {
+                for (const order of expiredOrders) {
                     await updateCaseOrderStatus(order.id, cancelledStatus.id);
 
                     // refund amount paid

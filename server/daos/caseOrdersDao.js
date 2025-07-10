@@ -44,6 +44,18 @@ export async function getUnpaidOrdersOlderThan(days) {
     .select('*');
 }
 
+export async function getPendingOrders(days) {
+  const pendingStatus = await getOrderStatusByName('payment_pending');
+
+  if (!pendingStatus) {
+    throw new Error(`Order status 'payment_pending' not found`);
+  }
+
+  return await db(TABLE_NAME)
+    .where('order_status_id', pendingStatus.id)
+    .select('*');
+}
+
 export const incrementAmountPaid = async (orderId, amount) => {
   return db(TABLE_NAME)
     .where({ id: orderId })
