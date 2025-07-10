@@ -1,4 +1,5 @@
 import { db } from "../db/knex.js";
+import { getStockTypeIdByName } from "./stockTypesDao.js";
 
 const STOCK_TABLE_NAME = 'stock'
 const TYPES_TABLE_NAME = 'stock_types'
@@ -6,7 +7,22 @@ const CASES_STOCK_VIEW = 'case_stock_status'
 
 export async function getAvailableCaseStock() { 
     //TODO: remove hard coded stock id
-    return await db(CASES_STOCK_VIEW).where({ stock_id: 4 }).first();
+    return await db(CASES_STOCK_VIEW).where({ stock_id: await getStockTypeIdByName('case') }).first();
+}
+
+
+export async function getAvailableMaterialStockCount() {
+    const plasticStock = await getStockByName('plastic');
+    const aluminiumStock = await getStockByName('aluminium');
+    const machineStock = await getStockByName('machine');
+
+    const stock = {
+        plastic: plasticStock.total_units + plasticStock.ordered_units, 
+        aluminium: aluminiumStock.total_units + aluminiumStock.ordered_units,  
+        machine: machineStock.total_units + machineStock.ordered_units
+    }
+
+    return stock;
 }
 
 export async function getStockByName(name) {

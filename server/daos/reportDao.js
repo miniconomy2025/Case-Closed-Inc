@@ -2,7 +2,7 @@ import { db } from "../db/knex.js";
 import apiUrls from "../utils/companyUrls.js";
 import simulationTimer from "../controllers/simulationController.js";
 
-import { getStockTypeIdByName } from "./stockTypesDao.js";
+import { getStockByName } from "./stockDao.js";
 
 const CASES_STOCK_VIEW = 'case_stock_status';
 const EXTERNAL_ORDER_COUNTS = 'count_external_orders_by_received_status()';
@@ -17,11 +17,17 @@ export async function getOrderCounts() {
 
 
 export async function getMaterialStockCount() {
-    const stock = await db(CASES_STOCK_VIEW)
-                .whereNot({stock_id: await getStockTypeIdByName('case')})
-                .select('stock_name', 'available_units');
+    const plasticStock = await getStockByName('plastic');
+    const aluminiumStock = await getStockByName('aluminium');
+    const machineStock = await getStockByName('machine');
 
-    return Object.fromEntries(stock.map(({ stock_name, available_units }) => [stock_name, parseInt(available_units)]));
+    const stock = {
+        plastic: plasticStock.total_units, 
+        aluminium: aluminiumStock.total_units,  
+        machine: machineStock.total_units
+    }
+
+    return stock;
 }
 
 export async function getTransactionsFromBank() {

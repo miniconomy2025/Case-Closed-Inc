@@ -1,8 +1,4 @@
-import {
-  getMaterialStockCount,
-} from "../../daos/reportDao.js";
-
-import { getAvailableCaseStock } from "../../daos/stockDao.js";
+import { getAvailableCaseStock, getAvailableMaterialStockCount } from "../../daos/stockDao.js";
 
 import logger from "../../utils/logger.js";
 
@@ -25,8 +21,10 @@ export default class DecisionEngine {
 
   async getState() {
     const { balance } = await BankClient.getBalance();
-    const materialStock = await getMaterialStockCount();
+    const materialStock = await getAvailableMaterialStockCount();
     const caseStock = await getAvailableCaseStock();
+
+    console.log(materialStock);
 
     const inventory = {
       plastic: materialStock.plastic,
