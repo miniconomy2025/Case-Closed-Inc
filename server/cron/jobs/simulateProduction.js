@@ -1,13 +1,7 @@
+import { getEquipmentParameters } from '../../daos/equipmentParametersDao.js';
 import { increaseStockUnitsByTypeId, decreaseStockUnitsByTypeId, getStockByName } from '../../daos/stockDao.js';
 import { getStockTypeIdByName } from '../../daos/stockTypesDao.js';
 import { db } from '../../db/knex.js';
-
-const PRODUCTION_CAPACITY_PER_MACHINE = 20; // TODO - update with value given by the hand
-const CASES_PER_BATCH = 1; // TODO - update with value given by the hand
-const PLASTIC_PER_BATCH = 4;
-const ALUMINIUM_PER_BATCH = 7;
-const PLASTIC_PER_CASE = PLASTIC_PER_BATCH / CASES_PER_BATCH;
-const ALUMINIUM_PER_CASE = ALUMINIUM_PER_BATCH / CASES_PER_BATCH;
 
 export default class SimulateProduction{
     async run() {  
@@ -22,8 +16,19 @@ export default class SimulateProduction{
         const plastic = await getStockByName('plastic');
         const aluminium = await getStockByName('aluminium');
 
+        const {
+            plastic_ratio,
+            aluminium_ratio,
+            production_rate
+        } = await getEquipmentParameters();
+
+        const PRODUCTION_CAPACITY_PER_MACHINE = production_rate;
+        const CASES_PER_BATCH = production_rate;
+        const PLASTIC_PER_BATCH = plastic_ratio;
+        const ALUMINIUM_PER_BATCH = aluminium_ratio; 
+
         // Validates we have enough materials for atleast 1 unit
-        if (!plastic || plastic.total_units < PLASTIC_PER_CASE || !aluminium || aluminium.total_units < ALUMINIUM_PER_CASE) {
+        if (!plastic || plastic.total_units < PLASTIC_PER_BATCH || !aluminium || aluminium.total_units < ALUMINIUM_PER_BATCH) {
             console.log('Skipping production: Not enough raw materials available.');
             return;
         }
