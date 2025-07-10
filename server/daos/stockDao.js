@@ -58,6 +58,12 @@ export async function increaseStockUnitsByTypeId(typeId, units, trx = db) {
         .increment('total_units', units);
 };
 
+export async function increaseOrderedUnitsByTypeId(typeId, units, trx = db) {
+    await trx(STOCK_TABLE_NAME)
+        .where({ stock_type_id: typeId })
+        .increment('ordered_units', units);
+};
+
 export async function decreaseStockUnitsByTypeId(typeId, units, trx = db) {
     await trx(STOCK_TABLE_NAME)
         .where({ stock_type_id: typeId })

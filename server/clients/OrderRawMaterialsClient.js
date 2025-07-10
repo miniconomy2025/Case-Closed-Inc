@@ -5,6 +5,7 @@ import logger from '../utils/logger.js';
 import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
 import simulationTimer from '../controllers/simulationController.js';
 import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
+import { increaseOrderedUnitsByTypeId } from '../daos/stockDao.js';
 
 const OrderRawMaterialsClient = {
   async processOrderFlow({ name, quantity }) {
@@ -66,6 +67,7 @@ const OrderRawMaterialsClient = {
       }];
 
       await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+      await increaseOrderedUnitsByTypeId(stockId.id, quantity);
 
       // pay for material order
       const materialPayment = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId)
