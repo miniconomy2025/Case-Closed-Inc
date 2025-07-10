@@ -142,17 +142,13 @@ jobs:
                     ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
                     ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
 
-                    # trust the CA that signed the client certs from other servers
                     ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
                     ssl_verify_client optional;
 
                     location / {
-                        # enforce client cert for non-GET requests
-                        if ($request_method != "GET") {
-                            # Require client cert if not GET
-                            if ($ssl_client_verify != "SUCCESS") {
-                                return 403;
-                            }
+                        # deny if NOT GET and client verification failed
+                        if ($request_method != "GET" && $ssl_client_verify != "SUCCESS") {
+                            return 403;
                         }
 
                         proxy_pass http://localhost:3000;
@@ -166,6 +162,7 @@ jobs:
                         proxy_set_header X-Forwarded-Proto $scheme;
                     }
                 }
+
                 NGINX_CONF
                 # Test and reload Nginx
                 sudo nginx -t && sudo systemctl reload nginx
