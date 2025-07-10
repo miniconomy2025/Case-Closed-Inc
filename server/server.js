@@ -10,9 +10,6 @@ const HOST = process.env.API_HOST || "localhost";
 
 const app = express();
 
-app.use(cors({
-    origin: 'https://case-supplier.projects.bbdgrad.com'
-}));
 app.use(express.json());
 
 app.use('/api', routes);
