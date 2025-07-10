@@ -11,6 +11,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 export default function DashboardPage() {
   const [dashboardState, setDashboardState] = useState({});
+  const [simulationDate, setSimulationDate] = useState("");
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +32,8 @@ export default function DashboardPage() {
             api.get("/sales"),
           ]
         );
+        const simulationDateAPI = await api.get("/simulation");
+        setSimulationDate(simulationDateAPI.date)
         setDashboardState({ bankBalance, shipments, stock, cases, sales });
       } catch (err) {
         setError(err as Error);
@@ -50,7 +53,7 @@ export default function DashboardPage() {
   return (
     <>
       <Typography sx={{ color: "#304074", mt: 1, fontWeight: 800 }}>
-        Current Time:{" "}
+        Current Time: {simulationDate}
       </Typography>
       {loading ? (
         <Box
