@@ -6,11 +6,14 @@ import Box from "@mui/material/Box";
 type GenericCardProps = {
   cardTitle: string;
   cardColour: string;
+  currency?: string;
   cardData: any;
 };
 
 export default function GenericCard(props: GenericCardProps) {
-  const { cardTitle, cardColour, cardData } = props;
+  const { cardTitle, cardColour, cardData, currency } = props;
+  console.log(currency)
+  console.log(cardData)
   const numberFormatter = new Intl.NumberFormat("en-ZA", {
     style: "decimal",
     minimumFractionDigits: 0,
@@ -43,7 +46,7 @@ export default function GenericCard(props: GenericCardProps) {
           }}
         >
           {typeof cardData === "number"
-            ? numberFormatter.format(cardData)
+            ? currency ? `Ð ${numberFormatter.format(cardData)}` : numberFormatter.format(cardData)
             : (cardData ?? "—")}
         </Box>
       </CardContent>

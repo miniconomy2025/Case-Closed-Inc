@@ -1,6 +1,6 @@
   export const dashboardCardSchema = [
     {
-      title: "Today's Sales",
+      title: "Sales",
       xs: 12,
       sm: 6,
       md:7,
@@ -13,6 +13,7 @@
           md:4,
           colour: '#FFF',
           key: "sales.total_sales",
+          currency: "Ð",
         },
         {
           title: "Total Orders",
@@ -83,7 +84,7 @@
       ]
     },
     {
-      title: "Current Inventory Shipments",
+      title: "Inventory Shipments",
       xs: 12,
       sm: 8,
       md:6,
