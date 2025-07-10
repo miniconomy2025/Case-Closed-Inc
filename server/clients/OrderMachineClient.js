@@ -46,10 +46,10 @@ const OrderMachineClient = {
 
       // create raw material order
       const machineOrder = await ThohClient.createMachineOrder(quantity);
-
+      
       // pay for material order
-      const machinePayment = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${machinePayment}`);
+      const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
+      logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       // create pickup request
       const items = [{ materialName: "case_machine", weightQuantity: quantity }];

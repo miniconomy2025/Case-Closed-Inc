@@ -138,21 +138,21 @@ export const handleSimulationStart = async (req, res, next) => {
     const plastcic = 10000;
     const aluminium = 10000;
 
-    await OrderRawMaterialsClient.processOrderFlow({
-        name: 'plastic',
-        quantity: plastcic
-    });
+    // await OrderRawMaterialsClient.processOrderFlow({
+    //     name: 'plastic',
+    //     quantity: plastcic
+    // });
 
-    await OrderRawMaterialsClient.processOrderFlow({
-        name: 'aluminium',
-        quantity: aluminium
-    });
+    // await OrderRawMaterialsClient.processOrderFlow({
+    //     name: 'aluminium',
+    //     quantity: aluminium
+    // });
 
     logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
-    simulationTimer.startOfDay();
+    // simulationTimer.startOfDay();
     logger.info(`[Date]: ${simulationTimer.getDate()}`);
-    simulationTimer.run();
+    // simulationTimer.run();
 
     return res
         .status(StatusCodes.OK)
