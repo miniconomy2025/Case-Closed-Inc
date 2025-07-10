@@ -97,12 +97,6 @@ class SimulationTimer {
   }
 
   async reset() {
-    if (this.interval !== null) {
-      clearInterval(this.interval);
-      this.interval = null;
-    }
-
-    async reset(){
         if (this.interval !== null) {
             clearInterval(this.interval);
             this.interval = null;
