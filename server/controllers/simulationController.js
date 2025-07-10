@@ -27,7 +27,7 @@ class SimulationTimer {
     }
 
     this.daysSinceStart = 0;
-    this.dayOfMonth = 1;
+    this.dayOfMonth = 0;
     this.month = 1;
     this.year = 2050;
     this.jobs = [
@@ -104,7 +104,7 @@ class SimulationTimer {
         }
 
         this.daysSinceStart = 0;
-        this.dayOfMonth = 1;
+        this.dayOfMonth = 0;
         this.month = 1;
         this.year = 2050
     }
@@ -164,9 +164,9 @@ export const handleSimulationStart = async (req, res, next) => {
       `[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`
     );
 
-    // simulationTimer.startOfDay();
+    simulationTimer.startOfDay();
     logger.info(`[Date]: ${simulationTimer.getDate()}`);
-    // simulationTimer.run();
+    simulationTimer.run();
 
     return res
       .status(StatusCodes.OK)

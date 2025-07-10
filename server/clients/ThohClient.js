@@ -1,5 +1,4 @@
 import axios from "axios";
-import knex from "../db/knex.js";
 import { insertEquipmentParameters } from "../daos/equipmentParametersDao.js";
 
 const thohApi = axios.create({
