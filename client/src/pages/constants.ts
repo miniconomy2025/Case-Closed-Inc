@@ -92,19 +92,11 @@
         {
           title: "Placed Orders",
           xs: 12,
-          sm: 6,
-          md:6,
+          sm: 12,
+          md:12,
           colour: '#FFF',
           key: "shipments.places_count"
-        },
-        {
-          title: "Received Orders",
-          xs: 12,
-          sm: 6,
-          md:6,
-          colour: '#FFF',
-          key: "shipments.received_count"
-        },
+        }
       ]
     }
 

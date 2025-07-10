@@ -8,44 +8,36 @@ import { useEffect, useState } from "react";
 import ReservedAvailablePieChart from "../layouts/piechart";
 import StockLevelsBarChart from "../layouts/barchart";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useQuery } from "@tanstack/react-query";
+
+
+  async function fetchDashboard() {
+      const [bankBalance, shipments, stock, cases, sales] = await Promise.all(
+        [
+          api.get("/bank/balance"),
+          api.get("/logistics/shipments"),
+          api.get("/stock"),
+          api.get("/cases"),
+          api.get("/sales"),
+        ]
+      );
+      return { bankBalance, shipments, stock, cases, sales };
+  }
+
+  const useDashboardQuery = () =>
+  useQuery({
+    queryKey: ["dashboard"],
+    queryFn: fetchDashboard,
+    refetchInterval: 5000
+  });
 
 export default function DashboardPage() {
-  const [dashboardState, setDashboardState] = useState({});
-  const [error, setError] = useState<Error | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const { data: dashboardState, isLoading: loading, error } = useDashboardQuery();
 
   function getNestedValue(obj: any, path: string): any {
     return path.split(".").reduce((acc, part) => acc && acc[part], obj);
   }
-  useEffect(() => {
-    async function fetchDashboard() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [bankBalance, shipments, stock, cases, sales] = await Promise.all(
-          [
-            api.get("/bank/balance"),
-            api.get("/logistics/shipments"),
-            api.get("/stock"),
-            api.get("/cases"),
-            api.get("/sales"),
-          ]
-        );
-        setDashboardState({ bankBalance, shipments, stock, cases, sales });
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDashboard();
-  }, []);
-
-  useEffect(() => {
-    console.log(dashboardState);
-    console.log(error);
-    console.log(loading);
-  }, [dashboardState, error, loading]);
 
   return (
     <>

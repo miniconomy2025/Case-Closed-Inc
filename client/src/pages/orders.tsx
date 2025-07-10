@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from "../utils/httpClient";
+import { useQuery } from '@tanstack/react-query';
 
 type CaseOrder = {
   order_id: number;
@@ -22,32 +23,35 @@ type OrderStats = {
   avgOrderValue: number;
 };
 
+  const fetchOrdersAndStats = async () => {
+    const [orders, stats] = await Promise.all([
+      api.get("/case/orders"),
+      api.get("/case/orders/stats")
+    ]);
+    return { orders, stats };
+  };
+
+const useOrdersAndStats = () =>
+  useQuery({
+    queryKey: ["orders-and-stats"],
+    queryFn: fetchOrdersAndStats,
+    refetchInterval: 3000
+  });
+
 const PhoneCaseOrdersTable: React.FC = () => {
   const [orders, setOrders] = useState<CaseOrder[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<CaseOrder | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const { data, isLoading: loading, error } = useOrdersAndStats();
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [ordersData, statsData] = await Promise.all([
-        api.get("/case/orders"),
-        api.get("/case/orders/stats")
-      ]);
-      setOrders(ordersData);
-      setStats(statsData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+   if (data) {
+     setOrders(data.orders)
+     setStats(data.stats)
+   }
+  }, [data]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
