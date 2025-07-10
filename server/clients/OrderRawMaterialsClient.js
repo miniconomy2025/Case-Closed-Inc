@@ -65,8 +65,7 @@ const OrderRawMaterialsClient = {
         per_unit_cost: rawOrder.price / rawOrder.weightQuantity
       }];
 
-      const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
-      console.log(response);
+      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
 
       // pay for material order
       const materialPayment = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId)
