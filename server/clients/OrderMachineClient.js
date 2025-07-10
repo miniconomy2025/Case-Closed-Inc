@@ -4,6 +4,7 @@ import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
 import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
 import simulationTimer from '../controllers/simulationController.js';
+import { increaseOrderedUnitsByTypeId } from '../daos/stockDao.js';
 
 import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
 
@@ -66,6 +67,7 @@ const OrderMachineClient = {
       }];
 
       await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+      await increaseOrderedUnitsByTypeId(stockId.id, quantity);
 
       // pay for material order
       const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
