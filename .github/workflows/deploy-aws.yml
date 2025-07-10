@@ -136,25 +136,37 @@ jobs:
                 }
 
                 server {
+                  listen 444 ssl;
+                  server_name case-supplier-api.projects.bbdgrad.com
+                  ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem
+                  ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem
+                  location / {
+                    limit_except GET {
+                        deny all;
+                    }
+                    proxy_pass http://localhost:3000;
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_set_header Origin \$http_origin;
+                    proxy_buffering off;
+                  }
+                }
+
+                server {
                     listen 443 ssl;
                     server_name _;
 
-                    ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
-                    ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
+
+                    ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem
+                    ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem
 
                     # trust the CA that signed the client certs from other servers
                     ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
-                    ssl_verify_client optional;
+                    ssl_verify_client on;
 
                     location / {
-                        # enforce client cert for non-GET requests
-                        if ($request_method != "GET") {
-                            # Require client cert if not GET
-                            if ($ssl_client_verify != "SUCCESS") {
-                                return 403;
-                            }
-                        }
-
                         proxy_pass http://localhost:3000;
                         proxy_http_version 1.1;
                         proxy_set_header Upgrade $http_upgrade;
