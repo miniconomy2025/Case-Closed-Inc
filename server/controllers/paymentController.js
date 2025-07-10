@@ -18,9 +18,8 @@ export const handlePayment = async (req, res, next) => {
 
         const cancelledStatus = await getOrderStatusByName('order_cancelled');
 
-        // TODO switch mock service
         if (order.order_status_id === cancelledStatus) {
-            await MockBankClient.makePayment(accountNumber, amount * 0.8, `Order already cancelled, refunding 80% of order ID: ${referenceId}`);
+            await BankClient.makePayment(accountNumber, amount * 0.8, `Order already cancelled, refunding 80% of order ID: ${referenceId}`);
             return res
                 .status(StatusCodes.OK)
                 .json({ message: 'Refund on cancelled order' });

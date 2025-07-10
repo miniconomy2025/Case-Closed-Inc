@@ -67,7 +67,7 @@ const OrderMachineClient = {
       }];
 
       await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
-      await increaseOrderedUnitsByTypeId(stockId.id, quantity);
+      await increaseOrderedUnitsByTypeId(stockId, quantity);
 
       // pay for material order
       const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
