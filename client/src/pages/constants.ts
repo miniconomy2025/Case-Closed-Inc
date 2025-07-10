@@ -45,7 +45,8 @@
           sm: 12,
           md:12,
           colour: '#FFF',
-          key: 'bankBalance.balance'
+          key: 'bankBalance.balance',
+          currency: "Ð",
         },
        
       ]
