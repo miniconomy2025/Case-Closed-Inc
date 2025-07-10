@@ -14,6 +14,7 @@ import {
 } from "../daos/stockDao.js";
 
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
+import simulationTimer from "./simulationController.js";
 
 export const getBalance = async (req, res, next) => {
   try {
@@ -144,3 +145,20 @@ export const getCaseOrdersStatsReport = async (req, res, next) => {
   }
 
 }
+
+export const getSimulationDate = async (req, res, next) => {
+  try {
+    const date = simulationTimer.getDate();
+    const daysOfSimulation = simulationTimer.getDaysOfSimulation();
+    const daysPassed = simulationTimer.getDaysPassed();
+
+    res.status(StatusCodes.OK).json({
+      date,
+      daysOfSimulation,
+      daysPassed
+    });
+    
+  } catch (error) {
+    next(error);
+  }
+};
