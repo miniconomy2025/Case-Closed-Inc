@@ -2,26 +2,12 @@ import { db } from "../db/knex.js";
 import apiUrls from "../utils/companyUrls.js";
 import simulationTimer from "../controllers/simulationController.js";
 
+import { getStockTypeIdByName } from "./stockTypesDao.js";
+
 const CASES_STOCK_VIEW = 'case_stock_status';
 const EXTERNAL_ORDER_COUNTS = 'count_external_orders_by_received_status()';
 const CASE_ORDER_COUNTS = 'count_case_orders()';
 const SALES_REPORT = 'get_sales_report()';
-
-export async function getBalanceFromBank() {
-    // const { balance } = await fetch(`${apiUrls.bank}/account/me/balance`, {
-    //     method: "GET"
-    // })
-    return 10000;
-}
-
-export async function getLoanTotalFromBank() {
-    const loans  = await fetch(`${apiUrls.bank}/loan`, {
-        method: "GET"
-    })
-
-    const allLoans = loans.reduce((sum, item) => sum + item.outstanding_amount, 0);
-    return allLoans;
-}
 
 
 export async function getOrderCounts() {
@@ -31,9 +17,8 @@ export async function getOrderCounts() {
 
 
 export async function getMaterialStockCount() {
-    // TODO: hard coded stock id
     const stock = await db(CASES_STOCK_VIEW)
-                .whereNot({stock_id: 4})
+                .whereNot({stock_id: await getStockTypeIdByName('case')})
                 .select('stock_name', 'available_units');
 
     return Object.fromEntries(stock.map(({ stock_name, available_units }) => [stock_name, parseInt(available_units)]));

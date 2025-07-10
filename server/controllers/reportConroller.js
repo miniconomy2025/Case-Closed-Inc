@@ -1,5 +1,4 @@
 import { 
-    getBalanceFromBank,
     getTransactionsFromBank,
     getOrderCounts, 
     getMaterialStockCount,
@@ -15,10 +14,11 @@ import {
 
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 import simulationTimer from "./simulationController.js";
+import BankClient from "../clients/BankClient.js";
 
 export const getBalance = async (req, res, next) => {
   try {
-    const balance = await getBalanceFromBank()
+    const balance = await BankClient.getBalance()
 
     if(balance){
         res.status(StatusCodes.OK).json(balance);
