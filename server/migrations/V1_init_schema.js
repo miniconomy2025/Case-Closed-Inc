@@ -43,9 +43,9 @@ export async function up(knex) {
     );
 
     CREATE TABLE "equipment_parameters" (
-      "plastic_ratio" int default 4,
-      "aluminium_ratio" int default 7,
-      "production_rate" int default 20
+      "plastic_ratio" int,
+      "aluminium_ratio" int,
+      "production_rate" int 
     );
 
     CREATE TABLE "order_types" (

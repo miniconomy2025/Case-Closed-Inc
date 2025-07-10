@@ -29,14 +29,6 @@ export async function up(knex) {
       ('material_order'),
       ('machine_order');
 
-    INSERT INTO "equipment_parameters" (
-      "plastic_ratio",
-      "aluminium_ratio",
-      "production_rate"
-    )
-    VALUES
-      (4, 7, 200);
-
     -- insert external orders
     -- INSERT INTO "external_orders" (
     --   "order_reference", "total_cost", "order_type_id",
