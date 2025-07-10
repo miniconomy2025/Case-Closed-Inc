@@ -150,14 +150,12 @@ export const getSimulationDate = async (req, res, next) => {
   try {
     const date = simulationTimer.getDate();
     const daysOfSimulation = simulationTimer.getDaysOfSimulation();
-    const daysPassed = simulationTimer.getDaysPassed();
 
     res.status(StatusCodes.OK).json({
       date,
-      daysOfSimulation,
-      daysPassed
+      daysOfSimulation
     });
-    
+
   } catch (error) {
     next(error);
   }
