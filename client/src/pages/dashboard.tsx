@@ -12,16 +12,17 @@ import { useQuery } from "@tanstack/react-query";
 
 
   async function fetchDashboard() {
-      const [bankBalance, shipments, stock, cases, sales] = await Promise.all(
+      const [bankBalance, shipments, stock, cases, sales, simulationTime] = await Promise.all(
         [
           api.get("/bank/balance"),
           api.get("/logistics/shipments"),
           api.get("/stock"),
           api.get("/cases"),
           api.get("/sales"),
+          api.get('/simulation')
         ]
       );
-      return { bankBalance, shipments, stock, cases, sales };
+      return { bankBalance, shipments, stock, cases, sales, simulationTime };
   }
 
   const useDashboardQuery = () =>
@@ -42,7 +43,7 @@ export default function DashboardPage() {
   return (
     <>
       <Typography sx={{ color: "#304074", mt: 1, fontWeight: 800 }}>
-        Current Time:{" "}
+        Current Time: {dashboardState?.simulationTime.date}
       </Typography>
       {loading ? (
         <Box
