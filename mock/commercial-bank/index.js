@@ -199,6 +199,7 @@ app.get('/transaction/:transaction_number', getAccountNumber, (req, res) => {
 // Take Out a Loan
 app.post('/loan', getAccountNumber, (req, res) => {
     const accountNumber = req.accountNumber;
+    console.log(accountNumber)
     const { amount } = req.body;
 
     if (!amount || amount <= 0) {
@@ -233,7 +234,7 @@ app.post('/loan', getAccountNumber, (req, res) => {
 
     // Add money to account balance
     accounts[accountNumber].balance += amount;
-
+    console.log(accounts[accountNumber], amount)
     console.log(`Loan ${loanNumber} created for account ${accountNumber}: ${amount} (due: ${totalDue})`);
     console.log("New balance: "+accounts[accountNumber].balance)
     res.json({

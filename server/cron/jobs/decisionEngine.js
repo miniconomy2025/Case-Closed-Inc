@@ -68,7 +68,7 @@ export default class DecisionEngine {
         OrderRawMaterialsClient.processOrderFlow({
             name: 'plastic',
             quantity: 1000
-        })
+        });
     } else {
       logger.info("[DecisionEngine]: Plastic stock good!");
     }
@@ -78,17 +78,14 @@ export default class DecisionEngine {
         OrderRawMaterialsClient.processOrderFlow({
             name: 'aluminium',
             quantity: 1000
-        })
+        });
     } else {
       logger.info("[DecisionEngine]: Aluminium stock good!");
     }
 
     if (await this.buyMachine(state)) {
       logger.info("[DecisionEngine]: Can buy machine");
-        OrderMachineClient.processMachineOrderFlow({
-            machineName: 'CaseMaker',
-            quantity: 10
-        });
+        OrderMachineClient.processOrderFlow(10);
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
     }

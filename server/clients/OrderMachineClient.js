@@ -8,7 +8,7 @@ const OrderMachineClient = {
   async processOrderFlow(quantity) {
     try {
       // get machine price
-      const machines = await ThohClient.getMachines();
+      const { machines } = await ThohClient.getMachines();
       const machineInfo = machines.find((m) => m.machineName.toLowerCase() === "case_machine");
 
       if (!machineInfo) {
@@ -35,7 +35,7 @@ const OrderMachineClient = {
 
       const totalCost = totalMachineCost + logisticsCost;
 
-      logger.info(`[OrderMachineCLient] Total machine cost: ${totalMaterialCost}`);
+      logger.info(`[OrderMachineCLient] Total machine cost: ${totalMachineCost}`);
       logger.info(`[OrderMachineClient] Estimated logistics cost: ${logisticsCost}`);
       logger.info(`[OrderMachineClient] Available balance: ${balance}`);
 
