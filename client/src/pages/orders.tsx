@@ -120,7 +120,7 @@ const PhoneCaseOrdersTable: React.FC = () => {
           </div>
           <div style={cardStyle}>
             <h3 style={{ color: '#4caf50' }}>Total Revenue</h3>
-            <p style={valueStyle}>Ð{stats.totalRevenue.toFixed(2)}</p>
+            <p style={valueStyle}>Ð {stats.totalRevenue.toFixed(2)}</p>
           </div>
         </div>
       )}
@@ -163,7 +163,7 @@ const PhoneCaseOrdersTable: React.FC = () => {
                 <td style={tdStyle}>{formatDate(order.ordered_at)}</td>
                 <td style={tdStyle}>{order.quantity} items</td>
                 <td style={{ ...tdStyle, fontWeight: 'bold', color: '#2e7d32' }}>
-                  Ð{order.total_price.toFixed(2)}
+                  Ð {order.total_price.toFixed(2)}
                 </td>
                 <td style={tdStyle}>
                   <button
