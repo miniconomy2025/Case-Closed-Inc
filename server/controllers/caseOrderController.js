@@ -6,6 +6,7 @@ import { decrementStockByName } from "../daos/stockDao.js";
 import { BankClient } from '../clients/index.js';
 import { getAccountNumber } from "../daos/bankDetailsDao.js";
 import simulationTimer from "./simulationController.js"
+import { getEquipmentParameters } from "../daos/equipmentParametersDao.js";
 
 /**
  * Check the status of a given case order.
@@ -92,7 +93,16 @@ export const postCaseOrder = async (req, res, next) => {
 
         const orderStatus = await getOrderStatusByName('payment_pending');
         const stockStatus = await getAvailableCaseStock();
-        const { selling_price: sellingPrice } = await getCasePrice();
+        const {
+            plastic_ratio,
+            aluminium_ratio,
+            production_rate
+        } = await getEquipmentParameters();
+
+        const plasticPerCase = plastic_ratio/production_rate;
+        const aluminiumPerCase = aluminium_ratio/production_rate;
+
+        const { selling_price: sellingPrice } = await getCasePrice(plasticPerCase, aluminiumPerCase);
         const pricePerCase = Math.round(sellingPrice);
 
         let status, response;

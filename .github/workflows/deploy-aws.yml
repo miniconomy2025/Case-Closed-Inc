@@ -49,6 +49,7 @@ jobs:
         run: |
           echo "dbhost=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
+
   setup-nginx:
     name: Deploy Certs to EC2
     runs-on: ubuntu-latest
@@ -144,12 +145,14 @@ jobs:
                         deny all;
                     }
                     proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
                     proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
-                    proxy_set_header Origin $http_origin;
-                    proxy_buffering off;
                 }
             }
 
@@ -248,29 +251,28 @@ jobs:
 
       # === Deploy on EC2 ===
       - name: Deploy to EC2
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
-          POSTGRES_HOST: ${{ needs.terraform.outputs.dbhost }}
-          API_HOST: ${{ needs.terraform.outputs.ec2host }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} -p 22 ec2-user@${{ needs.terraform.outputs.ec2host }} bash -s <<'EOF'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ needs.terraform.outputs.ec2host }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: POSTGRES_USER,POSTGRES_PASS, POSTGRES_HOST, API_HOST
+          port: 22
+          script: |
             set -e
-
             DEPLOY_DIR="/home/ec2-user/case-supplier-app"
             PACKAGE="/home/ec2-user/deploy.tar.gz"
-
-            rm -rf "$DEPLOY_DIR"
-            mkdir -p "$DEPLOY_DIR"
-            cd "$DEPLOY_DIR"
-
-            tar -xzf "$PACKAGE"
-            rm -f "$PACKAGE"
-
+            # Prepare deployment directory
+            rm -rf $DEPLOY_DIR
+            mkdir -p $DEPLOY_DIR
+            cd $DEPLOY_DIR
+            # Extract package and clean up
+            tar -xzf $PACKAGE
+            rm -f $PACKAGE
+            # Install production dependencies
             cd build-server
             npm i
-
-            cat <<ENV > dist/.env
+            cat <<EOF > dist/.env
             DB_USER=$POSTGRES_USER
             DB_PASSWORD=$POSTGRES_PASS
             DB_HOST=$POSTGRES_HOST
@@ -279,15 +281,15 @@ jobs:
             ENV=production
             API_PORT=3000
             API_HOST=$API_HOST
-            ENV
-
+            EOF
+            # Restart the app with PM2
             pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd dist
-
+            # Save PM2 process list and enable on reboot and reload nginx
             pm2 save
             sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
-
+            
+            # Create SSL directory
             sudo mkdir -p ../../etc/ssl/casesupplier/
-          EOF
-
+            

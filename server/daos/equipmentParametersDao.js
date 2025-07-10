@@ -13,3 +13,7 @@ export async function insertEquipmentParameters({
     production_rate,
   });
 }
+
+export async function getEquipmentParameters() {
+    return await db(TABLE_NAME).first();
+};

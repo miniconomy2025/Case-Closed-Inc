@@ -8,10 +8,11 @@ export async function clearMockData() {
         await trx('bank_details').update({
             account_number: 123451234512,
         });
-        await trx('equipment_parameters').update({
+        await trx('equipment_parameters').del();
+        await trx('equipment_parameters').insert({
             plastic_ratio: 4,
             aluminium_ratio: 7,
-            production_rate: 20
+            production_rate: 200
         });
         await trx('stock').update({
             total_units: 0,
