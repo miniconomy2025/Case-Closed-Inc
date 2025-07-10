@@ -47,6 +47,24 @@ const OrderMachineClient = {
       // create raw material order
       const machineOrder = await ThohClient.createMachineOrder(quantity);
 
+      const externalOrderObj = {
+        order_reference: machineOrder.orderId,
+        total_cost: machineOrder.totalPrice,
+        order_type_id: 2,
+        ordered_at: simulationTimer.getDate()
+      };
+
+      const stockId = await getStockTypeIdByName(machineOrder.materialName);
+
+      const externalOrderItemsObj = {
+        stock_type_id: stockId,
+        ordered_units: machineOrder.quantity,
+        per_unit_cost: machineOrder.totalPrice / machineOrder.quantity
+      };
+
+      const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+      console.log(response);
+
       // pay for material order
       const machinePayment = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
       logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${machinePayment}`);
