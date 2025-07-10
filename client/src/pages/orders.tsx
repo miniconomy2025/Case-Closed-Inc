@@ -164,7 +164,7 @@ const PhoneCaseOrdersTable: React.FC = () => {
                     {getStatusText(order.status_name)}
                   </span>
                 </td>
-                <td style={tdStyle}>{formatDate(order.ordered_at)}</td>
+                <td style={tdStyle}>{order.ordered_at}</td>
                 <td style={tdStyle}>{order.quantity} items</td>
                 <td style={{ ...tdStyle, fontWeight: 'bold', color: '#2e7d32' }}>
                   Ð {order.total_price.toFixed(2)}

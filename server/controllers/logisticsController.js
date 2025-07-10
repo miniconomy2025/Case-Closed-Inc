@@ -46,7 +46,7 @@ export const handleLogistics = async (req, res, next) => {
                 if (order.order_status_id !== pickupPendingStatus.id) {
                     return res
                         .status(StatusCodes.BAD_REQUEST)
-                        .json({ error: 'Payment has not been received for order.' });
+                        .json({ error: 'Pickup not pending.' });
                 };
 
                 if (quantity + order.quantity_delivered > order.quantity) {
@@ -57,9 +57,10 @@ export const handleLogistics = async (req, res, next) => {
 
                 // revoke stock after pickup
                 await decrementStockByName('case', quantity);
-                const updatedOrder = await incrementQuantityDelivered(id, quantity)
+                await incrementQuantityDelivered(id, quantity);
+                const updatedOrder = await getCaseOrderById(id);
 
-                if (updatedOrder.quantity < updatedOrder.quantity_delivered) {
+                if (updatedOrder.quantity <= updatedOrder.quantity_delivered) {
                     const completeStatus = await getOrderStatusByName('order_complete');
                     await updateCaseOrderStatus(id, completeStatus.id);
                 }

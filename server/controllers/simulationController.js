@@ -27,7 +27,7 @@ class SimulationTimer {
     }
 
     this.daysSinceStart = 0;
-    this.dayOfMonth = 0;
+    this.dayOfMonth = 1;
     this.month = 1;
     this.year = 2050;
     this.jobs = [
@@ -104,7 +104,7 @@ class SimulationTimer {
         }
 
         this.daysSinceStart = 0;
-        this.dayOfMonth = 0;
+        this.dayOfMonth = 1;
         this.month = 1;
         this.year = 2050
     }
