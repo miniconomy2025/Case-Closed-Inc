@@ -8,11 +8,13 @@ import {
     getCases,
     getSales,
     getCaseOrdersReport,
-    getCaseOrdersStatsReport
+    getCaseOrdersStatsReport,
+    getSimulationDate
 } from '../controllers/reportConroller.js'
 
 const router = express.Router();
 
+router.get('/simulation', getSimulationDate);
 router.get('/bank/balance', getBalance);
 router.get('/bank/transactions', getTransactions);
 router.get('/logistics/shipments', getShipments);
