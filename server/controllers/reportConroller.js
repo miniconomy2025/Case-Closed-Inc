@@ -1,10 +1,11 @@
 import { 
-    getBalanceFromBank,
     getTransactionsFromBank,
     getOrderCounts, 
     getMaterialStockCount,
     getAllShipments,
-    getSalesReport
+    getSalesReport,
+    getCaseOrders,
+    getOrderStats
 } from "../daos/reportDao.js";
 
 import {
@@ -12,10 +13,12 @@ import {
 } from "../daos/stockDao.js";
 
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
+import simulationTimer from "./simulationController.js";
+import BankClient from "../clients/BankClient.js";
 
 export const getBalance = async (req, res, next) => {
   try {
-    const balance = await getBalanceFromBank()
+    const balance = await BankClient.getBalance()
 
     if(balance){
         res.status(StatusCodes.OK).json(balance);
@@ -108,6 +111,51 @@ export const getSales = async (req, res, next) => {
     }else {
         res.status(StatusCodes.NOT_FOUND).json({message: "No sales of that type"})
     }    
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCaseOrdersReport = async (req, res, next) => {
+    try {
+    const caseOrders = await getCaseOrders();
+
+    if(caseOrders){
+        res.status(StatusCodes.OK).json(caseOrders);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No orders found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+
+}
+
+export const getCaseOrdersStatsReport = async (req, res, next) => {
+    try {
+    const caseOrdersStats = await getOrderStats();
+
+    if(caseOrdersStats){
+        res.status(StatusCodes.OK).json(caseOrdersStats);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No orders stats found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+
+}
+
+export const getSimulationDate = async (req, res, next) => {
+  try {
+    const date = simulationTimer.getDate();
+    const daysOfSimulation = simulationTimer.getDaysOfSimulation();
+
+    res.status(StatusCodes.OK).json({
+      date,
+      daysOfSimulation
+    });
+
   } catch (error) {
     next(error);
   }

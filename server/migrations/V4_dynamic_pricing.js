@@ -1,8 +1,8 @@
 export async function up(knex) {
   await knex.raw(`
     CREATE OR REPLACE FUNCTION calculate_case_price(
-      plastic_units_per_case INT,
-      aluminium_units_per_case INT,
+      plastic_units_per_case NUMERIC,
+      aluminium_units_per_case NUMERIC,
       markup NUMERIC
     )
     RETURNS TABLE (
@@ -40,5 +40,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.raw(`DROP FUNCTION IF EXISTS calculate_case_price(INT, INT, NUMERIC);`);
+  await knex.raw(`DROP FUNCTION IF EXISTS calculate_case_price(NUMERIC, NUMERIC, NUMERIC);`);
 }

@@ -7,7 +7,7 @@ interface RequestOptions {
   body?: any;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api/reports";
+const BASE_URL = "https://case-supplier-api.projects.bbdgrad.com:444/api/reports";
 
 const buildQueryString = (params?: RequestOptions['params']): string => {
   if (!params) return '';

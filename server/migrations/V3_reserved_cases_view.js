@@ -5,8 +5,8 @@ export async function up(knex) {
       s.id AS stock_id,
       st.name AS stock_name,
       s.total_units,
-      COALESCE(SUM(co.quantity), 0) AS reserved_units,
-      (s.total_units - COALESCE(SUM(co.quantity), 0)) AS available_units
+      COALESCE(SUM(co.quantity - co.quantity_delivered), 0) AS reserved_units,
+      (s.total_units - COALESCE(SUM(co.quantity - co.quantity_delivered), 0)) AS available_units
     FROM stock s
     LEFT JOIN stock_types st ON s.stock_type_id = st.id
     LEFT JOIN case_orders co ON st.name = 'case'

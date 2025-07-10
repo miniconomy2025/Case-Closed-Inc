@@ -1,25 +1,40 @@
 import { StatusCodes } from 'http-status-codes';
 import { getAvailableCaseStock } from "../daos/stockDao.js";
 import { getCasePrice } from '../daos/caseOrdersDao.js';
+import { getEquipmentParameters } from '../daos/equipmentParametersDao.js';
 
 export const getCaseStockInformation = async (req, res, next) => {
-  try {
+    try {
+        const { available_units } = await getAvailableCaseStock();
+        let pricePerCase;
+        
+        try {
+            const {
+                plastic_ratio,
+                aluminium_ratio,
+                production_rate
+            } = await getEquipmentParameters();
 
-    const stockStatus = await getAvailableCaseStock();
+            const plasticPerCase = plastic_ratio/production_rate;
+            const aluminiumPerCase = aluminium_ratio/production_rate;
 
-    // Defaults of function assume 4 plastic : 7 aluminium for 1 case, added markup is 30% on base cost
-    const { selling_price: sellingPrice } = await getCasePrice();
+            const { selling_price: sellingPrice } = await getCasePrice(plasticPerCase, aluminiumPerCase);
+            pricePerCase = Math.round(sellingPrice);
 
-    const pricePerCase = Math.round(sellingPrice);
+        } catch (error) {
+            pricePerCase = 20;
+        }
 
-    const status = StatusCodes.OK;
-    const response = {
-        ...stockStatus,
-        price_per_unit: pricePerCase,
+        const response = {
+            available_units: parseInt(available_units),
+            price_per_unit: pricePerCase,
+        };
+
+        return res
+            .status(StatusCodes.OK)
+            .json(response);
+
+    } catch (error) {
+        next(error);
     };
-
-    res.status(status).json(response);
-  } catch (error) {
-    next(error);
-  }
 };

@@ -1,6 +1,6 @@
   export const dashboardCardSchema = [
     {
-      title: "Today's Sales",
+      title: "Sales",
       xs: 12,
       sm: 6,
       md:7,
@@ -11,48 +11,48 @@
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#FFE2E5'
+          colour: '#FFF',
+          key: "sales.total_sales",
+          currency: "Ð",
         },
         {
           title: "Total Orders",
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#DCFCE7'
+          colour: '#FFF',
+          key: "sales.total_orders",
         },
         {
           title: "Cases Sold",
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#FFF4DE'
+          colour: '#FFF',
+          key: "sales.cases_sold",
         }
       ]
     },
     {
-      title: "Bank Summary",
+      title: "Your Balance",
       xs: 12,
       sm: 6,
       md:5,
       children: [
         {
-          title: "Balance",
+          title: "",
           xs: 12,
-          sm: 4,
-          md:6,
-          colour: '#FFF4DE'
+          sm: 12,
+          md:12,
+          colour: '#FFF',
+          key: 'bankBalance.balance',
+          currency: "Ð",
         },
-        {
-          title: "Transactions",
-          xs: 12,
-          sm: 4,
-          md:6,
-          colour: '#FFF4DE'
-        }
+       
       ]
     },
     {
-      title: "Inventory",
+      title: "Inventory Count",
       xs: 12,
       sm: 5,
       md:6,
@@ -62,50 +62,41 @@
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#FFF4DE'
+          colour: '#FFF',
+          key: "stock.aluminium",
         },
         {
           title: "Plastic",
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#FFF4DE'
+          colour: '#FFF',
+          key: "stock.plastic",
+          
         },
         {
           title: "Machines",
           xs: 12,
           sm: 4,
           md:4,
-          colour: '#FFF4DE'
+          colour: '#FFF',
+          key: "stock.machine",
         }
       ]
     },
     {
-      title: "Current Shipments",
+      title: "Inventory Shipments",
       xs: 12,
       sm: 8,
       md:6,
       children: [
         {
-          title: "Payment Pending",
+          title: "Placed Orders",
           xs: 12,
-          sm: 4,
-          md:4,
-          colour: '#FFF4DE'
-        },
-        {
-          title: "Pickup Pending",
-          xs: 12,
-          sm: 4,
-          md:4,
-          colour: '#FFF4DE'
-        },
-        {
-          title: "Completed Orders",
-          xs: 12,
-          sm: 4,
-          md:4,
-          colour: '#FFF4DE'
+          sm: 12,
+          md:12,
+          colour: '#FFF',
+          key: "shipments.places_count"
         }
       ]
     }

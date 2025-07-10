@@ -15,8 +15,7 @@ const NAVIGATION: Navigation = [
   },
   {
     segment: 'orders',
-    title: 'Orders',
-    icon: <ShoppingCartIcon />,
+    title: '📱 Case Orders',
   },
 ];
 
@@ -27,8 +26,10 @@ const BRANDING = {
 
 export default function App() {
   return (
-    <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
+    <div style={{backgroundColor:'#f0f0fa'}}>
+      <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
       <Outlet />
     </ReactRouterAppProvider>
+    </div>
   );
 }

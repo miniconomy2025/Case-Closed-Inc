@@ -1,8 +1,12 @@
-import { getCaseOrderById, createCaseOrder, updateCaseOrderStatus } from "../daos/caseOrdersDao.js";
+import { getCaseOrderById, createCaseOrder, updateCaseOrderStatus, getCasePrice } from "../daos/caseOrdersDao.js";
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 import { getAvailableCaseStock } from "../daos/stockDao.js";
 import { getOrderStatusByName, getOrderStatusById } from "../daos/orderStatusesDao.js";
 import { decrementStockByName } from "../daos/stockDao.js";
+import { BankClient } from '../clients/index.js';
+import { getAccountNumber } from "../daos/bankDetailsDao.js";
+import simulationTimer from "./simulationController.js"
+import { getEquipmentParameters } from "../daos/equipmentParametersDao.js";
 
 /**
  * Check the status of a given case order.
@@ -57,6 +61,11 @@ export const cancelUnpaidOrder = async (req, res, next) => {
         const cancelledStatus = await getOrderStatusByName('order_cancelled');
         await updateCaseOrderStatus(id, cancelledStatus.id);
 
+        // refund amount paid
+        if (order.amount_paid > 0 && order.account_number) {
+          await BankClient.makePayment(order.account_number, order.amount_paid * 0.8, `Order cancelled, refunding 80% of order ID: ${id}`)
+        }
+
         status = StatusCodes.NO_CONTENT;
         response = { };
       }
@@ -76,9 +85,25 @@ export const postCaseOrder = async (req, res, next) => {
     try {
         const { quantity } = req.body;
 
+        if (quantity % 1000 !== 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                error: 'Orders must be placed in multiples of 1000 units.',
+            });
+        };
+
         const orderStatus = await getOrderStatusByName('payment_pending');
         const stockStatus = await getAvailableCaseStock();
-        const pricePerCase = 100.0; // calculate this based on raw material prices
+        const {
+            plastic_ratio,
+            aluminium_ratio,
+            production_rate
+        } = await getEquipmentParameters();
+
+        const plasticPerCase = plastic_ratio/production_rate;
+        const aluminiumPerCase = aluminium_ratio/production_rate;
+
+        const { selling_price: sellingPrice } = await getCasePrice(plasticPerCase, aluminiumPerCase);
+        const pricePerCase = Math.round(sellingPrice);
 
         let status, response;
 
@@ -90,7 +115,9 @@ export const postCaseOrder = async (req, res, next) => {
         } else {
             // create order
             const total_price = pricePerCase * quantity;
-            const ordered_at = new Date();
+            const ordered_at = simulationTimer.getDate();
+
+            const { account_number } = await getAccountNumber();
 
             const newOrder = await createCaseOrder({
                 order_status_id: orderStatus.id,
@@ -98,6 +125,8 @@ export const postCaseOrder = async (req, res, next) => {
                 total_price,
                 ordered_at,
             });
+
+            newOrder.account_number = account_number;
 
             status = StatusCodes.CREATED;
             response = newOrder;

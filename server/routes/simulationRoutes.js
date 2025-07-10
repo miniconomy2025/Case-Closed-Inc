@@ -1,9 +1,9 @@
 import express from 'express';
-import { handleSimulationEvent, handleSimulationStart } from '../controllers/simulationController.js';
+import { handleSimulationStart,  handleSimulationEnd} from '../controllers/simulationController.js';
 
 const router = express.Router();
 
 router.post('/', handleSimulationStart);
-router.post('/event', handleSimulationEvent)
+router.post('/end', handleSimulationEnd);
 
 export default router;

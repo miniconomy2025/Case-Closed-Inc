@@ -28,6 +28,7 @@ jobs:
             mkdir -p ./tmp
             aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
             aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
+            aws ssm get-parameter --name "/ssl/client_ca_cert" --query "Parameter.Value" --output text > ./tmp/client_ca_cert.pem
 
       - name: Create Certs Package
         run: |
@@ -67,10 +68,12 @@ jobs:
                 sudo mkdir -p /etc/ssl/casesupplier
                 sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
                 sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
+                sudo mv $TEMP_DIR/client_ca_cert.pem /etc/ssl/casesupplier/client_ca_cert.pem
 
                 # Set permissions
                 sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
                 sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+                sudo chmod 644 /etc/ssl/casesupplier/client_ca_cert.pem
 
                 # Configure Nginx SSL proxy
                 sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
@@ -87,7 +90,18 @@ jobs:
                     ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
                     ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
 
+                    ssl_client_certificate /etc/ssl/casesupplier/client_ca_cert.pem;
+                    ssl_verify_client optional;
+
                     location / {
+                        # enforce client cert for non-GET requests
+                        if ($request_method != "GET") {
+                            # Require client cert if not GET
+                            if ($ssl_client_verify != "SUCCESS") {
+                                return 403;
+                            }
+                        }
+
                         proxy_pass http://localhost:3000;
                         proxy_http_version 1.1;
                         proxy_set_header Upgrade $http_upgrade;

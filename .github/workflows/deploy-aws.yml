@@ -49,13 +49,13 @@ jobs:
         run: |
           echo "dbhost=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
+
   setup-nginx:
     name: Deploy Certs to EC2
     runs-on: ubuntu-latest
     needs: terraform
 
     steps:
-      # === Code Checkout ===
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -67,15 +67,18 @@ jobs:
 
       - name: Get SSL Certs from SSM
         run: |
-            mkdir -p ./tmp
-            aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
-            aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
+          mkdir -p ./tmp
+          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
+          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
+
+          aws ssm get-parameter --name "/ssl/root-ca.crt" --query "Parameter.Value" --output text > ./tmp/root-ca.crt
+          aws ssm get-parameter --name "/ssl/case-supplier-client.crt" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.crt
+          aws ssm get-parameter --name "/ssl/case-supplier-client.key" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.key
 
       - name: Create Certs Package
         run: |
-            tar -czf ./certs.tar.gz -C ./tmp .
-  
-      # === Transfer Package to EC2 ===
+          tar -czf ./certs.tar.gz -C ./tmp .
+
       - name: Copy Files to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -85,65 +88,128 @@ jobs:
           port: 22
           source: "certs.tar.gz"
           target: "/home/ec2-user/"
-           
-     # === Deploy on EC2 ===
+
       - name: Upload SSL Certs and Configure Nginx
         uses: appleboy/ssh-action@v1.0.0
         with:
-            host: ${{ needs.terraform.outputs.ec2host }}
-            username: ${{ secrets.EC2_USER }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            port: 22
-            script: |
-                set -e
-                PACKAGE="/home/ec2-user/certs.tar.gz"
-                TEMP_DIR="/home/ec2-user/tmp"
+          host: ${{ needs.terraform.outputs.ec2host }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            PACKAGE="/home/ec2-user/certs.tar.gz"
+            TEMP_DIR="/home/ec2-user/tmp"
 
-                # Clean and extract certs
-                rm -rf $TEMP_DIR
-                mkdir -p $TEMP_DIR
-                tar -xzf $PACKAGE -C $TEMP_DIR
-                rm -f $PACKAGE
+            # Clean and extract certs
+            rm -rf $TEMP_DIR
+            mkdir -p $TEMP_DIR
+            tar -xzf $PACKAGE -C $TEMP_DIR
+            rm -f $PACKAGE
 
-                # Move certs to secure location
-                sudo mkdir -p /etc/ssl/casesupplier
-                sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
-                sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
+            # Move certs to secure location
+            sudo mkdir -p /etc/ssl/casesupplier
+            sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
+            sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
 
-                # Set permissions
-                sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
-                sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+            sudo mkdir -p /etc/ssl/casesupplier/mtls
+            sudo mv $TEMP_DIR/root-ca.crt /etc/ssl/casesupplier/mtls/root-ca.crt
+            sudo mv $TEMP_DIR/case-supplier-client.crt /etc/ssl/casesupplier/mtls/case-supplier-client.crt
+            sudo mv $TEMP_DIR/case-supplier-client.key /etc/ssl/casesupplier/mtls/case-supplier-client.key
 
-                # Configure Nginx SSL proxy
-                sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
-                server {
-                    listen 80;
-                    server_name _;
-                    return 301 https://$host$request_uri;
-                }
+            # Set permissions
+            sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
+            sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
 
-                server {
-                    listen 443 ssl;
-                    server_name _;
+            sudo chmod 644 /etc/ssl/casesupplier/mtls/root-ca.crt
+            sudo chmod 644 /etc/ssl/casesupplier/mtls/case-supplier-client.crt
+            sudo chmod 600 /etc/ssl/casesupplier/mtls/case-supplier-client.key
 
-                    ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
-                    ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
+            # Configure Nginx SSL proxy
+            sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
+            server {
+                listen 80;
+                server_name _;
+                return 301 https://$host$request_uri;
+            }
 
-                    location / {
-                        proxy_pass http://localhost:3000;
-                        proxy_http_version 1.1;
-                        proxy_set_header Upgrade $http_upgrade;
-                        proxy_set_header Connection 'upgrade';
-                        proxy_set_header Host $host;
-                        proxy_cache_bypass $http_upgrade;
-                        proxy_set_header X-Real-IP $remote_addr;
-                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                        proxy_set_header X-Forwarded-Proto $scheme;
+            map $ssl_client_s_dn $is_valid_ou {
+                default no;
+                ~OU=sumsang-company yes;
+                ~OU=retail-bank yes;
+                ~OU=screen-supplier yes;
+                ~OU=case-supplier yes;
+                ~OU=consumer-logistics yes;
+                ~OU=bulk-logistics yes;
+                ~OU=commercial-bank yes;
+                ~OU=thoh yes;
+                ~OU=recycler yes;
+                ~OU=electronics-supplier yes;
+            }
+
+            server {
+                listen 444 ssl;
+                server_name case-supplier-api.projects.bbdgrad.com;
+
+                ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem;
+
+                location / {
+                    limit_except GET OPTIONS {
+                        deny all;
                     }
+
+                    if ($request_method = OPTIONS) {
+                        return 204;
+                    }
+
+                    proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    add_header 'Access-Control-Allow-Origin' '*' always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
                 }
-                NGINX_CONF
-                # Test and reload Nginx
-                sudo nginx -t && sudo systemctl reload nginx
+            }
+
+            server {
+                listen 443 ssl;
+                server_name _;
+
+                ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem;
+
+                ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
+                ssl_verify_client on;
+
+                if ($is_valid_ou = no) {
+                    return 403;
+                }
+
+                location / {
+                    proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
+            NGINX_CONF
+
+            # Test and reload Nginx
+            sudo nginx -t && sudo systemctl reload nginx
+
   deploy-api:
     name: Build & Deploy to EC2
     runs-on: ubuntu-latest
@@ -221,23 +287,18 @@ jobs:
           port: 22
           script: |
             set -e
-
             DEPLOY_DIR="/home/ec2-user/case-supplier-app"
             PACKAGE="/home/ec2-user/deploy.tar.gz"
-
             # Prepare deployment directory
             rm -rf $DEPLOY_DIR
             mkdir -p $DEPLOY_DIR
             cd $DEPLOY_DIR
-
             # Extract package and clean up
             tar -xzf $PACKAGE
             rm -f $PACKAGE
-
             # Install production dependencies
             cd build-server
             npm i
-
             cat <<EOF > dist/.env
             DB_USER=$POSTGRES_USER
             DB_PASSWORD=$POSTGRES_PASS
@@ -247,13 +308,14 @@ jobs:
             ENV=production
             API_PORT=3000
             API_HOST=$API_HOST
+            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/
+            THOH_API_URL=https://thoh-api.projects.bbdgrad.com/
+            BULK_LOGISTICS_API_URL=https:/bulk-logistics-api.projects.bbdgrad.com/
             EOF
-
             # Restart the app with PM2
             pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd dist
-
             # Save PM2 process list and enable on reboot and reload nginx
             pm2 save
             sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true

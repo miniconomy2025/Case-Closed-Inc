@@ -37,6 +37,14 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   ingress {
+    description = "Allow HTTPS"
+    from_port   = 444
+    to_port     = 444
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Allow SSH"
     from_port   = 22
     to_port     = 22
