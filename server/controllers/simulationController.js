@@ -130,7 +130,7 @@ export const handleSimulationStart = async (req, res, next) => {
     
 
     // Buy machine from THoH
-    await OrderMachineClient.processOrderFlow(20);
+    // await OrderMachineClient.processOrderFlow(20);
 
     logger.info(`[SimulationStart]: Bought 20 machines`);
     
@@ -138,10 +138,10 @@ export const handleSimulationStart = async (req, res, next) => {
     const plastcic = 10000;
     const aluminium = 10000;
 
-    // await OrderRawMaterialsClient.processOrderFlow({
-    //     name: 'plastic',
-    //     quantity: plastcic
-    // });
+    await OrderRawMaterialsClient.processOrderFlow({
+        name: 'plastic',
+        quantity: plastcic
+    });
 
     // await OrderRawMaterialsClient.processOrderFlow({
     //     name: 'aluminium',

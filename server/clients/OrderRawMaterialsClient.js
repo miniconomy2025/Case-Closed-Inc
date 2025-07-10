@@ -59,12 +59,11 @@ const OrderRawMaterialsClient = {
 
       const stockId = await getStockTypeIdByName(rawOrder.materialName);
 
-      const externalOrderItemsObj = {
+      const externalOrderItemsObj = [{
         stock_type_id: stockId,
-        order_id: rawOrder.orderId,
         ordered_units: rawOrder.weightQuantity,
         per_unit_cost: rawOrder.price / rawOrder.weightQuantity
-      };
+      }];
 
       const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
       console.log(response);
