@@ -12,8 +12,10 @@ const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
 
 const app = express();
-app.use(express.json());
+
 app.use(cors());
+app.use(express.json());
+
 
 // routes
 app.use('/api', routes);
