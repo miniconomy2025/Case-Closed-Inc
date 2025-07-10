@@ -2,7 +2,10 @@ import ThohClient from './RawMaterialsClient.js';
 import BulkLogisticsClient from './BulkLogisticsClient.js';
 import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
-import { updateShipmentReference } from '../daos/externalOrdersDao.js';
+import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
+import simulationTimer from '../controllers/simulationController.js';
+
+import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
 
 const OrderMachineClient = {
   async processOrderFlow(quantity) {
@@ -47,9 +50,26 @@ const OrderMachineClient = {
       // create raw material order
       const machineOrder = await ThohClient.createMachineOrder(quantity);
 
+      const externalOrderObj = {
+        order_reference: machineOrder.orderId,
+        total_cost: machineOrder.totalPrice,
+        order_type_id: 2,
+        ordered_at: simulationTimer.getDate()
+      };
+
+      const stockId = await getStockTypeIdByName('machine');
+
+      const externalOrderItemsObj = [{
+        stock_type_id: stockId,
+        ordered_units: machineOrder.quantity,
+        per_unit_cost: machineOrder.totalPrice / machineOrder.quantity
+      }];
+
+      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+
       // pay for material order
-      const machinePayment = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${machinePayment}`);
+      const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
+      logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       // create pickup request
       const items = [{ materialName: "case_machine", weightQuantity: quantity }];

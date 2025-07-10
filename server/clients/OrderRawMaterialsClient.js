@@ -43,6 +43,7 @@ const OrderRawMaterialsClient = {
 
       // TODO future enhancement: calculate affordable quantity
       if (totalCost > balance) {
+        console.log(`To expensive to place order for ${name}: ${quantity}`)
         return;
       }
 
@@ -58,15 +59,13 @@ const OrderRawMaterialsClient = {
 
       const stockId = await getStockTypeIdByName(rawOrder.materialName);
 
-      const externalOrderItemsObj = {
+      const externalOrderItemsObj = [{
         stock_type_id: stockId,
-        order_id: rawOrder.orderId,
         ordered_units: rawOrder.weightQuantity,
         per_unit_cost: rawOrder.price / rawOrder.weightQuantity
-      };
+      }];
 
-      const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
-      console.log(response);
+      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
 
       // pay for material order
       const materialPayment = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId)
@@ -81,8 +80,8 @@ const OrderRawMaterialsClient = {
       );
 
       // pay for pickup request
-      const pickupPayment = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${pickupPayment}`);
+      const { status, transactionNumber } = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
+      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       await updateShipmentReference(rawOrder.orderId, pickupRequest.pickupRequestId)
   

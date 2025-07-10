@@ -71,6 +71,10 @@ jobs:
             aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
             aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
 
+            aws ssm get-parameter --name "/ssl/root-ca.crt" --query "Parameter.Value" --output text > ./tmp/root-ca.crt
+            aws ssm get-parameter --name "/ssl/case-supplier-client.crt" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.crt
+            aws ssm get-parameter --name "/ssl/case-supplier-client.key" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.key
+
       - name: Create Certs Package
         run: |
             tar -czf ./certs.tar.gz -C ./tmp .
@@ -110,9 +114,18 @@ jobs:
                 sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
                 sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
 
+                sudo mkdir -p /etc/ssl/casesupplier/mtls
+                sudo mv $TEMP_DIR/root-ca.crt /etc/ssl/casesupplier/mtls/root-ca.crt
+                sudo mv $TEMP_DIR/case-supplier-client.crt /etc/ssl/casesupplier/mtls/case-supplier-client.crt
+                sudo mv $TEMP_DIR/case-supplier-client.key /etc/ssl/casesupplier/mtls/case-supplier-client.key
+
                 # Set permissions
                 sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
                 sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
+
+                sudo chmod 644 /etc/ssl/casesupplier/mtls/root-ca.crt
+                sudo chmod 644 /etc/ssl/casesupplier/mtls/case-supplier-client.crt
+                sudo chmod 600 /etc/ssl/casesupplier/mtls/case-supplier-client.key
 
                 # Configure Nginx SSL proxy
                 sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
@@ -129,7 +142,15 @@ jobs:
                     ssl_certificate /etc/ssl/casesupplier/casesupplier_cert.crt;
                     ssl_certificate_key /etc/ssl/casesupplier/casesupplier_key.pem;
 
+                    ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
+                    ssl_verify_client optional;
+
                     location / {
+                        # deny if NOT GET and client verification failed
+                        if ($request_method != "GET" && $ssl_client_verify != "SUCCESS") {
+                            return 403;
+                        }
+
                         proxy_pass http://localhost:3000;
                         proxy_http_version 1.1;
                         proxy_set_header Upgrade $http_upgrade;
@@ -141,6 +162,7 @@ jobs:
                         proxy_set_header X-Forwarded-Proto $scheme;
                     }
                 }
+
                 NGINX_CONF
                 # Test and reload Nginx
                 sudo nginx -t && sudo systemctl reload nginx

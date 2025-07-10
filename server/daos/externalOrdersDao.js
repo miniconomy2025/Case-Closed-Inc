@@ -32,7 +32,7 @@ export async function createExternalOrderWithItems(order, items) {
 
     const itemRows = items.map((item) => ({
       stock_type_id: item.stock_type_id,
-      order_id: orderId,
+      order_id: orderId.id,
       ordered_units: item.ordered_units,
       per_unit_cost: item.per_unit_cost
     }));

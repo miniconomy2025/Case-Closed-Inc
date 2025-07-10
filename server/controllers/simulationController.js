@@ -26,7 +26,7 @@ class SimulationTimer {
     }
 
     this.daysSinceStart = 0;
-    this.dayOfMonth = 0;
+    this.dayOfMonth = 1;
     this.month = 1;
     this.year = 2050;
     this.jobs = [
@@ -102,11 +102,17 @@ class SimulationTimer {
       this.interval = null;
     }
 
-    this.daysSinceStart = 0;
-    this.dayOfMonth = 0;
-    this.month = 1;
-    this.year = 2050;
-  }
+    async reset(){
+        if (this.interval !== null) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+
+        this.daysSinceStart = 0;
+        this.dayOfMonth = 1;
+        this.month = 1;
+        this.year = 2050
+    }
 }
 
 const simulationTimer = new SimulationTimer();
@@ -138,13 +144,13 @@ export const handleSimulationStart = async (req, res, next) => {
     }
 
     // Buy machine from THoH
-    await OrderMachineClient.processOrderFlow(20);
+    await OrderMachineClient.processOrderFlow(1);
 
     logger.info(`[SimulationStart]: Bought 20 machines`);
 
     // Buy materials from THoH
-    const plastcic = 10000;
-    const aluminium = 10000;
+    const plastcic = 4000;
+    const aluminium = 7000;
 
     await OrderRawMaterialsClient.processOrderFlow({
       name: "plastic",
@@ -160,9 +166,9 @@ export const handleSimulationStart = async (req, res, next) => {
       `[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`
     );
 
-    simulationTimer.startOfDay();
+    // simulationTimer.startOfDay();
     logger.info(`[Date]: ${simulationTimer.getDate()}`);
-    simulationTimer.run();
+    // simulationTimer.run();
 
     return res
       .status(StatusCodes.OK)
