@@ -24,8 +24,6 @@ export default class DecisionEngine {
     const materialStock = await getAvailableMaterialStockCount();
     const caseStock = await getAvailableCaseStock();
 
-    console.log(materialStock);
-
     const inventory = {
       plastic: materialStock.plastic,
       aluminium: materialStock.aluminium,
