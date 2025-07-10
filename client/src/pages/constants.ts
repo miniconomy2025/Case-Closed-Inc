@@ -13,6 +13,7 @@
           md:4,
           colour: '#FFF',
           key: "sales.total_sales",
+          currency: "Ð",
         },
         {
           title: "Total Orders",
