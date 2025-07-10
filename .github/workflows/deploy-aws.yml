@@ -155,8 +155,12 @@ jobs:
                 ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem;
 
                 location / {
-                    limit_except GET {
+                    limit_except GET OPTIONS {
                         deny all;
+                    }
+
+                    if ($request_method = OPTIONS) {
+                        return 204;
                     }
 
                     proxy_pass http://localhost:3000;
@@ -168,6 +172,10 @@ jobs:
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
+
+                    add_header 'Access-Control-Allow-Origin' '*' always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
                 }
             }
 
