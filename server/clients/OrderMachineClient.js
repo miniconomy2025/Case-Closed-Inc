@@ -2,7 +2,8 @@ import ThohClient from './RawMaterialsClient.js';
 import BulkLogisticsClient from './BulkLogisticsClient.js';
 import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
-import { updateShipmentReference } from '../daos/externalOrdersDao.js';
+import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
+import simulationTimer from '../controllers/simulationController.js';
 
 const OrderMachineClient = {
   async processOrderFlow(quantity) {
