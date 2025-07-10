@@ -16,6 +16,7 @@ import OrderRawMaterialsClient from "../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../clients/OrderMachineClient.js";
 import BankClient from "../clients/BankClient.js";
 import ThohClient from "../clients/ThohClient.js";
+import { clearMockData } from "../daos/simulationDao.js";
 
 let schedule = null;
 
@@ -115,6 +116,9 @@ export default simulationTimer;
 export const handleSimulationStart = async (req, res, next) => {
   try {
     logger.info("=================== Simulation Started ===================");
+
+    await clearMockData();
+    logger.info(`[SimulationStart]: Cleared mock data`);
 
     const { accountNumber } = await BankClient.createAccount();
     // Open bank account
