@@ -104,6 +104,7 @@ export default function DashboardPage() {
                           <GenericCard
                             cardTitle={child.title}
                             cardColour={child.colour}
+                            currency={child.currency}
                             cardData={getNestedValue(dashboardState, child.key)}
                           />
                         </Box>
