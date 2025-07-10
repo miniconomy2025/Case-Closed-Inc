@@ -12,8 +12,6 @@ type GenericCardProps = {
 
 export default function GenericCard(props: GenericCardProps) {
   const { cardTitle, cardColour, cardData, currency } = props;
-  console.log(currency)
-  console.log(cardData)
   const numberFormatter = new Intl.NumberFormat("en-ZA", {
     style: "decimal",
     minimumFractionDigits: 0,
