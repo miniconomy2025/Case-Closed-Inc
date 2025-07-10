@@ -15,6 +15,7 @@ import {
 import OrderRawMaterialsClient from "../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../clients/OrderMachineClient.js";
 import BankClient from "../clients/BankClient.js";
+import ThohClient from "../clients/ThohClient.js";
 
 let schedule = null;
 
@@ -124,6 +125,8 @@ export const handleSimulationStart = async (req, res, next) => {
     });
 
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
+
+    ThohClient.syncCaseMachineToEquipmentParameters();
 
     // Get loan
     const { success, loanNumber } = await BankClient.takeLoan(1000000);
