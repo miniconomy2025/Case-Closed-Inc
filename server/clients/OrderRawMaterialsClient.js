@@ -2,7 +2,9 @@ import ThohClient from './RawMaterialsClient.js';
 import BulkLogisticsClient from './BulkLogisticsClient.js';
 import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
-import { updateShipmentReference } from '../daos/externalOrdersDao.js';
+import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
+import simulationTimer from '../controllers/simulationController.js';
+import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
 
 const OrderRawMaterialsClient = {
   async processOrderFlow({ name, quantity }) {
@@ -47,6 +49,25 @@ const OrderRawMaterialsClient = {
 
       // create raw material order
       const rawOrder = await ThohClient.createRawMaterialsOrder(name, quantity);
+
+      const externalOrderObj = {
+        order_reference: rawOrder.orderId,
+        total_cost: rawOrder.price,
+        order_type_id: 1,
+        ordered_at: simulationTimer.getDate()
+      };
+
+      const stockId = await getStockTypeIdByName(rawOrder.materialName);
+
+      const externalOrderItemsObj = {
+        stock_type_id: stockId,
+        order_id: rawOrder.orderId,
+        ordered_units: rawOrder.weightQuantity,
+        per_unit_cost: rawOrder.price / rawOrder.weightQuantity
+      };
+
+      const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+      console.log(response);
 
       // pay for material order
       const materialPayment = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId)
