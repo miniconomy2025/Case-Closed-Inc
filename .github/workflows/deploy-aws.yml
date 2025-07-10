@@ -162,11 +162,18 @@ jobs:
                     ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem
                     ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem
 
-                    # trust the CA that signed the client certs from other servers
                     ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
                     ssl_verify_client on;
 
                     location / {
+<<<<<<< HEAD
+=======
+                        # deny if NOT GET and client verification failed
+                        if ($request_method != "GET" && $ssl_client_verify != "SUCCESS") {
+                            return 403;
+                        }
+
+>>>>>>> fc96fa88bdf805dea1e701fad782cf6e4940fa3d
                         proxy_pass http://localhost:3000;
                         proxy_http_version 1.1;
                         proxy_set_header Upgrade $http_upgrade;
@@ -178,6 +185,7 @@ jobs:
                         proxy_set_header X-Forwarded-Proto $scheme;
                     }
                 }
+
                 NGINX_CONF
                 # Test and reload Nginx
                 sudo nginx -t && sudo systemctl reload nginx

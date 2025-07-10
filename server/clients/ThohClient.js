@@ -1,4 +1,5 @@
 import axios from "axios";
+import { insertEquipmentParameters } from "../daos/equipmentParametersDao.js";
 
 const thohApi = axios.create({
   baseURL: process.env.THOH_API_URL || "http://localhost:3002",
@@ -32,6 +33,7 @@ const ThohClient = {
   async getMachinesForSale() {
     // const res = await thohApi.get('/simulation/machines');
     // return res.data;
+
     return {
       machines: [
         {
@@ -66,6 +68,23 @@ const ThohClient = {
       },
       bankAccount: "THOH-ACC-001",
     };
+  },
+
+  async syncCaseMachineToEquipmentParameters() {
+    const res = await thohApi.get("/machines");
+    const machines = res.data.machines || [];
+
+    const caseMachine = machines.find((m) => m.machineName === "case_machine");
+    if (!caseMachine) {
+      throw new Error("No 'case_machine' found in machines list");
+    }
+
+    await insertEquipmentParameters({
+      plastic_ratio: caseMachine.inputRatio?.plastic ?? 0,
+      aluminium_ratio: caseMachine.inputRatio?.aluminium ?? 0,
+      production_rate: caseMachine.productionRate ?? 0,
+    });
+    return true;
   },
 };
 

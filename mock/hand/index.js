@@ -160,7 +160,7 @@ app.post('/raw-materials', (req, res) => {
         ];
 
         const material = availableMaterials.find(m => 
-            m.name.toLowerCase() === materialName.toLowerCase());
+            m.name.toLowerCase() == materialName.toLowerCase());
 
         if (!material) {
             return res.status(404).json({ error: 'Material not found' });

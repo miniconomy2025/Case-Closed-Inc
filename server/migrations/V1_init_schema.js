@@ -8,7 +8,7 @@ export async function up(knex) {
       "total_price" float NOT NULL,
       "amount_paid" float DEFAULT 0,
       "account_number" varchar(16),
-      "ordered_at" timestamp NOT NULL
+      "ordered_at" CHAR(10) NOT NULL
     );
 
     CREATE TABLE "order_statuses" (
@@ -34,8 +34,8 @@ export async function up(knex) {
       "total_cost" float NOT NULL,
       "order_type_id" int NOT NULL,
       "shipment_reference" varchar(255),
-      "ordered_at" timestamp NOT NULL,
-      "received_at" timestamp
+      "ordered_at" CHAR(10) NOT NULL,
+      "received_at" CHAR(10)
     );
 
     CREATE TABLE "bank_details" (

@@ -5,6 +5,8 @@ import logger from '../utils/logger.js';
 import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
 import simulationTimer from '../controllers/simulationController.js';
 
+import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
+
 const OrderMachineClient = {
   async processOrderFlow(quantity) {
     try {
@@ -55,20 +57,19 @@ const OrderMachineClient = {
         ordered_at: simulationTimer.getDate()
       };
 
-      const stockId = await getStockTypeIdByName(machineOrder.materialName);
+      const stockId = await getStockTypeIdByName('machine');
 
-      const externalOrderItemsObj = {
+      const externalOrderItemsObj = [{
         stock_type_id: stockId,
         ordered_units: machineOrder.quantity,
         per_unit_cost: machineOrder.totalPrice / machineOrder.quantity
-      };
+      }];
 
-      const response = await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
-      console.log(response);
+      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
 
       // pay for material order
-      const machinePayment = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${machinePayment}`);
+      const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
+      logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       // create pickup request
       const items = [{ materialName: "case_machine", weightQuantity: quantity }];
