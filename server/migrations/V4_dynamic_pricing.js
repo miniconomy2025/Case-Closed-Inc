@@ -40,5 +40,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.raw(`DROP FUNCTION IF EXISTS calculate_case_price(INT, INT, NUMERIC);`);
+  await knex.raw(`DROP FUNCTION IF EXISTS calculate_case_price(NUMERIC, NUMERIC, NUMERIC);`);
 }
