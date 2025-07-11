@@ -5,16 +5,6 @@ import SimulateProduction from "../cron/jobs/simulateProduction.js";
 import DecisionEngine from "../cron/jobs/decisionEngine.js";
 import CancelUnpaidOrdersJob from "../cron/jobs/canelUnpaidOrders.js";
 import logger from "../utils/logger.js";
-import { decrementStockByName } from "../daos/stockDao.js";
-import apiUrls from "../utils/companyUrls.js";
-import {
-  getAccountNumber,
-  updateAccountNumber,
-} from "../daos/bankDetailsDao.js";
-
-import OrderRawMaterialsClient from "../clients/OrderRawMaterialsClient.js";
-import OrderMachineClient from "../clients/OrderMachineClient.js";
-import BankClient from "../clients/BankClient.js";
 import ThohClient from "../clients/ThohClient.js";
 import { clearMockData } from "../daos/simulationDao.js";
 
@@ -41,8 +31,23 @@ class SimulationTimer {
     SimulationTimer.instance = this;
   }
 
+
+  async startOfSim(){
+    logger.info(`[Date]: ${simulationTimer.getDate()}`);
+    simulationTimer.jobs[0].run();
+  }
+
   async startOfDay() {
-    // Do increments
+    this.incrementDate();
+    logger.info(`[Date]: ${simulationTimer.getDate()}`);
+    
+    // Run Jobs
+    this.jobs.forEach((job) => {
+      job.run();
+    });
+  }
+
+  incrementDate(){
     this.daysSinceStart++;
     this.dayOfMonth++;
     if (this.dayOfMonth > 30) {
@@ -54,11 +59,6 @@ class SimulationTimer {
         this.year++;
       }
     }
-
-    // Run Jobs
-    this.jobs.forEach((job) => {
-      job.run();
-    });
   }
 
   getDate() {
@@ -92,7 +92,6 @@ class SimulationTimer {
     if (this.interval == null) {
       this.interval = setInterval(() => {
         this.startOfDay();
-        logger.info(`[Date]: ${this.getDate()}`);
       }, 120000); // 2 mins: 120000
     }
   }
@@ -118,66 +117,17 @@ export const handleSimulationStart = async (req, res, next) => {
     logger.info("=================== Simulation Started ===================");
 
     await clearMockData();
-    logger.info(`[SimulationStart]: Cleared mock data`);
-
-    // Create an account and send through our notification URL
+    logger.info(`[SimulationStart]: Cleared database`);
+            // Get production ratios and production rates 
     try {
-    const { accountNumber } = await BankClient.createAccount({
-      notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
-    });
-    // Store our account number
-    await updateAccountNumber(accountNumber);
-    logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
+        await ThohClient.syncCaseMachineToEquipmentParameters();
     } catch {
-      logger.info(`[SimulationStart]: Failed to create account`);
-    }
-
-    // Get production ratios and production rates 
-    try {
-      await ThohClient.syncCaseMachineToEquipmentParameters();
-    } catch {
-      logger.info(`[SimulationStart]: Failed to sync case machine parameters`);
+        logger.info(`[SimulationStart]: Failed to sync case machine parameters`);
     };
-
-    // Get loan
-    try {
-      const { success, loanNumber } = await BankClient.takeLoan(500000);
-      if (success) {
-        logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
-      } else {
-        logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
-      };
-    } catch {
-      logger.info(`[SimulationStart]: Failed to take loan`);
-    }
     
-    // Buy machine from THoH
-    try {
-      await OrderMachineClient.processOrderFlow(1);
-      logger.info(`[SimulationStart]: Bought 1 machines`);
+    simulationTimer.startOfSim();
 
-      // Buy materials from THoH
-      const plastcic = 1000;
-      const aluminium = 2000;
-
-      await OrderRawMaterialsClient.processOrderFlow({
-        name: "plastic",
-        quantity: plastcic,
-      });
-
-      await OrderRawMaterialsClient.processOrderFlow({
-        name: "aluminium",
-        quantity: aluminium,
-      });
-      logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
-    } catch {
-      logger.warn(`[SimulationStart]: Ordering failed`);
-    }
-
-    simulationTimer.startOfDay();
-    logger.info(`[Date]: ${simulationTimer.getDate()}`);
     simulationTimer.run();
-
     return res
       .status(StatusCodes.OK)
       .json({ message: "Successfully started simulation" });
