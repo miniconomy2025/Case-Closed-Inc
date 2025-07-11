@@ -40,6 +40,7 @@ export async function up(knex) {
 
     CREATE TABLE "bank_details" (
       "account_number" char(12) PRIMARY KEY
+      "account_balance" int
     );
 
     CREATE TABLE "equipment_parameters" (
