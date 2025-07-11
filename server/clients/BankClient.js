@@ -9,9 +9,9 @@ const bankApi = axios.create({
 });
 
 const BankClient = {
-  async createAccount() {
+  async createAccount(notificationUrl) {
     try {
-      const res = await bankApi.post('/account', {});
+      const res = await bankApi.post('/account', { notification_url: notificationUrl });
       return { accountNumber: res.data.account_number };
     } catch {
       logger.warn('create bank account call failed')
