@@ -59,7 +59,7 @@ export default class DecisionEngine {
         let have_account = false;
         try{
             const { account_number } = await getAccountNumber();
-            have_account = ture;
+            have_account = true;
         }catch {
             have_account = false;
         }
@@ -112,21 +112,21 @@ export default class DecisionEngine {
                 });
                 // Store our account number
                 await updateAccountNumber(accountNumber);
-                logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
+                logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
             } catch {
-                logger.info(`[SimulationStart]: Failed to create account`);
+                logger.info(`[DecisionEngine]: Failed to create account`);
             }
 
             // Get loan
             try {
                 const { success, loanNumber } = await BankClient.takeLoan(500000);
                 if (success) {
-                    logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
+                    logger.info(`[DecisionEngine]: Recieved Loan: 1000000`);
                 } else {
-                    logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
+                    logger.info(`[DecisionEngine]: Bank Rejected Loan: 1000000`);
                 };
             } catch {
-                logger.info(`[SimulationStart]: Failed to take loan`);
+                logger.info(`[DecisionEngine]: Failed to take loan`);
             }
         }
     }
