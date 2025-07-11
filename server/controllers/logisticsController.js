@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { getExternalOrderWithItems } from '../daos/externalOrdersDao.js';
-
-import { decrementStockByName, deliverStockByName, incrementStockByName } from '../daos/stockDao.js';
+import { decrementStockByName, deliverStockByName } from '../daos/stockDao.js';
 import { getCaseOrderById, updateCaseOrderStatus, incrementQuantityDelivered } from '../daos/caseOrdersDao.js';
 import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
 
@@ -20,7 +19,8 @@ export const handleLogistics = async (req, res, next) => {
             .json({ error: 'Unexpected number of items' });
         }
 
-        const { name, quantity } = items[0]; // as per business logic this should always have a length of 1
+        // as per business logic this should always have a length of 1
+        const { name, quantity } = items[0]; 
 
         switch (type) {
             case 'DELIVERY':
