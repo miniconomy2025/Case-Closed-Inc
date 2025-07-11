@@ -6,11 +6,6 @@ export const getAccountNumber = async () => {
     return await db(TABLE_NAME).first();
 };
 
-export const getStoredBalance = async (accountNumber) => {
-    return await db(TABLE_NAME)
-    .where({account_number: accountNumber})
-    .returning('account_balance');
-};
 
 export const updateAccountNumber = async (accountNumber) => {
     return (await db(TABLE_NAME))
