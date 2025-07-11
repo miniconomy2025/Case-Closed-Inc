@@ -120,35 +120,37 @@ export const handleSimulationStart = async (req, res, next) => {
     await clearMockData();
     logger.info(`[SimulationStart]: Cleared mock data`);
 
-    const { accountNumber } = await BankClient.createAccount();
-    // Open bank account
-    // Call Commercial Bank
-    await updateAccountNumber(accountNumber);
-    const { setUrlSuccess } = await BankClient.setNotificationUrl({
-      notificationUrl: "/api/payment",
+    // Create an account and send through our notification URL
+    const { accountNumber } = await BankClient.createAccount({
+      notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
     });
-
+    // Store our account number
+    await updateAccountNumber(accountNumber);
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
 
-    ThohClient.syncCaseMachineToEquipmentParameters();
+    // Get production ratios and production rates 
+    try {
+      await ThohClient.syncCaseMachineToEquipmentParameters();
+    } catch {
+      logger.info(`[SimulationStart]: Failed to sync case machine parameters`);
+    };
 
     // Get loan
-    const { success, loanNumber } = await BankClient.takeLoan(1000000);
+    const { success, loanNumber } = await BankClient.takeLoan(500000);
 
     if (success) {
       logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
     } else {
       logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
-    }
+    };
 
     // Buy machine from THoH
     await OrderMachineClient.processOrderFlow(1);
-
-    logger.info(`[SimulationStart]: Bought 20 machines`);
+    logger.info(`[SimulationStart]: Bought 1 machines`);
 
     // Buy materials from THoH
-    const plastcic = 4000;
-    const aluminium = 7000;
+    const plastcic = 1000;
+    const aluminium = 2000;
 
     await OrderRawMaterialsClient.processOrderFlow({
       name: "plastic",
@@ -160,9 +162,7 @@ export const handleSimulationStart = async (req, res, next) => {
       quantity: aluminium,
     });
 
-    logger.info(
-      `[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`
-    );
+    logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
 
     simulationTimer.startOfDay();
     logger.info(`[Date]: ${simulationTimer.getDate()}`);
