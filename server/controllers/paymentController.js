@@ -2,7 +2,6 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
 import { getCaseOrderById, updateCaseOrderStatus, updateOrderPaymentAndAccount } from '../daos/caseOrdersDao.js';
 import BankClient from '../clients/BankClient.js';
-import MockBankClient from '../clients/MockBankClient.js';
 
 export const handlePayment = async (req, res, next) => {
     try {
