@@ -1,9 +1,11 @@
 import axios from "axios";
 import { insertEquipmentParameters } from "../daos/equipmentParametersDao.js";
+import mtlsAgent from './mtlsAgent.js';
 
 const thohApi = axios.create({
   baseURL: process.env.THOH_API_URL || "http://localhost:3002",
   timeout: 5000,
+  httpsAgent: mtlsAgent || undefined,
 });
 
 const ThohClient = {
@@ -71,8 +73,8 @@ const ThohClient = {
   },
 
   async syncCaseMachineToEquipmentParameters() {
-    const res = await thohApi.get("/machines");
-    const machines = res.data.machines || [];
+    const response = await thohApi.get("/machines");
+    const { machines } = response.data || {};
 
     const caseMachine = machines.find((m) => m.machineName === "case_machine");
     if (!caseMachine) {
