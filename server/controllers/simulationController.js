@@ -121,12 +121,16 @@ export const handleSimulationStart = async (req, res, next) => {
     logger.info(`[SimulationStart]: Cleared mock data`);
 
     // Create an account and send through our notification URL
+    try {
     const { accountNumber } = await BankClient.createAccount({
       notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
     });
     // Store our account number
     await updateAccountNumber(accountNumber);
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
+    } catch {
+      logger.info(`[SimulationStart]: Failed to create account`);
+    }
 
     // Get production ratios and production rates 
     try {
@@ -136,33 +140,39 @@ export const handleSimulationStart = async (req, res, next) => {
     };
 
     // Get loan
-    const { success, loanNumber } = await BankClient.takeLoan(500000);
-
-    if (success) {
-      logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
-    } else {
-      logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
-    };
-
+    try {
+      const { success, loanNumber } = await BankClient.takeLoan(500000);
+      if (success) {
+        logger.info(`[SimulationStart]: Recieved Loan: 1000000`);
+      } else {
+        logger.info(`[SimulationStart]: Bank Rejected Loan: 1000000`);
+      };
+    } catch {
+      logger.info(`[SimulationStart]: Failed to take loan`);
+    }
+    
     // Buy machine from THoH
-    await OrderMachineClient.processOrderFlow(1);
-    logger.info(`[SimulationStart]: Bought 1 machines`);
+    try {
+      await OrderMachineClient.processOrderFlow(1);
+      logger.info(`[SimulationStart]: Bought 1 machines`);
 
-    // Buy materials from THoH
-    const plastcic = 1000;
-    const aluminium = 2000;
+      // Buy materials from THoH
+      const plastcic = 1000;
+      const aluminium = 2000;
 
-    await OrderRawMaterialsClient.processOrderFlow({
-      name: "plastic",
-      quantity: plastcic,
-    });
+      await OrderRawMaterialsClient.processOrderFlow({
+        name: "plastic",
+        quantity: plastcic,
+      });
 
-    await OrderRawMaterialsClient.processOrderFlow({
-      name: "aluminium",
-      quantity: aluminium,
-    });
-
-    logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
+      await OrderRawMaterialsClient.processOrderFlow({
+        name: "aluminium",
+        quantity: aluminium,
+      });
+      logger.info(`[SimulationStart]: Bought ${plastcic} plastic and ${aluminium} aluminium`);
+    } catch {
+      logger.warn(`[SimulationStart]: Ordering failed`);
+    }
 
     simulationTimer.startOfDay();
     logger.info(`[Date]: ${simulationTimer.getDate()}`);

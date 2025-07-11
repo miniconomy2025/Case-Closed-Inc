@@ -1,7 +1,6 @@
 import { getAvailableCaseStock, getAvailableMaterialStockCount } from "../../daos/stockDao.js";
 
 import logger from "../../utils/logger.js";
-
 import OrderRawMaterialsClient from "../../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
@@ -20,7 +19,13 @@ export default class DecisionEngine {
   }
 
   async getState() {
-    const { balance } = await BankClient.getBalance();
+    let balance;
+    try {
+      const { balance } = await BankClient.getBalance();
+      balance = balance;
+    } catch {
+      balance = 0;
+    };
     const materialStock = await getAvailableMaterialStockCount();
     const caseStock = await getAvailableCaseStock();
 
@@ -57,28 +62,40 @@ export default class DecisionEngine {
 
     // TODO: Integrate with systems
     if (await this.buyMaterial(state, "plastic")) {
+      try {
       logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
         await OrderRawMaterialsClient.processOrderFlow({
             name: 'plastic',
             quantity: 1000
         });
+        } catch {
+        logger.info("[DecisionEngine]: Failed to buy machine");
+      }
     } else {
       logger.info("[DecisionEngine]: Plastic stock good!");
     }
 
     if (await this.buyMaterial(state, "aluminium")) {
+      try {
       logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
         await OrderRawMaterialsClient.processOrderFlow({
             name: 'aluminium',
             quantity: 1000
         });
+      } catch {
+        logger.info("[DecisionEngine]: Failed to buy machine");
+      }
     } else {
       logger.info("[DecisionEngine]: Aluminium stock good!");
     }
 
     if (await this.buyMachine(state)) {
-      logger.info("[DecisionEngine]: Can buy machine");
+      try {
+        logger.info("[DecisionEngine]: Can buy machine");
         await OrderMachineClient.processOrderFlow(1);
+      } catch {
+        logger.info("[DecisionEngine]: Failed to buy machine");
+      }
     } else {
       logger.info("[DecisionEngine]: Do not buy machine");
     }
