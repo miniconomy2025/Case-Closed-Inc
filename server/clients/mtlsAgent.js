@@ -7,7 +7,7 @@ let agent = null;
 const certPath = '/etc/ssl/casesupplier/mtls/case-supplier-client.crt';
 const keyPath = '/etc/ssl/casesupplier/mtls/case-supplier-client.key';
 
-if (fs.existsSync(certPath) && fs.existsSync(keyPath) && fs.existsSync(caPath)) {
+if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
   agent = new https.Agent({
     cert: fs.readFileSync(certPath),
     key: fs.readFileSync(keyPath),
