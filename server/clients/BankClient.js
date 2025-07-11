@@ -1,5 +1,6 @@
 import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
+import logger from '../utils/logger.js';
 
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL || "http://localhost:3003/",
@@ -8,9 +9,13 @@ const bankApi = axios.create({
 });
 
 const BankClient = {
-  async createAccount() {
-    const res = await bankApi.post('/account', {});
-    return { accountNumber: res.data.account_number };
+  async createAccount(notificationUrl) {
+    try {
+      const res = await bankApi.post('/account', { notification_url: notificationUrl });
+      return { accountNumber: res.data.account_number };
+    } catch {
+      logger.warn('create bank account call failed')
+    }
   },
 
   async getMyAccount() {
@@ -24,8 +29,12 @@ const BankClient = {
   },
 
   async getBalance() {
+    try {
     const res = await bankApi.get('/account/me/balance');
     return { balance: res.data.balance };
+    } catch (error) {
+      logger.warn(error)
+    };
   },
 
   async checkFrozen() {

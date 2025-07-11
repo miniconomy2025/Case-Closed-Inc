@@ -5,9 +5,7 @@ export async function clearMockData() {
         await trx('case_orders').del();
         await trx('external_order_items').del();
         await trx('external_orders').del();
-        await trx('bank_details').update({
-            account_number: 123451234512,
-        });
+        await trx('bank_details').del()
         await trx('equipment_parameters').del();
         await trx('equipment_parameters').insert({
             plastic_ratio: 4,
