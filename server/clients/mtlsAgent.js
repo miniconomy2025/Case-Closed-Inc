@@ -6,14 +6,12 @@ let agent = null;
 
 const certPath = '/etc/ssl/casesupplier/mtls/case-supplier-client.crt';
 const keyPath = '/etc/ssl/casesupplier/mtls/case-supplier-client.key';
-const caPath = '/etc/ssl/casesupplier/mtls/root-ca.crt';
 
-if (fs.existsSync(certPath) && fs.existsSync(keyPath) && fs.existsSync(caPath)) {
+if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
   agent = new https.Agent({
     cert: fs.readFileSync(certPath),
     key: fs.readFileSync(keyPath),
-    ca: fs.readFileSync(caPath),
-    rejectUnauthorized: true,
+    rejectUnauthorized: false,
   });
   logger.info('[mTLS] HTTPS Agent configured using files on disk');
 } else {
