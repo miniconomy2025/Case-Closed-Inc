@@ -4,6 +4,6 @@ import { handleSimulationStart,  handleSimulationEnd} from '../controllers/simul
 const router = express.Router();
 
 router.post('/', handleSimulationStart);
-router.post('/end', handleSimulationEnd);
+router.delete('/', handleSimulationEnd);
 
 export default router;
