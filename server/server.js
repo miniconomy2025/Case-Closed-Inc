@@ -16,19 +16,17 @@ app.use(express.json());
 app.use('/api', routes);
 
 app.use('/test', (req, res) => {
-  const clientCert = req.headers['x-client-cert'];
-  const clientSubject = req.headers['x-client-subject'];
-  const verifyStatus = req.headers['x-client-verify'];
+  const verified = req.headers['x-client-verify'];
+  const subject = req.headers['x-client-subject'];
+  const issuer = req.headers['x-client-issuer'];
+  const fingerprint = req.headers['x-client-fingerprint'];
+  const serial = req.headers['x-client-serial'];
 
-  if (verifyStatus !== 'SUCCESS') {
+  if (verified !== 'SUCCESS') {
     return res.status(401).json({ error: 'Client certificate not verified' });
   }
 
-  res.status(200).json({
-    cert: clientCert,
-    subject: clientSubject,
-    verified: verifyStatus
-  });
+  res.json({ subject, issuer, fingerprint, serial });
 });
 
 app.use(errorHandler);
