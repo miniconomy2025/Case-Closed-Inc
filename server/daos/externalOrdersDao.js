@@ -58,8 +58,8 @@ export const getExternalOrderWithItems = async (shipmentReference) => {
         .first();
 };
 
-export async function updateShipmentReference(orderReference, shipmentReference) {
-    return await db(EXTERNAL_ORDERS_TABLE)
+export async function updateShipmentReference(orderReference, shipmentReference, trx = db) {
+    return await trx(EXTERNAL_ORDERS_TABLE)
         .where({ order_reference: orderReference })
         .update({ shipment_reference: shipmentReference });
 };
