@@ -1,6 +1,7 @@
 import axios from "axios";
 import { insertEquipmentParameters } from "../daos/equipmentParametersDao.js";
 import mtlsAgent from './mtlsAgent.js';
+import logger from "../utils/logger.js";
 
 const thohApi = axios.create({
   baseURL: process.env.THOH_API_URL || "http://localhost:3002",
@@ -9,6 +10,16 @@ const thohApi = axios.create({
 });
 
 const ThohClient = {
+    async getSimulationDate() {
+        try{
+            const res = await thohApi.get('/current-simulation-time');
+            return res.data.simulationDate; // TODO: See how the hand responds when sim is not running.
+        }catch{
+            return '0000-00-00';
+        }
+    },
+
+
   async getAvailableMaterials() {
     // const res = await thohApi.get('/simulation/raw-materials');
     // return res.data;

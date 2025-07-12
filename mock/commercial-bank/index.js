@@ -198,6 +198,7 @@ app.get('/transaction/:transaction_number', getAccountNumber, (req, res) => {
 
 // Take Out a Loan
 app.post('/loan', getAccountNumber, (req, res) => {
+    console.log('hit');
     const accountNumber = req.accountNumber;
     console.log(accountNumber)
     const { amount } = req.body;
@@ -417,5 +418,5 @@ app.post('/debug/reset', (req, res) => {
 });
 
 app.listen(port, () => {
-   console.log("Commercial Bank Started: Port 3000")
+   console.log(`Commercial Bank Started: Port ${port}`)
 });

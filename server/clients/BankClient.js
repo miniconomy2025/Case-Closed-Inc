@@ -43,8 +43,8 @@ const BankClient = {
   async getBalance() {
     try {
         const res = await bankApi.get('/account/me/balance');
-        const { accountNumber } = await getAccountNumber()
-        await updateBalance(res.data.balance, accountNumber);
+        const { account_number }  = await getAccountNumber();
+        await updateBalance(res.data.balance, account_number);
 
         return { balance: res.data.balance };
     } catch (error) {
@@ -63,22 +63,51 @@ const BankClient = {
   },
 
   async getOutstandingLoans() {
-    const res = await bankApi.get('/account/me/loans');
-    return {
-      totalDue: res.data.total_due,
-      loans: res.data.loans.map(l => ({
-        loanNumber: l.loan_number,
-        due: l.due,
-      })),
-    };
+    try{
+        const res = await bankApi.get('/account/me/loans');
+        return {
+            totalDue: res.data.total_due,
+            loans: res.data.loans.map(l => ({
+                loanNumber: l.loan_number,
+                due: l.due,
+            })),
+        };        
+    }catch (error){
+        return {
+            totalDue: 0,
+            loans: []
+        }; 
+    }
   },
 
   async takeLoan(amount) {
-    const res = await bankApi.post('/loan', { amount });
-    return {
-      success: res.data.success,
-      loanNumber: res.data.loan_number,
-    };
+    try{
+        const response = await bankApi.post('/loan', { amount });
+        if(response.data.success == true){
+            const { account_number }  = await getAccountNumber();
+            await updateBalance(amount, account_number);
+            return {
+                success: response.data.success,
+                message: 'Loan approved',
+                loanNumber: response.data.loan_number,                
+            }
+        }else{
+            try{
+                const validAmount = response.data.amount_remaining;
+                await this.takeLoan(validAmount);
+            }catch{
+                return{
+                    success: false,
+                    message: 'Loan Rejected'                    
+                }
+            }
+        }
+    }catch{
+        return{
+            success: false,
+            message: 'Bank down'
+        }
+    }
   },
 
   async repayLoan(loanNumber, amount) {

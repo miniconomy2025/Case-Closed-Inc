@@ -16,5 +16,9 @@ export async function clearMockData() {
             total_units: 0,
             ordered_units: 0
         });
+        // await trx('bank_details').insert({
+        //     account_number: 'MockAccount',
+        //     account_balance: 0
+        // });        
     });
 };

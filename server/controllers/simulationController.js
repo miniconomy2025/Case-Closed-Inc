@@ -92,11 +92,11 @@ class SimulationTimer {
     if (this.interval == null) {
       this.interval = setInterval(() => {
         this.startOfDay();
-      }, 120000); // 2 mins: 120000
+      }, 30000); // 2 mins: 120000
     }
   }
 
-  async reset() {
+    async reset() {
         if (this.interval !== null) {
             clearInterval(this.interval);
             this.interval = null;
@@ -106,6 +106,17 @@ class SimulationTimer {
         this.dayOfMonth = 1;
         this.month = 1;
         this.year = 2050
+    }
+
+    async resume(currentDate) {
+        const [currentYear, currentMonth, currentDay] = currentDate.split("-").map(Number);
+        this.dayOfMonth = currentDay;
+        this.month = currentMonth;
+        this.year = currentYear;
+
+        this.daysSinceStart = this.getDaysPassed('2050-01-01');
+
+        this.run();
     }
 }
 
@@ -145,5 +156,21 @@ export const handleSimulationEnd = async (req, res, next) => {
       .json({ message: "Successfully stopped simulation" });
   } catch (error) {
     next(error);
+  }
+};
+
+
+export const resumeSimulation = async () => { 
+  try {
+    logger.info(`[Simulation]: Check if there is an active simulation`);
+    const simDate = await ThohClient.getSimulationDate();
+    if(simDate !== '0000-00-00'){
+        simulationTimer.resume(simDate);
+    }else{
+        logger.info(`[Simulation]: No active simulation date`);
+    }
+
+  } catch (error) {
+    logger.info(`[Simulation]: No active simulation date`);
   }
 };

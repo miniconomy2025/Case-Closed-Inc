@@ -6,6 +6,10 @@ export const getAccountNumber = async () => {
     return await db(TABLE_NAME).first();
 };
 
+export const insertAccountNumber = async (accountNumber) => {
+    return db(TABLE_NAME)
+    .insert({ account_number: accountNumber, account_balance: 0 }); 
+}
 
 export const updateAccountNumber = async (accountNumber) => {
     return (await db(TABLE_NAME))

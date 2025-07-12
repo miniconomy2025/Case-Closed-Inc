@@ -4,6 +4,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import routes from './routes/index.js';
 import cors from 'cors';
+import { resumeSimulation } from './controllers/simulationController.js';
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
@@ -23,6 +24,7 @@ const startServer = async () => {
         app.listen(PORT, () => {
             logger.info(`Server running on http://${HOST}:${PORT}`);
         });
+        resumeSimulation();
     } catch (err) {
         logger.error('Migrations failed', { error: err });
         logger.error('Server startup failed — exiting.');
