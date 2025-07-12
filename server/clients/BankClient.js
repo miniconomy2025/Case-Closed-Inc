@@ -11,7 +11,7 @@ const bankApi = axios.create({
 const BankClient = {
   async createAccount(notificationUrl) {
     try {
-      const res = await bankApi.post('/account', { notification_url: notificationUrl });
+      const res = await bankApi.post('/account', { callbackURL: notificationUrl });
       return { accountNumber: res.data.account_number };
     } catch {
       logger.warn('create bank account call failed')
@@ -30,8 +30,8 @@ const BankClient = {
 
   async getBalance() {
     try {
-    const res = await bankApi.get('/account/me/balance');
-    return { balance: res.data.balance };
+    const res = await bankApi.get('/account/api') || 0;
+    return { balance: res.data.net_balance };
     } catch (error) {
       logger.warn(error)
     };

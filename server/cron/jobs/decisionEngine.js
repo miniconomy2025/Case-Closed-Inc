@@ -68,8 +68,8 @@ export default class DecisionEngine {
             name: 'plastic',
             quantity: 1000
         });
-        } catch {
-        logger.info("[DecisionEngine]: Failed to buy machine");
+        } catch (error) {
+        logger.info("[DecisionEngine]: Failed to buy plastic");
       }
     } else {
       logger.info("[DecisionEngine]: Plastic stock good!");
@@ -83,7 +83,7 @@ export default class DecisionEngine {
             quantity: 1000
         });
       } catch {
-        logger.info("[DecisionEngine]: Failed to buy machine");
+        logger.info("[DecisionEngine]: Failed to buy aluminium");
       }
     } else {
       logger.info("[DecisionEngine]: Aluminium stock good!");
@@ -93,7 +93,7 @@ export default class DecisionEngine {
       try {
         logger.info("[DecisionEngine]: Can buy machine");
         await OrderMachineClient.processOrderFlow(1);
-      } catch {
+      } catch (error) {
         logger.info("[DecisionEngine]: Failed to buy machine");
       }
     } else {

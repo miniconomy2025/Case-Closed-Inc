@@ -122,13 +122,11 @@ export const handleSimulationStart = async (req, res, next) => {
 
     // Create an account and send through our notification URL
     try {
-    const { accountNumber } = await BankClient.createAccount({
-      notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
-    });
+    const { accountNumber } = await BankClient.createAccount("https://case-supplier-api.projects.bbdgrad.com/api/payment");
     // Store our account number
     await updateAccountNumber(accountNumber);
     logger.info(`[SimulationStart]: Opened Bank Account: ${accountNumber}`);
-    } catch {
+    } catch (error) {
       logger.info(`[SimulationStart]: Failed to create account`);
     }
 
