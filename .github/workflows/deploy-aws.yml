@@ -205,9 +205,11 @@ jobs:
                     proxy_set_header X-Forwarded-Proto $scheme;
 
                     # Forward client certificate info
-                    proxy_set_header X-Client-Cert $ssl_client_cert;
-                    proxy_set_header X-Client-Subject $ssl_client_s_dn;
                     proxy_set_header X-Client-Verify $ssl_client_verify;
+                    proxy_set_header X-Client-Subject $ssl_client_s_dn;
+                    proxy_set_header X-Client-Issuer $ssl_client_i_dn;
+                    proxy_set_header X-Client-Fingerprint $ssl_client_fingerprint;
+                    proxy_set_header X-Client-Serial $ssl_client_serial;
                 }
             }
             NGINX_CONF
