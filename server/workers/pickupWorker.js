@@ -22,7 +22,6 @@ console.log(
 
 const sqs = new SQSClient({ region: process.env.AWS_REGION || "af-south-1" });
 
-// const sqs = new SQSClient({ region: process.env.AWS_REGION || "us-east-1" });
 const PICKUP_QUEUE_URL = process.env.PICKUP_QUEUE_URL;
 
 async function pollQueue() {

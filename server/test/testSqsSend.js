@@ -1,6 +1,6 @@
 import { enqueuePickupRequest } from "../utils/sqsClient.js";
 import dotenv from "dotenv";
-dotenv.config({ path: "../.env" }); // <-- add this line
+dotenv.config();
 
 console.log(process.env.PICKUP_QUEUE_URL);
 
