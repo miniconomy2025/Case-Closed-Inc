@@ -1,6 +1,8 @@
 import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 import logger from '../utils/logger.js';
+import { getAccountNumber, updateBalance } from '../daos/bankDetailsDao.js';
+
 
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL || "http://localhost:3003/",
@@ -19,8 +21,18 @@ const BankClient = {
   },
 
   async getMyAccount() {
-    const res = await bankApi.get('/account/me');
-    return { accountNumber: res.data.account_number };
+    try{
+        const res = await bankApi.get('/account/me');
+        return { accountNumber: res.data.account_number };        
+    }catch {
+        try{
+            const { account_number } = await getAccountNumber()
+            return account_number;
+        }catch{
+            logger.warn('No bank account created')
+        }
+    }
+
   },
 
   async setNotificationUrl(notificationUrl) {
@@ -30,10 +42,18 @@ const BankClient = {
 
   async getBalance() {
     try {
-    const res = await bankApi.get('/account/api') || 0;
-    return { balance: res.data.net_balance };
+        const res = await bankApi.get('/account/me/balance');
+        const { accountNumber } = await getAccountNumber()
+        await updateBalance(res.data.balance, accountNumber);
+
+        return { balance: res.data.balance };
     } catch (error) {
-      logger.warn(error)
+        try{
+            const { account_balance } = await getAccountNumber()
+            return { balance: account_balance};
+        }catch{
+            return { balance: 0 }
+        }
     };
   },
 
