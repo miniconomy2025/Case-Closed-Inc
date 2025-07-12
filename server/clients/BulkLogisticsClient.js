@@ -1,5 +1,5 @@
-import axios from 'axios';
-import mtlsAgent from './mtlsAgent.js';
+import axios from "axios";
+import mtlsAgent from "./mtlsAgent.js";
 
 const logisticsApi = axios.create({
   baseURL: process.env.BULK_LOGISTICS_API_URL || "http://localhost:3001/",
@@ -8,25 +8,29 @@ const logisticsApi = axios.create({
 });
 
 const BulkLogisticsClient = {
-  async createPickupRequest(originalExternalOrderId, originCompany, items) {
+  async createPickupRequest(originalExternalOrderId, originCompanyId, items) {
     const requestData = {
       originalExternalOrderId,
-      originCompany,
-      destinationCompany: 'case-supplier',
+      originCompanyId,
+      destinationCompanyId: "case-supplier",
       items,
     };
 
-    const res = await logisticsApi.post('/api/pickup-request', requestData);
+    const res = await logisticsApi.post("/api/pickup-request", requestData);
     return res.data;
   },
 
   async getPickupRequest(pickupRequestId) {
-    const res = await logisticsApi.get(`/api/pickup-request/${pickupRequestId}`);
+    const res = await logisticsApi.get(
+      `/api/pickup-request/${pickupRequestId}`
+    );
     return res.data;
   },
 
   async getPickupRequestsForCompany() {
-    const res = await logisticsApi.get(`/api/pickup-request/company/case-supplier`);
+    const res = await logisticsApi.get(
+      `/api/pickup-request/company/case-supplier`
+    );
     return res.data;
   },
 };

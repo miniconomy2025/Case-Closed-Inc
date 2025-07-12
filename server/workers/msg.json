@@ -1,0 +1,6 @@
+{
+  "originalExternalOrderId": "test-order-123",
+  "originCompanyId": "thoh",
+  "destinationCompanyId": "case-supplier",
+  "items": [{ "itemName": "plastic", "quantity": 1000 }]
+}
