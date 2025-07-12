@@ -27,7 +27,7 @@ const OrderMachineClient = {
       let totalMachineCost = pricePerUnit * quantity;
 
       // estimate logistics cost with fake order
-      const fakeItems = [{ materialName: "case_machine", weightQuantity: quantity }];
+      const fakeItems = [{ itemName: "case_machine", quantity: quantity }];
       const pickupPreview = await BulkLogisticsClient.createPickupRequest(
         'preview-order',
         'thoh',
@@ -74,7 +74,7 @@ const OrderMachineClient = {
       logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       // create pickup request
-      const items = [{ materialName: "case_machine", weightQuantity: quantity }];
+      const items = [{ itemName: "case_machine", quantity: quantity }];
       const pickupRequest = await BulkLogisticsClient.createPickupRequest(
         machineOrder.orderId,
         'thoh',

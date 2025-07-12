@@ -6,9 +6,6 @@ const logger = winston.createLogger({
         winston.format.timestamp(),
         winston.format.printf(({ timestamp, level, message, ...meta }) => {
             let msg = `${timestamp} [${level.toUpperCase()}]: ${message}`;
-            if (Object.keys(meta).length) {
-                msg += ` ${JSON.stringify(meta)}`;
-            }
             return msg;
         })
     ),

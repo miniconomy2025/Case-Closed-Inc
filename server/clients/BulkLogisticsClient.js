@@ -8,11 +8,11 @@ const logisticsApi = axios.create({
 });
 
 const BulkLogisticsClient = {
-  async createPickupRequest(originalExternalOrderId, originCompanyId, items) {
+  async createPickupRequest(originalExternalOrderId, originCompany, items) {
     const requestData = {
       originalExternalOrderId,
-      originCompanyId,
-      destinationCompanyId: 'case-supplier',
+      originCompany,
+      destinationCompany: 'case-supplier',
       items,
     };
 
