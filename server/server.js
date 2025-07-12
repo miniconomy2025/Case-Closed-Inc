@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use('/api', routes);
 
-app.use('/test', allowCompany('screen-supplier-api.projects.bbdgrad.com') , (req, res) => {
+app.use('/test', allowCompany(['screen-supplier-api.projects.bbdgrad.com']) , (req, res) => {
   const verified = req.headers['x-client-verify'];
   const subject = req.headers['x-client-subject'];
   const issuer = req.headers['x-client-issuer'];
@@ -30,7 +30,7 @@ app.use('/test', allowCompany('screen-supplier-api.projects.bbdgrad.com') , (req
   res.json({ subject, issuer, fingerprint, serial });
 });
 
-app.use('/test2', allowCompany('case-supplier-api.projects.bbdgrad.com') , (req, res) => {
+app.use('/test2', allowCompany(['case-supplier-api.projects.bbdgrad.com', 'screen-supplier-api.projects.bbdgrad.com']) , (req, res) => {
   const verified = req.headers['x-client-verify'];
   const subject = req.headers['x-client-subject'];
   const issuer = req.headers['x-client-issuer'];
@@ -44,7 +44,7 @@ app.use('/test2', allowCompany('case-supplier-api.projects.bbdgrad.com') , (req,
   res.json({ subject, issuer, fingerprint, serial });
 });
 
-app.use('/test3', allowCompany('thoh-api.projects.bbdgrad.com') , (req, res) => {
+app.use('/test3', allowCompany(['case-supplier-api.projects.bbdgrad.com']) , (req, res) => {
   const verified = req.headers['x-client-verify'];
   const subject = req.headers['x-client-subject'];
   const issuer = req.headers['x-client-issuer'];

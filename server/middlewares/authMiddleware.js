@@ -1,11 +1,11 @@
-export function allowCompany(allowedCN) {
+export function allowCompany(allowedCNs = []) {
     return (req, res, next) => {
         const verified = req.headers['x-client-verify'];
         const subject = req.headers['x-client-subject'];
 
         if (verified !== 'SUCCESS') {
             return res.status(401).json({ error: 'Client certificate not verified' });
-        }
+        };
 
         // Extract CN from subject string
         // Example subject: "CN=screen-supplier-api.projects.bbdgrad.com,OU=screen-supplier,O=Miniconomy,L=Johannesburg,ST=Gauteng,C=ZA"
@@ -16,10 +16,10 @@ export function allowCompany(allowedCN) {
 
         const clientCN = match[1];
 
-        if (clientCN !== allowedCN) {
-            return res.status(403).json({ error: `Access denied: CN ${clientCN} not allowed` });
+        if (!allowedCNs.includes(clientCN)) {
+            return res.status(403).json({ error: `Access denied: CN "${clientCN}" not allowed` });
         };
 
         next();
     };
-};
+}
