@@ -3,6 +3,6 @@ import { handleLogistics } from '../controllers/logisticsController.js';
 
 const router = express.Router();
 
-router.post('/', handleLogistics);
+router.post('/', allowCompany(['case-supplier-api.projects.bbdgrad.com', 'bulk-logistics-api.projects.bbdgrad.com']), handleLogistics);
 
 export default router;
