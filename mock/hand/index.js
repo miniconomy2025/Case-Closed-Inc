@@ -16,6 +16,12 @@ function getCurrentUnixTimestamp() {
 }
 
 
+app.get('/current-simulation-time', (req, res) => {
+    res.json({
+        simulationDate: '2050-03-20',
+    });
+});
+
 // Get machines for sale
 app.get('/machines', (req, res) => {
     const machines = [

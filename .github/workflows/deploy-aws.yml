@@ -315,9 +315,11 @@ jobs:
             ENV=production
             API_PORT=3000
             API_HOST=$API_HOST
-            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/api/
+            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/api
             THOH_API_URL=https://thoh-api.projects.bbdgrad.com/
+            RAW_MATERIALS_API_URL=https://thoh-api.projects.bbdgrad.com/
             BULK_LOGISTICS_API_URL=https:/bulk-logistics-api.projects.bbdgrad.com/
+            PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             EOF
             # Restart the app with PM2
             pm2 stop case-supplier-app || true

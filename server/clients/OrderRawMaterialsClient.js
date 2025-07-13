@@ -6,6 +6,7 @@ import { createExternalOrderWithItems, updateShipmentReference } from '../daos/e
 import simulationTimer from '../controllers/simulationController.js';
 import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
 import { increaseOrderedUnitsByTypeId } from '../daos/stockDao.js';
+import { enqueuePickupRequest } from '../utils/sqsClient.js';
 
 const OrderRawMaterialsClient = {
   async processOrderFlow({ name, quantity }) {
@@ -23,70 +24,53 @@ const OrderRawMaterialsClient = {
       }
 
       const pricePerUnit = materialInfo.pricePerKg;
-      let totalMaterialCost = pricePerUnit * quantity;
+      const totalMaterialCost = parseFloat(pricePerUnit * quantity);
 
-      // estimate logistics cost with fake order
-      const fakeItems = [{ itemName: name, quantity: quantity }];
-      const pickupPreview = await BulkLogisticsClient.createPickupRequest(
-        'preview-order',
-        'thoh',
-        fakeItems
-      );
+      const fakeItems = [{ itemName: name, quantity }];
+      const pickupPreview = await BulkLogisticsClient.createPickupRequest('preview-order', 'thoh', fakeItems);
+      const logisticsCost = parseFloat(pickupPreview.cost);
 
-      const logisticsCost = pickupPreview.cost;
       const { balance } = await BankClient.getBalance();
-
       const totalCost = totalMaterialCost + logisticsCost;
 
       logger.info(`[OrderRawMaterialsClient] Total material cost: ${totalMaterialCost}`);
       logger.info(`[OrderRawMaterialsClient] Estimated logistics cost: ${logisticsCost}`);
       logger.info(`[OrderRawMaterialsClient] Available balance: ${balance}`);
 
-      // TODO future enhancement: calculate affordable quantity
       if (totalCost > balance) {
-        console.log(`To expensive to place order for ${name}: ${quantity}`)
+        console.log(`Too expensive to place order for ${name}: ${quantity}`);
         return;
       }
 
-      // create raw material order
       const rawOrder = await ThohClient.createRawMaterialsOrder(name, quantity);
 
-      const externalOrderObj = {
-        order_reference: rawOrder.orderId,
-        total_cost: rawOrder.price,
-        order_type_id: 1,
-        ordered_at: simulationTimer.getDate()
-      };
-
       const stockId = await getStockTypeIdByName(rawOrder.materialName);
-
-      const externalOrderItemsObj = [{
-        stock_type_id: stockId,
-        ordered_units: rawOrder.weightQuantity,
-        per_unit_cost: rawOrder.price / rawOrder.weightQuantity
-      }];
-
-      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+      await createExternalOrderWithItems(
+        {
+          order_reference: rawOrder.orderId,
+          total_cost: rawOrder.price,
+          order_type_id: 1,
+          ordered_at: simulationTimer.getDate(),
+        },
+        [{
+          stock_type_id: stockId,
+          ordered_units: rawOrder.weightQuantity,
+          per_unit_cost: rawOrder.price / rawOrder.weightQuantity,
+        }]
+      );
       await increaseOrderedUnitsByTypeId(stockId, quantity);
 
-      // pay for material order
-      const materialPayment = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${materialPayment}`);
+      const { success } = await BankClient.handPayment(rawOrder.price, rawOrder.orderId);
 
-      // create pickup request
-      const items = [{ itemName: name, quantity: quantity }];
-      const pickupRequest = await BulkLogisticsClient.createPickupRequest(
-        rawOrder.orderId,
-        'thoh',
-        items
-      );
+      if (success) {
+        // enqueue pickup request
+        await enqueuePickupRequest({
+          originalExternalOrderId: rawOrder.orderId,
+          originCompany: 'thoh',
+          items: [{ itemName: name, quantity }],
+        });
+      }
 
-      // pay for pickup request
-      const { status, transactionNumber } = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
-      logger.info(`[OrderRawMaterialsClient] Paid for raw material order: ${status}: ${transactionNumber}`);
-
-      await updateShipmentReference(rawOrder.orderId, pickupRequest.pickupRequestId)
-  
     } catch (err) {
       logger.error(`[OrderRawMaterialsClient] Error in order flow: ${err.message}`);
       throw err;

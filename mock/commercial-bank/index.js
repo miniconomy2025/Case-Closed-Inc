@@ -198,6 +198,7 @@ app.get('/transaction/:transaction_number', getAccountNumber, (req, res) => {
 
 // Take Out a Loan
 app.post('/loan', getAccountNumber, (req, res) => {
+    console.log('hit');
     const accountNumber = req.accountNumber;
     console.log(accountNumber)
     const { amount } = req.body;
@@ -232,15 +233,25 @@ app.post('/loan', getAccountNumber, (req, res) => {
         payments: []
     };
 
+    if(amount > 50000){
+        res.json({
+            success: false,
+            error: "loanNotPermitted",
+            amount_remaining: 49999
+        });
+    }else{
+        accounts[accountNumber].balance += amount;
+        console.log(accounts[accountNumber], amount)
+        console.log(`Loan ${loanNumber} created for account ${accountNumber}: ${amount} (due: ${totalDue})`);
+        console.log("New balance: "+accounts[accountNumber].balance)
+        res.json({
+            success: true,
+            loan_number: loanNumber
+        });        
+    }
+
     // Add money to account balance
-    accounts[accountNumber].balance += amount;
-    console.log(accounts[accountNumber], amount)
-    console.log(`Loan ${loanNumber} created for account ${accountNumber}: ${amount} (due: ${totalDue})`);
-    console.log("New balance: "+accounts[accountNumber].balance)
-    res.json({
-        success: true,
-        loan_number: loanNumber
-    });
+
 });
 
 // Get Outstanding Loans
@@ -417,5 +428,5 @@ app.post('/debug/reset', (req, res) => {
 });
 
 app.listen(port, () => {
-   console.log("Commercial Bank Started: Port 3000")
+   console.log(`Commercial Bank Started: Port ${port}`)
 });

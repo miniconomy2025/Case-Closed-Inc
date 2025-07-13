@@ -6,8 +6,7 @@ import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
 
 import {
-  getAccountNumber,
-  updateAccountNumber,
+  updateAccount,
 } from "../../daos/bankDetailsDao.js";
 
 export default class DecisionEngine {
@@ -24,6 +23,7 @@ export default class DecisionEngine {
 
   async getState() {
     const { balance } = await BankClient.getBalance();
+    const loans = await BankClient.getOutstandingLoans();
     const materialStock = await getAvailableMaterialStockCount();
     const caseStock = await getAvailableCaseStock();
 
@@ -37,6 +37,7 @@ export default class DecisionEngine {
 
     return {
       balance,
+      loans,
       inventory,
     };
   }
@@ -58,7 +59,7 @@ export default class DecisionEngine {
     async run() {
         let have_account = false;
         try{
-            const { account_number } = await getAccountNumber();
+            await BankClient.getMyAccount();
             have_account = true;
         }catch {
             have_account = false;
@@ -66,44 +67,52 @@ export default class DecisionEngine {
 
         if(have_account){
             const state = await this.getState();
-
-            if (await this.buyMaterial(state, "plastic")) {
-            try {
-            logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
-                    await OrderRawMaterialsClient.processOrderFlow({
-                        name: 'plastic',
-                        quantity: 1000
-                    });
-                } catch {
-                    logger.info("[DecisionEngine]: Failed to buy machine");
-                }
-            } else {
-                logger.info("[DecisionEngine]: Plastic stock good!");
-            }
-
-            if (await this.buyMaterial(state, "aluminium")) {
+            if(state.balance < 2000){
                 try {
-                    logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
-                    await OrderRawMaterialsClient.processOrderFlow({
-                        name: 'aluminium',
-                        quantity: 1000
-                    });
+                    const { message } = await BankClient.takeLoan(100000);
+                    logger.info(`[DecisionEngine]: ${message}`);
                 } catch {
-                    logger.info("[DecisionEngine]: Failed to buy machine");
-                }
-            } else {
-                logger.info("[DecisionEngine]: Aluminium stock good!");
-            }
-
-            if (await this.buyMachine(state)) {
+                    logger.info(`[DecisionEngine]: Failed to take loan`);
+                }                
+            }else{
+                if (await this.buyMaterial(state, "plastic")) {
                 try {
-                    logger.info("[DecisionEngine]: Can buy machine");
-                    await OrderMachineClient.processOrderFlow(1);
-                } catch {
-                    logger.info("[DecisionEngine]: Failed to buy machine");
+                logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
+                        await OrderRawMaterialsClient.processOrderFlow({
+                            name: 'plastic',
+                            quantity: 1000
+                        });
+                    } catch {
+                        logger.info("[DecisionEngine]: Failed to buy machine");
+                    }
+                } else {
+                    logger.info("[DecisionEngine]: Plastic stock good!");
                 }
-            } else {
-                logger.info("[DecisionEngine]: Do not buy machine");
+
+                if (await this.buyMaterial(state, "aluminium")) {
+                    try {
+                        logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
+                        await OrderRawMaterialsClient.processOrderFlow({
+                            name: 'aluminium',
+                            quantity: 1000
+                        });
+                    } catch {
+                        logger.info("[DecisionEngine]: Failed to buy machine");
+                    }
+                } else {
+                    logger.info("[DecisionEngine]: Aluminium stock good!");
+                }
+
+                if (await this.buyMachine(state)) {
+                    try {
+                        logger.info("[DecisionEngine]: Can buy machine");
+                        await OrderMachineClient.processOrderFlow(1);
+                    } catch {
+                        logger.info("[DecisionEngine]: Failed to buy machine");
+                    }
+                } else {
+                    logger.info("[DecisionEngine]: Do not buy machine");
+                }
             }
         }else{
             try {
@@ -111,7 +120,7 @@ export default class DecisionEngine {
                     notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
                 });
                 // Store our account number
-                await updateAccountNumber(accountNumber);
+                await updateAccount(accountNumber, 0);
                 logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
             } catch {
                 logger.info(`[DecisionEngine]: Failed to create account`);
@@ -119,12 +128,12 @@ export default class DecisionEngine {
 
             // Get loan
             try {
-                const { success, loanNumber } = await BankClient.takeLoan(500000);
-                if (success) {
-                    logger.info(`[DecisionEngine]: Recieved Loan: 1000000`);
-                } else {
-                    logger.info(`[DecisionEngine]: Bank Rejected Loan: 1000000`);
-                };
+                try {
+                    const { message } = await BankClient.takeLoan(500000);
+                    logger.info(`[DecisionEngine]: ${message}`);
+                } catch {
+                    logger.info(`[DecisionEngine]: Failed to take loan`);
+                } 
             } catch {
                 logger.info(`[DecisionEngine]: Failed to take loan`);
             }
