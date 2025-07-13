@@ -94,7 +94,7 @@ const BankClient = {
         }else{
             try{
                 const validAmount = response.data.amount_remaining;
-                await this.takeLoan(validAmount);
+                return await this.takeLoan(validAmount);
             }catch{
                 return{
                     success: false,
