@@ -1,7 +1,7 @@
 import axios from 'axios';
 import mtlsAgent from './mtlsAgent.js';
 import logger from '../utils/logger.js';
-import { getAccountNumber, updateBalance, updateAccountNumber } from '../daos/bankDetailsDao.js';
+import { getAccountNumber, updateBalance, updateAccount } from '../daos/bankDetailsDao.js';
 
 
 const bankApi = axios.create({
@@ -25,7 +25,7 @@ const BankClient = {
         const res = await bankApi.get('/account/me');
         const accountNumber = res.data.account_number;
         const balance = res.data.net_balance;
-        await updateAccountNumber(accountNumber, balance);
+        await updateAccount(accountNumber, balance);
         return { accountNumber: accountNumber};        
     }catch {
         try{
@@ -45,11 +45,10 @@ const BankClient = {
 
   async getBalance() {
     try {
-        const res = await bankApi.get('/account/me/balance');
-        const { account_number }  = await getAccountNumber();
-        await updateBalance(res.data.balance, account_number);
+        const res = await bankApi.get('/account/me');
+        await updateAccount(res.data.account_number, res.data.net_balance);
 
-        return { balance: res.data.balance };
+        return { balance: parseFloat(res.data.net_balance) };
     } catch (error) {
         try{
             const { account_balance } = await getAccountNumber()
@@ -96,7 +95,7 @@ const BankClient = {
             }
         }else{
             try{
-                const validAmount = response.data.amount_remaining;
+                const validAmount = parseFloat(response.data.amount_remaining);
                 return await this.takeLoan(validAmount);
             }catch{
                 return{
@@ -140,11 +139,24 @@ const BankClient = {
 
   async makePayment(toAccountNumber, amount, description) {
     const res = await bankApi.post('/transaction', {
-      accountNumber: (await this.getMyAccount()).accountNumber,
       to_account_number: toAccountNumber,
       to_bank_name: 'commercial-bank',
       amount: amount,
-      description: description,
+      description: `${description}`,
+    });
+    return {
+      success: res.data.success,
+      transactionNumber: res.data.transaction_number,
+      status: res.data.status,
+    };
+  },
+
+  async handPayment(amount, description) {
+    const res = await bankApi.post('/transaction', {
+      to_account_number: "",
+      to_bank_name: 'thoh',
+      amount: amount,
+      description: `${description}`,
     });
     return {
       success: res.data.success,

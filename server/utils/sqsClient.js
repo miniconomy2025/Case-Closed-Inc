@@ -20,7 +20,7 @@ const sqs = new SQSClient({
 export async function enqueuePickupRequest(payload) {
   return sqs.send(
     new SendMessageCommand({
-      QueueUrl: process.env.AWS_SESSION_TOKEN,
+      QueueUrl: process.env.PICKUP_QUEUE_URL,
       MessageBody: JSON.stringify(payload),
       MessageGroupId: "pickup-group-1",
       MessageDeduplicationId: `${payload.orderId}-${Date.now()}`,

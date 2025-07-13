@@ -7,10 +7,21 @@ export async function insertEquipmentParameters({
   aluminium_ratio,
   production_rate,
 }) {
-  return await db(TABLE_NAME).insert({
-    plastic_ratio,
-    aluminium_ratio,
-    production_rate,
+  await db.transaction(async (trx) => {
+    const existingRow = await trx(TABLE_NAME).first();
+
+    let case_machine_weight = null;
+    if (existingRow) {
+      case_machine_weight = existingRow.case_machine_weight;
+    }
+
+    await trx(TABLE_NAME).del();
+    await trx(TABLE_NAME).insert({
+      plastic_ratio,
+      aluminium_ratio,
+      production_rate,
+      case_machine_weight,
+    });
   });
 }
 

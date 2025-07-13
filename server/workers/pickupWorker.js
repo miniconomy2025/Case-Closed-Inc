@@ -48,14 +48,14 @@ async function pollQueue() {
 
           console.log("Pickup request sent");
           await BankClient.makePayment(
-            pickupRequest.bulkLogisticsBankAccountNumber,
+            pickupRequest.accountNumber,
             pickupRequest.cost,
-            pickupRequest.pickupRequestId
+            pickupRequest.paymentReferenceId
           );
           console.log("bank request sent");
           await updateShipmentReference(
             originalExternalOrderId,
-            pickupRequest.pickupRequestId
+            pickupRequest.paymentReferenceId
           );
           console.log("shipment reference updated");
           // Success: delete message from queue

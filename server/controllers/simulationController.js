@@ -116,7 +116,10 @@ class SimulationTimer {
 
         this.daysSinceStart = this.getDaysPassed('2050-01-01');
 
-        this.startOfDay();
+        this.jobs.forEach((job) => {
+          job.run();
+        });
+
         this.run();
     }
 }
@@ -166,6 +169,13 @@ export const resumeSimulation = async () => {
     logger.info(`[Simulation]: Check if there is an active simulation`);
     const simDate = await ThohClient.getSimulationDate();
     if(simDate !== '0000-00-00'){
+
+        try {
+            await ThohClient.syncCaseMachineToEquipmentParameters();
+        } catch {
+            logger.info(`[SimulationStart]: Failed to sync case machine parameters`);
+        };
+
         simulationTimer.resume(simDate);
         logger.info(`[Simulation]: Found active simulation date: ${simDate}`);
     }else{

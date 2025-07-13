@@ -6,7 +6,7 @@ import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
 
 import {
-  updateAccountNumber,
+  updateAccount,
 } from "../../daos/bankDetailsDao.js";
 
 export default class DecisionEngine {
@@ -120,7 +120,7 @@ export default class DecisionEngine {
                     notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
                 });
                 // Store our account number
-                await updateAccountNumber(accountNumber, 0);
+                await updateAccount(accountNumber, 0);
                 logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
             } catch {
                 logger.info(`[DecisionEngine]: Failed to create account`);

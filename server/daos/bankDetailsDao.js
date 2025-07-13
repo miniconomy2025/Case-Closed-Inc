@@ -6,7 +6,7 @@ export const getAccountNumber = async () => {
     return await db(TABLE_NAME).first();
 };
 
-export const updateAccountNumber = async (accountNumber, account_balance) => {
+export const updateAccount = async (accountNumber, account_balance) => {
     await db.transaction(async (trx) => {
         await trx(TABLE_NAME).del();
 

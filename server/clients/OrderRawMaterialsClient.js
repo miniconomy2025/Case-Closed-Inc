@@ -24,16 +24,16 @@ const OrderRawMaterialsClient = {
       }
 
       const pricePerUnit = materialInfo.pricePerKg;
-      const totalMaterialCost = pricePerUnit * quantity;
+      const totalMaterialCost = parseFloat(pricePerUnit * quantity);
 
       const fakeItems = [{ itemName: name, quantity }];
       const pickupPreview = await BulkLogisticsClient.createPickupRequest('preview-order', 'thoh', fakeItems);
-      const logisticsCost = pickupPreview.cost;
+      const logisticsCost = parseFloat(pickupPreview.cost);
 
       const { balance } = await BankClient.getBalance();
       const totalCost = totalMaterialCost + logisticsCost;
 
-            logger.info(`[OrderRawMaterialsClient] Total material cost: ${totalMaterialCost}`);
+      logger.info(`[OrderRawMaterialsClient] Total material cost: ${totalMaterialCost}`);
       logger.info(`[OrderRawMaterialsClient] Estimated logistics cost: ${logisticsCost}`);
       logger.info(`[OrderRawMaterialsClient] Available balance: ${balance}`);
 
@@ -60,7 +60,7 @@ const OrderRawMaterialsClient = {
       );
       await increaseOrderedUnitsByTypeId(stockId, quantity);
 
-      const { success } = await BankClient.makePayment(rawOrder.bankAccount, rawOrder.price, rawOrder.orderId);
+      const { success } = await BankClient.handPayment(rawOrder.price, rawOrder.orderId);
 
       if (success) {
         // enqueue pickup request

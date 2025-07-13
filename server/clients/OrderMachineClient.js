@@ -24,7 +24,7 @@ const OrderMachineClient = {
         quantity = machineInfo.quantity;
       }
 
-      const pricePerUnit = machineInfo.price;
+      const pricePerUnit = parseFloat(machineInfo.price);
       const totalMachineCost = pricePerUnit * quantity;
 
       // estimate logistics cost with fake order
@@ -35,7 +35,7 @@ const OrderMachineClient = {
         fakeItems
       );
 
-      const logisticsCost = pickupPreview.cost;
+      const logisticsCost = parseFloat(pickupPreview.cost);
       const { balance } = await BankClient.getBalance();
       const totalCost = totalMachineCost + logisticsCost;
 
@@ -71,8 +71,7 @@ const OrderMachineClient = {
       await increaseOrderedUnitsByTypeId(stockId, quantity);
 
       // pay for material order
-      const { status, transactionNumber, success } = await BankClient.makePayment(
-        machineOrder.bankAccount,
+      const { status, transactionNumber, success } = await BankClient.handPayment(
         machineOrder.totalPrice,
         machineOrder.orderId
       );
