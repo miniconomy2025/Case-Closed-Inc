@@ -7,6 +7,7 @@ import CancelUnpaidOrdersJob from "../cron/jobs/canelUnpaidOrders.js";
 import logger from "../utils/logger.js";
 import ThohClient from "../clients/ThohClient.js";
 import { clearMockData } from "../daos/simulationDao.js";
+import { purgeQueue } from "../utils/sqsClient.js";
 
 let schedule = null;
 
@@ -131,7 +132,12 @@ export const handleSimulationStart = async (req, res, next) => {
   try {
     logger.info("=================== Simulation Started ===================");
 
+    // Remove all messages from SQS queue - worried about when we start it still 
+    // immediately ticks the poll queue and try to pay if things were still in the queue from the prior sim
+    // await purgeQueue();
+
     await clearMockData();
+
     logger.info(`[SimulationStart]: Cleared database`);
             // Get production ratios and production rates
             
