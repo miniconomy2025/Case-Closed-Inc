@@ -153,7 +153,7 @@ const BankClient = {
 
   async handPayment(amount, description) {
     const res = await bankApi.post('/transaction', {
-      to_account_number: "",
+      to_account_number: "000000000000",
       to_bank_name: 'thoh',
       amount: amount,
       description: `${description}`,
