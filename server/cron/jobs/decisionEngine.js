@@ -44,7 +44,7 @@ export default class DecisionEngine {
 
   async buyMaterial(state, material) {
     const { inventory, balance } = state;
-    const demandRatio = inventory.casesReserved / inventory.casesAvailable;
+    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 0;
     const minThreshold = this.thresholds[`${material}Min`];
 
     return (inventory[material] < minThreshold && demandRatio > this.thresholds.demandThreshold) || ( balance > this.thresholds.excessCashThreshold);
