@@ -3,6 +3,8 @@ import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import routes from './routes/index.js';
+import './workers/pickupWorker.js';
+
 import cors from 'cors';
 
 const PORT = process.env.API_PORT || 3000;

@@ -2,11 +2,11 @@ import ThohClient from './RawMaterialsClient.js';
 import BulkLogisticsClient from './BulkLogisticsClient.js';
 import BankClient from './BankClient.js';
 import logger from '../utils/logger.js';
-import { createExternalOrderWithItems, updateShipmentReference } from '../daos/externalOrdersDao.js';
+import { createExternalOrderWithItems } from '../daos/externalOrdersDao.js';
 import simulationTimer from '../controllers/simulationController.js';
 import { increaseOrderedUnitsByTypeId } from '../daos/stockDao.js';
-
 import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
+import { enqueuePickupRequest } from '../utils/sqsClient.js';
 import { updateCaseMachineWeight } from '../daos/equipmentParametersDao.js';
 
 const OrderMachineClient = {
@@ -25,10 +25,10 @@ const OrderMachineClient = {
       }
 
       const pricePerUnit = machineInfo.price;
-      let totalMachineCost = pricePerUnit * quantity;
+      const totalMachineCost = pricePerUnit * quantity;
 
       // estimate logistics cost with fake order
-      const fakeItems = [{ itemName: "case_machine", quantity: quantity }];
+      const fakeItems = [{ itemName: "case_machine", quantity }];
       const pickupPreview = await BulkLogisticsClient.createPickupRequest(
         'preview-order',
         'thoh',
@@ -37,15 +37,14 @@ const OrderMachineClient = {
 
       const logisticsCost = pickupPreview.cost;
       const { balance } = await BankClient.getBalance();
-
       const totalCost = totalMachineCost + logisticsCost;
 
-      logger.info(`[OrderMachineCLient] Total machine cost: ${totalMachineCost}`);
+      logger.info(`[OrderMachineClient] Total machine cost: ${totalMachineCost}`);
       logger.info(`[OrderMachineClient] Estimated logistics cost: ${logisticsCost}`);
       logger.info(`[OrderMachineClient] Available balance: ${balance}`);
 
-      // TODO future enhancement: calculate affordable quantity
       if (totalCost > balance) {
+        logger.warn(`[OrderMachineClient] Not enough balance to place order.`);
         return;
       }
 
@@ -56,7 +55,7 @@ const OrderMachineClient = {
         order_reference: machineOrder.orderId,
         total_cost: machineOrder.totalPrice,
         order_type_id: 2,
-        ordered_at: simulationTimer.getDate()
+        ordered_at: simulationTimer.getDate(),
       };
       
       await updateCaseMachineWeight(machineOrder.unitWeight);
@@ -65,32 +64,34 @@ const OrderMachineClient = {
       const externalOrderItemsObj = [{
         stock_type_id: stockId,
         ordered_units: machineOrder.quantity,
-        per_unit_cost: machineOrder.totalPrice / machineOrder.quantity
+        per_unit_cost: machineOrder.totalPrice / machineOrder.quantity,
       }];
 
       await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
       await increaseOrderedUnitsByTypeId(stockId, quantity);
 
       // pay for material order
-      const { status, transactionNumber }  = await BankClient.makePayment(machineOrder.bankAccount, machineOrder.totalPrice, machineOrder.orderId)
-      logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
-
-      // create pickup request
-      const items = [{ itemName: "case_machine", quantity: machineOrder.totalWeight }];
-      const pickupRequest = await BulkLogisticsClient.createPickupRequest(
-        machineOrder.orderId,
-        'thoh',
-        items
+      const { status, transactionNumber, success } = await BankClient.makePayment(
+        machineOrder.bankAccount,
+        machineOrder.totalPrice,
+        machineOrder.orderId
       );
+      logger.info(`[OrderMachineClient] Paid for machine order: ${status}: ${transactionNumber}`);
 
-      // pay for pickup request
-      const pickupPayment = await BankClient.makePayment(pickupRequest.bulkLogisticsBankAccountNumber, pickupRequest.cost, pickupRequest.pickupRequestId)
-      logger.info(`[OrderMachineCLient] Paid for raw material order: ${pickupPayment}`);
+      if (success) {
+        // enqueue pickup request
+        const items = [{ itemName: "case_machine", quantity: machineOrder.totalWeight }];
+        await enqueuePickupRequest({
+          originalExternalOrderId: machineOrder.orderId,
+          originCompany: 'thoh',
+          items,
+        });
 
-      await updateShipmentReference(machineOrder.orderId, pickupRequest.pickupRequestId)
-  
+        logger.info(`[OrderMachineClient] Enqueued pickup request for machine order ${machineOrder.orderId}`);
+      }
+
     } catch (err) {
-      logger.error(`[OrderMachineCLient] Error in order flow: ${err.message}`);
+      logger.error(`[OrderMachineClient] Error in order flow: ${err.message}`);
       throw err;
     }
   },

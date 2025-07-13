@@ -22,7 +22,7 @@ const BankClient = {
 
   async getMyAccount() {
     try{
-        const res = await bankApi.get('/account');
+        const res = await bankApi.get('/account/me');
         const accountNumber = res.data.account_number;
         const balance = res.data.net_balance;
         await updateAccountNumber(accountNumber, balance);
@@ -32,7 +32,7 @@ const BankClient = {
             const { account_number } = await getAccountNumber()
             return account_number;
         }catch{
-            logger.warn('No bank account created')
+            logger.warn('No bank account active')
         }
     }
 
