@@ -92,7 +92,7 @@ class SimulationTimer {
     if (this.interval == null) {
       this.interval = setInterval(() => {
         this.startOfDay();
-      }, 30000); // 2 mins: 120000
+      }, 120000); // 2 mins: 120000
     }
   }
 
@@ -116,6 +116,7 @@ class SimulationTimer {
 
         this.daysSinceStart = this.getDaysPassed('2050-01-01');
 
+        this.startOfDay();
         this.run();
     }
 }
@@ -166,6 +167,7 @@ export const resumeSimulation = async () => {
     const simDate = await ThohClient.getSimulationDate();
     if(simDate !== '0000-00-00'){
         simulationTimer.resume(simDate);
+        logger.info(`[Simulation]: Found active simulation date: ${simDate}`);
     }else{
         logger.info(`[Simulation]: No active simulation date`);
     }

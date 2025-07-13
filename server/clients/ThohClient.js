@@ -13,7 +13,11 @@ const ThohClient = {
     async getSimulationDate() {
         try{
             const res = await thohApi.get('/current-simulation-time');
-            return res.data.simulationDate; // TODO: See how the hand responds when sim is not running.
+            if(res.data?.error){
+                return '0000-00-00';
+            }else{
+                return res.data.simulationDate; 
+            }
         }catch{
             return '0000-00-00';
         }

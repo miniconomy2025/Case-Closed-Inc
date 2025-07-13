@@ -6,9 +6,7 @@ import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
 
 import {
-  getAccountNumber,
   updateAccountNumber,
-  insertAccountNumber
 } from "../../daos/bankDetailsDao.js";
 
 export default class DecisionEngine {
@@ -69,7 +67,7 @@ export default class DecisionEngine {
 
         if(have_account){
             const state = await this.getState();
-            if(state.balance == 0){
+            if(state.balance < 2000){
                 try {
                     const { message } = await BankClient.takeLoan(100000);
                     logger.info(`[DecisionEngine]: ${message}`);
