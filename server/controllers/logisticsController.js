@@ -3,6 +3,7 @@ import { getExternalOrderWithItems } from '../daos/externalOrdersDao.js';
 import { decrementStockByName, deliverStockByName } from '../daos/stockDao.js';
 import { getCaseOrderById, updateCaseOrderStatus, incrementQuantityDelivered } from '../daos/caseOrdersDao.js';
 import { getOrderStatusByName } from '../daos/orderStatusesDao.js';
+import { getCaseMachineWeight } from '../daos/equipmentParametersDao.js';
 
 /**
  * KEY NOTE: ID is either:
@@ -30,7 +31,13 @@ export const handleLogistics = async (req, res, next) => {
                         .status(StatusCodes.NOT_FOUND)
                         .json({ error: 'Delivery order not found' });
                 };
-                await deliverStockByName(deliveryOrder.stock_type_name, quantity);
+                if (deliveryOrder.stock_type_name === 'machine') {
+                    const weightPerUnit = await getCaseMachineWeight();
+                    const machineQuantity = Math.ceil(quantity / weightPerUnit);
+                    await deliverStockByName(deliveryOrder.stock_type_name, machineQuantity);
+                } else {
+                    await deliverStockByName(deliveryOrder.stock_type_name, quantity);
+                };
                 return res
                     .status(StatusCodes.OK)
                     .json({ message: 'Successfully received external order' });
