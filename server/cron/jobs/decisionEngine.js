@@ -61,7 +61,7 @@ export default class DecisionEngine {
     async run() {
         let have_account = false;
         try{
-            const { account_number } = await getAccountNumber();
+            await BankClient.getMyAccount();
             have_account = true;
         }catch {
             have_account = false;
@@ -122,7 +122,7 @@ export default class DecisionEngine {
                     notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
                 });
                 // Store our account number
-                await insertAccountNumber(accountNumber);
+                await updateAccountNumber(accountNumber, 0);
                 logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
             } catch {
                 logger.info(`[DecisionEngine]: Failed to create account`);

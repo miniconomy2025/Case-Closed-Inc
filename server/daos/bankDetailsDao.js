@@ -6,19 +6,19 @@ export const getAccountNumber = async () => {
     return await db(TABLE_NAME).first();
 };
 
-export const insertAccountNumber = async (accountNumber) => {
-    return db(TABLE_NAME)
-    .insert({ account_number: accountNumber, account_balance: 0 }); 
-}
+export const updateAccountNumber = async (accountNumber, account_balance) => {
+    await db.transaction(async (trx) => {
+        await trx(TABLE_NAME).del();
 
-export const updateAccountNumber = async (accountNumber) => {
-    return (await db(TABLE_NAME))
-    .where({id : 1})
-    .update({ account_number: accountNumber });
+        await trx(TABLE_NAME).insert({
+            account_number: accountNumber,
+            account_balance: account_balance,
+        });
+    });
 };
-
+  
 export const updateBalance = async (balance, account_number) => {
     return db(TABLE_NAME)
-    .where({account_number: account_number})
-    .update({ account_balance: balance });
+        .where({ account_number })
+        .update({ account_balance: balance });
 };

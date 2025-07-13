@@ -203,6 +203,13 @@ jobs:
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
+
+                    # Forward client certificate info
+                    proxy_set_header X-Client-Verify $ssl_client_verify;
+                    proxy_set_header X-Client-Subject $ssl_client_s_dn;
+                    proxy_set_header X-Client-Issuer $ssl_client_i_dn;
+                    proxy_set_header X-Client-Fingerprint $ssl_client_fingerprint;
+                    proxy_set_header X-Client-Serial $ssl_client_serial;
                 }
             }
             NGINX_CONF
@@ -308,9 +315,11 @@ jobs:
             ENV=production
             API_PORT=3000
             API_HOST=$API_HOST
-            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/
+            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/api
             THOH_API_URL=https://thoh-api.projects.bbdgrad.com/
+            RAW_MATERIALS_API_URL=https://thoh-api.projects.bbdgrad.com/
             BULK_LOGISTICS_API_URL=https:/bulk-logistics-api.projects.bbdgrad.com/
+            PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             EOF
             # Restart the app with PM2
             pm2 stop case-supplier-app || true
