@@ -20,7 +20,7 @@ export async function updateCaseOrderStatus(orderId, orderStatusId) {
         .update({ order_status_id: orderStatusId });
 }
 
-export async function getCasePrice(plastic = 4, aluminium = 7, markup = 1.3) {
+export async function getCasePrice(plastic = 4, aluminium = 7, markup = 4) {
   const result = await db.raw(
     `SELECT * FROM calculate_case_price(?, ?, ?)`,
     [plastic, aluminium, markup]
