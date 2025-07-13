@@ -133,7 +133,10 @@ export const handleSimulationStart = async (req, res, next) => {
 
     await clearMockData();
     logger.info(`[SimulationStart]: Cleared database`);
-            // Get production ratios and production rates 
+            // Get production ratios and production rates
+            
+    simulationTimer.reset();
+
     try {
         await ThohClient.syncCaseMachineToEquipmentParameters();
     } catch {
