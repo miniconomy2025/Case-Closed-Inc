@@ -7,6 +7,7 @@ import simulationTimer from '../controllers/simulationController.js';
 import { increaseOrderedUnitsByTypeId } from '../daos/stockDao.js';
 
 import { getStockTypeIdByName } from '../daos/stockTypesDao.js';
+import { updateCaseMachineWeight } from '../daos/equipmentParametersDao.js';
 
 const OrderMachineClient = {
   async processOrderFlow(quantity) {
@@ -57,7 +58,8 @@ const OrderMachineClient = {
         order_type_id: 2,
         ordered_at: simulationTimer.getDate()
       };
-
+      
+      await updateCaseMachineWeight(machineOrder.unitWeight);
       const stockId = await getStockTypeIdByName('machine');
 
       const externalOrderItemsObj = [{
@@ -74,7 +76,7 @@ const OrderMachineClient = {
       logger.info(`[OrderMachineCLient] Paid for raw material order: ${status}: ${transactionNumber}`);
 
       // create pickup request
-      const items = [{ itemName: "case_machine", quantity: quantity }];
+      const items = [{ itemName: "case_machine", quantity: machineOrder.totalWeight }];
       const pickupRequest = await BulkLogisticsClient.createPickupRequest(
         machineOrder.orderId,
         'thoh',

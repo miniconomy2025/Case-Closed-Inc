@@ -14,6 +14,17 @@ export async function insertEquipmentParameters({
   });
 }
 
+export async function updateCaseMachineWeight(newWeight) {
+  return await db(TABLE_NAME)
+    .whereNull('case_machine_weight')
+    .update({ case_machine_weight: newWeight });
+};
+
+export async function getCaseMachineWeight() {
+  const row = await db(TABLE_NAME).first('case_machine_weight');
+  return row?.case_machine_weight ?? null;
+};
+
 export async function getEquipmentParameters() {
     return await db(TABLE_NAME).first();
 };
