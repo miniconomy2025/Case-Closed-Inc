@@ -1,5 +1,6 @@
 import express from 'express';
 import { handleMachineFailure } from '../controllers/machineController.js';
+import { allowCompany } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
