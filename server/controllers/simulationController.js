@@ -24,7 +24,7 @@ class SimulationTimer {
     this.jobs = [
       new DecisionEngine(),
       new SimulateProduction(),
-      new CancelUnpaidOrdersJob(),
+      new CancelUnpaidOrdersJob(this),
     ];
 
     this.interval = null;
