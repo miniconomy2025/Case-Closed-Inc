@@ -1,10 +1,5 @@
 import axios from "axios";
 
-const recyclerApi = axios.create({
-  baseURL: process.env.RECYCLER_API_URL || "http://localhost:3000",
-  timeout: 5000,
-});
-
 const RecyclerClient = {
   async getAvailableMaterials() {
     return [
