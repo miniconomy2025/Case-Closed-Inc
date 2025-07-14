@@ -43,26 +43,26 @@ const OrderRawMaterialsClient = {
       }
 
       const rawOrder = await ThohClient.createRawMaterialsOrder(name, quantity);
-
-      const stockId = await getStockTypeIdByName(rawOrder.materialName);
-      await createExternalOrderWithItems(
-        {
-          order_reference: rawOrder.orderId,
-          total_cost: rawOrder.price,
-          order_type_id: 1,
-          ordered_at: simulationTimer.getDate(),
-        },
-        [{
-          stock_type_id: stockId,
-          ordered_units: rawOrder.weightQuantity,
-          per_unit_cost: rawOrder.price / rawOrder.weightQuantity,
-        }]
-      );
-      await increaseOrderedUnitsByTypeId(stockId, quantity);
-
       const { success } = await BankClient.handPayment(rawOrder.price, rawOrder.orderId);
 
       if (success) {
+        // track order in db
+        const stockId = await getStockTypeIdByName(rawOrder.materialName);
+        await createExternalOrderWithItems(
+          {
+            order_reference: rawOrder.orderId,
+            total_cost: rawOrder.price,
+            order_type_id: 1,
+            ordered_at: simulationTimer.getDate(),
+          },
+          [{
+            stock_type_id: stockId,
+            ordered_units: rawOrder.weightQuantity,
+            per_unit_cost: rawOrder.price / rawOrder.weightQuantity,
+          }]
+        );
+        await increaseOrderedUnitsByTypeId(stockId, quantity);
+
         // enqueue pickup request
         await enqueuePickupRequest({
           originalExternalOrderId: rawOrder.orderId,
