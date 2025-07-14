@@ -219,7 +219,7 @@ const PhoneCaseOrdersTable: React.FC = () => {
 // --- Styles ---
 const cardStyle: React.CSSProperties = {
   background: 'white',
-  padding: '20px',
+  padding: '15px',
   borderRadius: '12px',
   boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
 };

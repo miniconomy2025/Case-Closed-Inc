@@ -3,6 +3,13 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { Outlet } from 'react-router';
 import type { Navigation } from '@toolpad/core';
+import { createTheme } from '@mui/material/styles';
+
+const THEME = createTheme({
+  palette: {
+    mode: 'light'
+  },
+});
 
 const NAVIGATION: Navigation = [
   {
@@ -16,6 +23,7 @@ const NAVIGATION: Navigation = [
   {
     segment: 'orders',
     title: '📱 Case Orders',
+    icon: <ShoppingCartIcon/>
   },
 ];
 
@@ -27,7 +35,7 @@ const BRANDING = {
 export default function App() {
   return (
     <div style={{backgroundColor:'#f0f0fa'}}>
-      <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
+      <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING} theme={THEME}>
       <Outlet />
     </ReactRouterAppProvider>
     </div>

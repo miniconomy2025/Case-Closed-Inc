@@ -24,7 +24,7 @@ class SimulationTimer {
     this.jobs = [
       new DecisionEngine(),
       new SimulateProduction(),
-      new CancelUnpaidOrdersJob(),
+      new CancelUnpaidOrdersJob(this),
     ];
 
     this.interval = null;
@@ -134,7 +134,7 @@ export const handleSimulationStart = async (req, res, next) => {
 
     // Remove all messages from SQS queue - worried about when we start it still 
     // immediately ticks the poll queue and try to pay if things were still in the queue from the prior sim
-    // await purgeQueue();
+    await purgeQueue();
 
     await clearMockData();
 
