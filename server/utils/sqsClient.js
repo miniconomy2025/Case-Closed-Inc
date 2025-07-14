@@ -1,4 +1,4 @@
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { SQSClient, SendMessageCommand, PurgeQueueCommand } from "@aws-sdk/client-sqs";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -26,4 +26,18 @@ export async function enqueuePickupRequest(payload) {
       MessageDeduplicationId: `${payload.orderId}-${Date.now()}`,
     })
   );
+}
+
+export async function purgeQueue() {
+  try {
+    const command = new PurgeQueueCommand({
+      QueueUrl: process.env.PICKUP_QUEUE_URL,
+    });
+
+    await sqs.send(command);
+    console.log("Queue successfully purged.");
+  } catch (error) {
+    console.error("Failed to purge queue:", error);
+    throw error;
+  }
 }
