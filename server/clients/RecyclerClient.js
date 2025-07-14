@@ -7,8 +7,6 @@ const recyclerApi = axios.create({
 
 const RecyclerClient = {
   async getAvailableMaterials() {
-    // const res = await recyclerApi.get('/materials');
-
     return [
       { id: 1, name: "aluminium", available_quantity_in_kg: 2, price: 5.0 },
       { id: 2, name: "plastic", available_quantity_in_kg: 3, price: 2.5 },
@@ -16,11 +14,6 @@ const RecyclerClient = {
   },
 
   async placeOrder(item) {
-    // const res = await recyclerApi.post('/orders', {
-    //   supplierId: 1, // or from config
-    //   items: [{ materialId: item.materialId, quantity: item.quantity }],
-    // });
-
     return {
       orderNumber: "mock-recycler-order-uuid-1234",
       status: "created",
