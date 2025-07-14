@@ -50,25 +50,7 @@ const OrderMachineClient = {
 
       // create raw material order
       const machineOrder = await ThohClient.createMachineOrder(quantity);
-
-      const externalOrderObj = {
-        order_reference: machineOrder.orderId,
-        total_cost: machineOrder.totalPrice,
-        order_type_id: 2,
-        ordered_at: simulationTimer.getDate(),
-      };
-      
       await updateCaseMachineWeight(machineOrder.unitWeight);
-      const stockId = await getStockTypeIdByName('machine');
-
-      const externalOrderItemsObj = [{
-        stock_type_id: stockId,
-        ordered_units: machineOrder.quantity,
-        per_unit_cost: machineOrder.totalPrice / machineOrder.quantity,
-      }];
-
-      await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
-      await increaseOrderedUnitsByTypeId(stockId, quantity);
 
       // pay for material order
       const { status, transactionNumber, success } = await BankClient.handPayment(
@@ -78,6 +60,24 @@ const OrderMachineClient = {
       logger.info(`[OrderMachineClient] Paid for machine order: ${status}: ${transactionNumber}`);
 
       if (success) {
+        // track order in db
+        const stockId = await getStockTypeIdByName('machine');
+
+        const externalOrderObj = {
+          order_reference: machineOrder.orderId,
+          total_cost: machineOrder.totalPrice,
+          order_type_id: 2,
+          ordered_at: simulationTimer.getDate(),
+        };
+        const externalOrderItemsObj = [{
+          stock_type_id: stockId,
+          ordered_units: machineOrder.quantity,
+          per_unit_cost: machineOrder.totalPrice / machineOrder.quantity,
+        }];
+
+        await createExternalOrderWithItems(externalOrderObj, externalOrderItemsObj);
+        await increaseOrderedUnitsByTypeId(stockId, quantity);
+
         // enqueue pickup request
         const items = [{ itemName: "case_machine", quantity: machineOrder.totalWeight }];
         await enqueuePickupRequest({
