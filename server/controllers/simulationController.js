@@ -11,7 +11,7 @@ import { purgeQueue } from "../utils/sqsClient.js";
 
 let schedule = null;
 
-class SimulationTimer {
+export class SimulationTimer {
   constructor() {
     if (SimulationTimer.instance) {
       return SimulationTimer.instance;
