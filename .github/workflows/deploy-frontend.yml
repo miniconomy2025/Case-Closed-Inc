@@ -51,8 +51,8 @@ jobs:
         run: |
           aws s3 sync ./dist/ s3://case-supplier-s3-cloudfront-distribution-bucket/ --delete --exact-timestamps
 
-      - name: Invalidate CloudFront Cache
+      # === Invalidate CloudFront cache ===
+      - name: Invalidate CloudFront cache
         run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='case-supplier-s3-cloudfront-distribution-bucket.s3-website.af-south-1.amazonaws.com'].Id" --output text)
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
