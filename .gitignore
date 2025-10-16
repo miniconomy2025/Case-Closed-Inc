@@ -1,3 +1,25 @@
 # Ignore Docker files
 Dockerfile
-docker-compose.yml 
+docker-compose.yml
+
+# Ignore coverage reports
+server/coverage/
+coverage/
+*.lcov
+
+# Ignore environment files
+.env
+.env.local
+.env.*.local
+
+# Ignore node modules
+node_modules/
+server/node_modules/
+
+# Ignore logs
+*.log
+server/logs/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db 
