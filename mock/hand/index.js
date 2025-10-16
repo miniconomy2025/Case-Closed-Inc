@@ -28,8 +28,16 @@ app.get('/machines', (req, res) => {
         {
             machineName: "case_machine",
             quantity: 10,
+            machineDetails: {
+                "requiredMaterials": "copper,plastic,aluminium",
+                "inputRatio": {
+                "copper": 2,
+                "plastic": 1,
+                "aluminium": 1,
+                },   
+                productionRate: 200, // cases per day 
+            },
             materialRatio: "4:7", // plastic:aluminium ratio
-            productionRate: 200, // cases per day
             price: 8500,
             weight: 2000,
         }

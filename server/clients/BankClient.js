@@ -104,7 +104,8 @@ const BankClient = {
                 }
             }
         }
-    }catch{
+    }catch (error) {
+      console.log(error);
         return{
             success: false,
             message: 'Bank down'
