@@ -51,8 +51,8 @@ jobs:
         run: |
           aws s3 sync ./dist/ s3://case-supplier-s3-cloudfront-distribution-bucket/ --delete --exact-timestamps
 
-      - name: Invalidate CloudFront cache
+      - name: Invalidate CloudFront Cache
         run: |
-          # Get CloudFront distribution ID for frontend
-          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[0]=='case-supplier.projects.bbdgrad.com'].Id" --output text)
-          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
