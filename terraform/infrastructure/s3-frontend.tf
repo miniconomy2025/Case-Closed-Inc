@@ -97,9 +97,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   viewer_certificate {
-    # cloudfront_default_certificate = true
+    cloudfront_default_certificate = true
     # Use default certificate for now - add custom domain later
-    acm_certificate_arn = aws_acm_certificate.main.arn
+    # acm_certificate_arn = aws_acm_certificate.main.arn
     ssl_support_method  = "sni-only"
   }
 
