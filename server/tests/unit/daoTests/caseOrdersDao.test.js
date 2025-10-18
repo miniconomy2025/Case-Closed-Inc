@@ -1,209 +1,147 @@
+import { db } from '../../../db/knex.js';
 import {
   getCaseOrderById,
   createCaseOrder,
   updateCaseOrderStatus,
+  getCasePrice,
   getUnpaidOrdersOlderThan,
-  getPendingOrders,
   incrementAmountPaid,
   incrementQuantityDelivered,
   updateOrderAccountNumber,
   updateOrderPaymentAndAccount,
-} from "../../../daos/caseOrdersDao.js";
-import { getOrderStatusByName } from "../../../daos/orderStatusesDao.js";
+} from '../../../daos/caseOrdersDao.js';
 
-// Mock db manually like the existing test
-const mockFirst = jest.fn();
-const mockWhere = jest.fn();
-const mockSelect = jest.fn();
-const mockInsert = jest.fn();
-const mockUpdate = jest.fn();
-const mockIncrement = jest.fn();
-const mockAndWhere = jest.fn();
-const mockReturning = jest.fn();
+import { getOrderStatusByName } from '../../../daos/orderStatusesDao.js';
+import {
+  mockFirst,
+  mockSelect,
+  mockWhere,
+  mockInsert,
+  mockUpdate,
+  mockIncrement,
+  mockRaw,
+  mockAndWhere,
+  setupMockDb
+} from '../__mocks__/mockKnex.js';
 
-jest.mock("../../../db/knex.js", () => ({
-  db: jest.fn(() => ({
-    where: mockWhere,
-    first: mockFirst,
-    select: mockSelect,
-    insert: mockInsert,
-    update: mockUpdate,
-    increment: mockIncrement,
-    andWhere: mockAndWhere,
-    returning: mockReturning,
-  })),
-}));
+jest.mock('../../../db/knex.js', () => ({ db: jest.fn() }));
+jest.mock('../../../daos/orderStatusesDao.js', () => ({ getOrderStatusByName: jest.fn() }));
 
-// Mock orderStatusesDao
-jest.mock("../../../daos/orderStatusesDao.js", () => ({
-  getOrderStatusByName: jest.fn(),
-}));
+beforeEach(() => {
+  setupMockDb(db);
+});
 
-describe("caseOrdersDao", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+describe('caseOrdersDao', () => {
+  it('getCaseOrderById returns the first row', async () => {
+    const row = { id: 1, quantity: 10 };
+    mockFirst.mockResolvedValueOnce(row);
+
+    const result = await getCaseOrderById(1);
+
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
+    expect(mockFirst).toHaveBeenCalled();
+    expect(result).toEqual(row);
   });
 
-  describe("getCaseOrderById", () => {
-    it("should return a case order when found", async () => {
-      const mockOrder = { id: 1, quantity: 10, total_price: 200 };
-      mockFirst.mockResolvedValue(mockOrder);
-      mockWhere.mockReturnValue({ first: mockFirst });
+  it('createCaseOrder inserts and returns the new row', async () => {
+    const input = { order_status_id: 1, quantity: 5, total_price: 100, ordered_at: new Date() };
+    const returnedRow = { ...input, id: 42 };
+    mockInsert.mockReturnValueOnce({ returning: jest.fn().mockResolvedValueOnce([returnedRow]) });
 
-      const result = await getCaseOrderById(1);
+    const result = await createCaseOrder(input);
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toEqual(mockOrder);
-    });
-
-    it("should return undefined when order not found", async () => {
-      mockFirst.mockResolvedValue(undefined);
-      mockWhere.mockReturnValue({ first: mockFirst });
-
-      const result = await getCaseOrderById(999);
-
-      expect(mockWhere).toHaveBeenCalledWith({ id: 999 });
-      expect(result).toBeUndefined();
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockInsert).toHaveBeenCalledWith(input);
+    expect(result).toEqual(returnedRow);
   });
 
-  describe("createCaseOrder", () => {
-    it("should create a new case order successfully", async () => {
-      const orderData = {
-        order_status_id: 1,
-        quantity: 5,
-        total_price: 100,
-        ordered_at: new Date(),
-      };
-      const mockReturnedOrder = { id: 1, ...orderData };
-      mockReturning.mockResolvedValue([mockReturnedOrder]);
-      mockInsert.mockReturnValue({ returning: mockReturning });
+  it('updateCaseOrderStatus updates the order', async () => {
+    mockUpdate.mockResolvedValueOnce(1);
 
-      const result = await createCaseOrder(orderData);
+    const result = await updateCaseOrderStatus(3, 2);
 
-      expect(mockInsert).toHaveBeenCalledWith(orderData);
-      expect(result).toEqual(mockReturnedOrder);
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 3 });
+    expect(mockUpdate).toHaveBeenCalledWith({ order_status_id: 2 });
+    expect(result).toBe(1);
   });
 
-  describe("updateCaseOrderStatus", () => {
-    it("should update order status successfully", async () => {
-      const mockUpdateResult = 1;
-      mockUpdate.mockResolvedValue(mockUpdateResult);
-      mockWhere.mockReturnValue({ update: mockUpdate });
+  it('getCasePrice calls db.raw and returns first row', async () => {
+    const row = { price: 42 };
+    mockRaw.mockResolvedValueOnce({ rows: [row] });
 
-      const result = await updateCaseOrderStatus(1, 2);
+    const result = await getCasePrice(4, 7, 4);
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toBe(mockUpdateResult);
-    });
+    expect(mockRaw).toHaveBeenCalledWith('SELECT * FROM calculate_case_price(?, ?, ?)', [4, 7, 4]);
+    expect(result).toEqual(row);
   });
 
-  describe("getUnpaidOrdersOlderThan", () => {
-    it("should return unpaid orders older than specified days", async () => {
-      const mockPendingStatus = { id: 1, name: "payment_pending" };
-      const mockOrders = [
-        { id: 1, order_status_id: 1, ordered_at: new Date("2023-01-01") },
-        { id: 2, order_status_id: 1, ordered_at: new Date("2023-01-02") },
-      ];
-
-      getOrderStatusByName.mockResolvedValue(mockPendingStatus);
-      mockSelect.mockResolvedValue(mockOrders);
-      mockAndWhere.mockReturnValue({ select: mockSelect });
-      mockWhere.mockReturnValue({ andWhere: mockAndWhere });
-
-      const result = await getUnpaidOrdersOlderThan(30);
-
-      expect(getOrderStatusByName).toHaveBeenCalledWith("payment_pending");
-      expect(result).toEqual(mockOrders);
-    });
-
-    it("should throw error when payment_pending status not found", async () => {
-      getOrderStatusByName.mockResolvedValue(null);
-
-      await expect(getUnpaidOrdersOlderThan(30)).rejects.toThrow(
-        "Order status 'payment_pending' not found"
-      );
-    });
+  it('getUnpaidOrdersOlderThan throws if pending status not found', async () => {
+    getOrderStatusByName.mockResolvedValueOnce(null);
+    await expect(getUnpaidOrdersOlderThan(5)).rejects.toThrow(
+      "Order status 'payment_pending' not found"
+    );
   });
 
-  describe("getPendingOrders", () => {
-    it("should return all pending orders", async () => {
-      const mockPendingStatus = { id: 1, name: "payment_pending" };
-      const mockOrders = [
-        { id: 1, order_status_id: 1 },
-        { id: 2, order_status_id: 1 },
-      ];
+  it('getUnpaidOrdersOlderThan returns orders if status exists', async () => {
+    const pendingStatus = { id: 1 };
+    const orders = [{ id: 10 }, { id: 11 }];
+    getOrderStatusByName.mockResolvedValueOnce(pendingStatus);
+    mockSelect.mockResolvedValueOnce(orders);
 
-      getOrderStatusByName.mockResolvedValue(mockPendingStatus);
-      mockSelect.mockResolvedValue(mockOrders);
-      mockWhere.mockReturnValue({ select: mockSelect });
+    const result = await getUnpaidOrdersOlderThan(5);
 
-      const result = await getPendingOrders();
-
-      expect(getOrderStatusByName).toHaveBeenCalledWith("payment_pending");
-      expect(result).toEqual(mockOrders);
-    });
-
-    it("should throw error when payment_pending status not found", async () => {
-      getOrderStatusByName.mockResolvedValue(null);
-
-      await expect(getPendingOrders()).rejects.toThrow(
-        "Order status 'payment_pending' not found"
-      );
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith('order_status_id', pendingStatus.id);
+    expect(mockAndWhere).toHaveBeenCalled();
+    expect(mockSelect).toHaveBeenCalledWith('*');
+    expect(result).toEqual(orders);
   });
 
-  describe("incrementAmountPaid", () => {
-    it("should increment amount paid for an order", async () => {
-      const mockResult = 1;
-      mockIncrement.mockResolvedValue(mockResult);
-      mockWhere.mockReturnValue({ increment: mockIncrement });
+  it('incrementAmountPaid calls increment', async () => {
+    mockIncrement.mockResolvedValueOnce(1);
 
-      const result = await incrementAmountPaid(1, 50);
+    const result = await incrementAmountPaid(3, 50);
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toBe(mockResult);
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 3 });
+    expect(mockIncrement).toHaveBeenCalledWith('amount_paid', 50);
+    expect(result).toBe(1);
   });
 
-  describe("incrementQuantityDelivered", () => {
-    it("should increment quantity delivered for an order", async () => {
-      const mockResult = 1;
-      mockIncrement.mockResolvedValue(mockResult);
-      mockWhere.mockReturnValue({ increment: mockIncrement });
+  it('incrementQuantityDelivered calls increment', async () => {
+    mockIncrement.mockResolvedValueOnce(2);
 
-      const result = await incrementQuantityDelivered(1, 5);
+    const result = await incrementQuantityDelivered(5, 10);
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toBe(mockResult);
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 5 });
+    expect(mockIncrement).toHaveBeenCalledWith('quantity_delivered', 10);
+    expect(result).toBe(2);
   });
 
-  describe("updateOrderAccountNumber", () => {
-    it("should update account number for an order", async () => {
-      const mockResult = 1;
-      mockUpdate.mockResolvedValue(mockResult);
-      mockWhere.mockReturnValue({ update: mockUpdate });
+  it('updateOrderAccountNumber updates account number', async () => {
+    mockUpdate.mockResolvedValueOnce(1);
 
-      const result = await updateOrderAccountNumber(1, "ACC123");
+    const result = await updateOrderAccountNumber(7, 'ACC-777');
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toBe(mockResult);
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 7 });
+    expect(mockUpdate).toHaveBeenCalledWith({ account_number: 'ACC-777' });
+    expect(result).toBe(1);
   });
 
-  describe("updateOrderPaymentAndAccount", () => {
-    it("should update both account number and increment payment", async () => {
-      const mockResult = 1;
-      mockIncrement.mockResolvedValue(mockResult);
-      mockUpdate.mockReturnValue({ increment: mockIncrement });
-      mockWhere.mockReturnValue({ update: mockUpdate });
+  it('updateOrderPaymentAndAccount updates and increments', async () => {
+    mockUpdate.mockReturnValueOnce({ increment: mockIncrement });
+    mockIncrement.mockResolvedValueOnce(1);
 
-      const result = await updateOrderPaymentAndAccount(1, 100, "ACC123");
+    const result = await updateOrderPaymentAndAccount(7, 50, 'ACC-777');
 
-      expect(mockWhere).toHaveBeenCalledWith({ id: 1 });
-      expect(result).toBe(mockResult);
-    });
+    expect(db).toHaveBeenCalledWith('case_orders');
+    expect(mockWhere).toHaveBeenCalledWith({ id: 7 });
+    expect(mockUpdate).toHaveBeenCalledWith({ account_number: 'ACC-777' });
+    expect(mockIncrement).toHaveBeenCalledWith('amount_paid', 50);
+    expect(result).toBe(1);
   });
 });
