@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.844.0",
+    "@types/supertest": "^6.0.3",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
@@ -27,6 +28,8 @@
     "node-cron": "^4.1.1",
     "npm": "^11.4.2",
     "pg": "^8.16.3",
+    "pg-mem": "^3.0.5",
+    "supertest": "^7.1.4",
     "winston": "^3.17.0"
   },
   "devDependencies": {
