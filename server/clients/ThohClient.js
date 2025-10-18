@@ -7,6 +7,9 @@ const thohApi = axios.create({
   baseURL: process.env.THOH_API_URL || "http://localhost:3002",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
+  headers: {
+    'Client-Id': 'case-supplier',
+  },
 });
 
 const ThohClient = {

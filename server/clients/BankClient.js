@@ -8,6 +8,9 @@ const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL || "http://localhost:3003/",
   timeout: 5000,
   httpsAgent: mtlsAgent || undefined,
+  headers: {
+    'Client-Id': 'case-supplier',
+  },
 });
 
 const BankClient = {
