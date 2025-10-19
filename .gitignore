@@ -1,3 +1,7 @@
 # Ignore Docker files
 Dockerfile
 docker-compose.yml 
+
+*logs
+
+*.vscode
