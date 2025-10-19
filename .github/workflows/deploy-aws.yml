@@ -59,37 +59,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch Parameters
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get SSL Certs from SSM
-        run: |
-          mkdir -p ./tmp
-          aws ssm get-parameter --name "/ssl/crt" --query "Parameter.Value" --output text > ./tmp/ssl_cert.crt
-          aws ssm get-parameter --name "/ssl/privkey_pem" --query "Parameter.Value" --output text > ./tmp/ssl_key.pem
-
-          aws ssm get-parameter --name "/ssl/root-ca.crt" --query "Parameter.Value" --output text > ./tmp/root-ca.crt
-          aws ssm get-parameter --name "/ssl/case-supplier-client.crt" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.crt
-          aws ssm get-parameter --name "/ssl/case-supplier-client.key" --query "Parameter.Value" --output text > ./tmp/case-supplier-client.key
-
-      - name: Create Certs Package
-        run: |
-          tar -czf ./certs.tar.gz -C ./tmp .
-
-      - name: Copy Files to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ needs.terraform.outputs.ec2host }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "certs.tar.gz"
-          target: "/home/ec2-user/"
-
-      - name: Upload SSL Certs and Configure Nginx
+      - name: Configure Nginx on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -98,71 +74,37 @@ jobs:
           port: 22
           script: |
             set -e
-            PACKAGE="/home/ec2-user/certs.tar.gz"
-            TEMP_DIR="/home/ec2-user/tmp"
 
-            # Clean and extract certs
-            rm -rf $TEMP_DIR
-            mkdir -p $TEMP_DIR
-            tar -xzf $PACKAGE -C $TEMP_DIR
-            rm -f $PACKAGE
+            # Install Nginx + Certbot (if not already)
+            sudo yum update -y
+            sudo amazon-linux-extras install nginx1 -y || sudo apt install -y nginx
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
 
-            # Move certs to secure location
-            sudo mkdir -p /etc/ssl/casesupplier
-            sudo mv $TEMP_DIR/ssl_cert.crt /etc/ssl/casesupplier/casesupplier_cert.crt
-            sudo mv $TEMP_DIR/ssl_key.pem /etc/ssl/casesupplier/casesupplier_key.pem
+            # Install certbot
+            if ! command -v certbot >/dev/null; then
+              sudo dnf install -y certbot python3-certbot-nginx || sudo apt install -y certbot python3-certbot-nginx
+            fi
 
-            sudo mkdir -p /etc/ssl/casesupplier/mtls
-            sudo mv $TEMP_DIR/root-ca.crt /etc/ssl/casesupplier/mtls/root-ca.crt
-            sudo mv $TEMP_DIR/case-supplier-client.crt /etc/ssl/casesupplier/mtls/case-supplier-client.crt
-            sudo mv $TEMP_DIR/case-supplier-client.key /etc/ssl/casesupplier/mtls/case-supplier-client.key
+            # Obtain or renew Let's Encrypt certificate
+            sudo certbot --nginx -d bbd-grad-program-2025.online --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online || true
 
-            # Set permissions
-            sudo chmod 644 /etc/ssl/casesupplier/casesupplier_cert.crt
-            sudo chmod 600 /etc/ssl/casesupplier/casesupplier_key.pem
-
-            sudo chmod 644 /etc/ssl/casesupplier/mtls/root-ca.crt
-            sudo chmod 644 /etc/ssl/casesupplier/mtls/case-supplier-client.crt
-            sudo chmod 600 /etc/ssl/casesupplier/mtls/case-supplier-client.key
-
-            # Configure Nginx SSL proxy
+            # Configure Nginx
             sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
-                server_name _;
+                server_name bbd-grad-program-2025.online;
                 return 301 https://$host$request_uri;
             }
 
-            map $ssl_client_s_dn $is_valid_ou {
-                default no;
-                ~OU=sumsang-company yes;
-                ~OU=retail-bank yes;
-                ~OU=screen-supplier yes;
-                ~OU=case-supplier yes;
-                ~OU=consumer-logistics yes;
-                ~OU=bulk-logistics yes;
-                ~OU=commercial-bank yes;
-                ~OU=thoh yes;
-                ~OU=recycler yes;
-                ~OU=electronics-supplier yes;
-            }
-
             server {
-                listen 444 ssl;
-                server_name case-supplier-api.projects.bbdgrad.com;
+                listen 443 ssl;
+                server_name bbd-grad-program-2025.online;
 
-                ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem;
+                ssl_certificate /etc/letsencrypt/live/bbd-grad-program-2025.online/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/bbd-grad-program-2025.online/privkey.pem;
 
                 location / {
-                    limit_except GET OPTIONS {
-                        deny all;
-                    }
-
-                    if ($request_method = OPTIONS) {
-                        return 204;
-                    }
-
                     proxy_pass http://localhost:3000;
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
@@ -174,42 +116,8 @@ jobs:
                     proxy_set_header X-Forwarded-Proto $scheme;
 
                     add_header 'Access-Control-Allow-Origin' '*' always;
-                    add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
                     add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
-                }
-            }
-
-            server {
-                listen 443 ssl;
-                server_name _;
-
-                ssl_certificate /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/case-supplier-api.projects.bbdgrad.com/privkey.pem;
-
-                ssl_client_certificate /etc/ssl/casesupplier/mtls/root-ca.crt;
-                ssl_verify_client on;
-
-                if ($is_valid_ou = no) {
-                    return 403;
-                }
-
-                location / {
-                    proxy_pass http://localhost:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
-
-                    # Forward client certificate info
-                    proxy_set_header X-Client-Verify $ssl_client_verify;
-                    proxy_set_header X-Client-Subject $ssl_client_s_dn;
-                    proxy_set_header X-Client-Issuer $ssl_client_i_dn;
-                    proxy_set_header X-Client-Fingerprint $ssl_client_fingerprint;
-                    proxy_set_header X-Client-Serial $ssl_client_serial;
                 }
             }
             NGINX_CONF
