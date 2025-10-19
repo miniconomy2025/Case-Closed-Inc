@@ -51,7 +51,7 @@ jobs:
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
 
   setup-nginx:
-    name: Deploy Certs to EC2
+    name: Configure Nginx + SSL
     runs-on: ubuntu-latest
     needs: terraform
 
@@ -75,21 +75,17 @@ jobs:
           script: |
             set -e
 
-            # Install Nginx + Certbot
-            sudo yum update -y
-            sudo amazon-linux-extras install nginx1 -y || sudo apt install -y nginx
+            echo "=== Installing Nginx & Certbot ==="
+            sudo dnf update -y
+            sudo dnf install -y nginx certbot python3-certbot-nginx
+
             sudo systemctl enable nginx
             sudo systemctl start nginx
 
-            # Install certbot
-            if ! command -v certbot >/dev/null; then
-              sudo dnf install -y certbot python3-certbot-nginx || sudo apt install -y certbot python3-certbot-nginx
-            fi
-
-            # Obtain or renew Let's Encrypt certificate
+            echo "=== Requesting Let's Encrypt certificate ==="
             sudo certbot --nginx -d bbd-grad-program-2025.online --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online || true
 
-            # Configure Nginx
+            echo "=== Configuring Nginx ==="
             sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
@@ -122,8 +118,9 @@ jobs:
             }
             NGINX_CONF
 
-            # Test and reload Nginx
-            sudo nginx -t && sudo systemctl reload nginx
+            echo "=== Testing and reloading Nginx ==="
+            sudo nginx -t
+            sudo systemctl reload nginx
 
   deploy-api:
     name: Build & Deploy to EC2
