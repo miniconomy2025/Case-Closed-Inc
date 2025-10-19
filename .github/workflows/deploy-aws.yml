@@ -215,6 +215,6 @@ jobs:
             EOF
             pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
-            pm2 start server.js --name "case-supplier-app" --cwd dist
+            pm2 start npm --name "case-supplier-app" -- start --prefix dist
             pm2 save
             sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
