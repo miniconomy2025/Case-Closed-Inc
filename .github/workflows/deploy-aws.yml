@@ -51,9 +51,12 @@ jobs:
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
 
   setup-nginx:
-    name: Configure Nginx + SSL
+    name: Setup Nginx + SSL
     runs-on: ubuntu-latest
     needs: terraform
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout Repository
@@ -65,7 +68,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Configure Nginx on EC2
+      - name: Install Nginx + Certbot and Configure Proxy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -74,31 +77,19 @@ jobs:
           port: 22
           script: |
             set -e
+            echo "=== Installing Nginx and Certbot ==="
+            sudo apt-get update -y
+            sudo apt-get install -y nginx certbot python3-certbot-nginx
 
-            echo "=== Installing Nginx & Certbot ==="
-            sudo dnf update -y
-            sudo dnf install -y nginx certbot python3-certbot-nginx
-
-            sudo systemctl enable nginx
-            sudo systemctl start nginx
-
-            echo "=== Requesting Let's Encrypt certificate ==="
-            sudo certbot --nginx -d bbd-grad-program-2025.online --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online || true
-
-            echo "=== Configuring Nginx ==="
-            sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
+            echo "=== Creating Nginx config ==="
+            sudo tee /etc/nginx/sites-enabled/default > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
-                server_name bbd-grad-program-2025.online;
-                return 301 https://$host$request_uri;
-            }
+                server_name bbd-grad-program-2025.online www.bbd-grad-program-2025.online;
 
-            server {
-                listen 443 ssl;
-                server_name bbd-grad-program-2025.online;
-
-                ssl_certificate /etc/letsencrypt/live/bbd-grad-program-2025.online/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/bbd-grad-program-2025.online/privkey.pem;
+                location /.well-known/acme-challenge/ {
+                    root /var/www/html;
+                }
 
                 location / {
                     proxy_pass http://localhost:3000;
@@ -110,17 +101,21 @@ jobs:
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
-
-                    add_header 'Access-Control-Allow-Origin' '*' always;
-                    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-                    add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
                 }
             }
             NGINX_CONF
 
-            echo "=== Testing and reloading Nginx ==="
+            echo "=== Testing and Reloading Nginx ==="
             sudo nginx -t
             sudo systemctl reload nginx
+
+            echo "=== Requesting SSL Certificate via Certbot ==="
+            sudo certbot --nginx -d bbd-grad-program-2025.online -d www.bbd-grad-program-2025.online \
+              --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online
+
+            echo "=== Enabling auto-renewal ==="
+            sudo systemctl enable certbot.timer
+            sudo systemctl start certbot.timer
 
   deploy-api:
     name: Build & Deploy to EC2
