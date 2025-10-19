@@ -59,8 +59,11 @@ export default class DecisionEngine {
     async run() {
         let have_account = false;
         try{
-            await BankClient.getMyAccount();
-            have_account = true;
+            const { accountNumber } = await BankClient.getMyAccount();
+            if (accountNumber) {
+                have_account = true;
+            }
+            
         }catch {
             have_account = false;
         }
@@ -117,7 +120,7 @@ export default class DecisionEngine {
         }else{
             try {
                 const { accountNumber } = await BankClient.createAccount({
-                    notification_url: "https://case-supplier-api.projects.bbdgrad.com/api/payment",
+                    notification_url: process.env.BANK_PAYMENT_URL,
                 });
                 // Store our account number
                 await updateAccount(accountNumber, 0);
