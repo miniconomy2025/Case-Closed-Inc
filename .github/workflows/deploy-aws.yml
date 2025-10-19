@@ -50,18 +50,25 @@ jobs:
           echo "dbhost=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
 
-  setup-ec2:
-    name: Setup EC2 (Node.js, PM2, Nginx, Certbot)
+  setup-nginx:
+    name: Setup Node.js, Nginx & SSL
     runs-on: ubuntu-latest
     needs: terraform
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Prepare EC2
+      - name: Install Node.js, PM2, Nginx & Certbot
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -70,7 +77,6 @@ jobs:
           port: 22
           script: |
             set -e
-
             echo "=== Updating system ==="
             sudo dnf update -y
 
@@ -118,23 +124,20 @@ jobs:
             echo "=== Requesting SSL certificates ==="
             sudo certbot --nginx -d bbd-grad-program-2025.online -d www.bbd-grad-program-2025.online \
               --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online
-            sudo systemctl enable certbot.timer
-            sudo systemctl start certbot.timer
 
   deploy-api:
-    name: Deploy API to EC2
+    name: Build & Deploy to EC2
     runs-on: ubuntu-latest
-    needs: 
-      - terraform
-      - setup-ec2
+    needs: terraform
     defaults:
       run:
         working-directory: ./server
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch AWS Parameters + Terraform outputs
+      - name: Fetch Parameters
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -150,15 +153,32 @@ jobs:
           EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
           echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
 
-      - name: Package API
+      - name: Install Root Dependencies
+        run: npm install
+
+      - name: Build Root App
+        run: npm run build
+
+      - name: Create Deployment Package
         run: |
           mkdir -p ../build-server
           cp -r ./dist ../build-server/
           cp ./package.json ./package-lock.json ../build-server/
           tar -czf ../deploy.tar.gz -C .. build-server
+          ls -la ../build-server
           rm -rf ../build-server
 
-      - name: Copy & Deploy to EC2
+      - name: Copy Files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ needs.terraform.outputs.ec2host }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "deploy.tar.gz"
+          target: "/home/ec2-user/"
+
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -170,16 +190,13 @@ jobs:
             set -e
             DEPLOY_DIR="/home/ec2-user/case-supplier-app"
             PACKAGE="/home/ec2-user/deploy.tar.gz"
-
             rm -rf $DEPLOY_DIR
             mkdir -p $DEPLOY_DIR
             cd $DEPLOY_DIR
             tar -xzf $PACKAGE
             rm -f $PACKAGE
-
             cd build-server
             npm i
-
             cat <<EOF > dist/.env
             DB_USER=$POSTGRES_USER
             DB_PASSWORD=$POSTGRES_PASS
@@ -195,7 +212,6 @@ jobs:
             BULK_LOGISTICS_API_URL=https:/bulk-logistics-api.projects.bbdgrad.com/
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             EOF
-
             pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd dist
