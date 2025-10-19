@@ -115,7 +115,7 @@ jobs:
             }
 
             server {
-                listen 444 ssl;
+                listen 444;
                 server_name bbd-grad-program-2025.online www.bbd-grad-program-2025.online;
 
                 location / {
