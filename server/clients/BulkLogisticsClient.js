@@ -17,17 +17,17 @@ const BulkLogisticsClient = {
       items,
     };
 
-    const res = await logisticsApi.post('/api/pickup-request', requestData);
+    const res = await logisticsApi.post('/pickup-request', requestData);
     return res.data;
   },
 
   async getPickupRequest(pickupRequestId) {
-    const res = await logisticsApi.get(`/api/pickup-request/${pickupRequestId}`);
+    const res = await logisticsApi.get(`/pickup-request/${pickupRequestId}`);
     return res.data;
   },
 
   async getPickupRequestsForCompany() {
-    const res = await logisticsApi.get(`/api/pickup-request/company/case-supplier`);
+    const res = await logisticsApi.get(`/pickup-request/company/case-supplier`);
     return res.data;
   },
 };
