@@ -1,10 +1,11 @@
 import axios from 'axios';
-import mtlsAgent from './mtlsAgent.js';
 
 const rawMaterialsApi = axios.create({
   baseURL: process.env.RAW_MATERIALS_API_URL || "http://localhost:3002/",
   timeout: 5000,
-  httpsAgent: mtlsAgent || undefined,
+  headers: {
+    'Client-Id': 'case-supplier',
+  },
 });
 
 const ThohClient = {

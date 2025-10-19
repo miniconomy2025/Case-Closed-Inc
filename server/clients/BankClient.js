@@ -1,5 +1,4 @@
 import axios from 'axios';
-import mtlsAgent from './mtlsAgent.js';
 import logger from '../utils/logger.js';
 import { getAccountNumber, updateBalance, updateAccount } from '../daos/bankDetailsDao.js';
 
@@ -7,7 +6,9 @@ import { getAccountNumber, updateBalance, updateAccount } from '../daos/bankDeta
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL || "http://localhost:3003/",
   timeout: 5000,
-  httpsAgent: mtlsAgent || undefined,
+  headers: {
+    'Client-Id': 'case-supplier',
+  },
 });
 
 const BankClient = {
@@ -27,7 +28,7 @@ const BankClient = {
         const balance = res.data.net_balance;
         await updateAccount(accountNumber, balance);
         return { accountNumber: accountNumber};        
-    }catch {
+    }catch (error) {
         try{
             const { account_number } = await getAccountNumber()
             return account_number;

@@ -1,48 +1,31 @@
+import { db } from '../../../db/knex.js';
 import {
   insertEquipmentParameters,
   updateCaseMachineWeight,
   getCaseMachineWeight,
   getEquipmentParameters,
-} from "../../../daos/equipmentParametersDao.js";
+} from '../../../daos/equipmentParametersDao.js';
 
-// Mocks for db and transaction/trx query-builder shape
-const mockFirst = jest.fn();
-const mockDel = jest.fn();
-const mockInsert = jest.fn();
-const mockWhereNull = jest.fn();
-const mockUpdate = jest.fn();
+import {
+  mockFirst,
+  mockDel,
+  mockInsert,
+  mockUpdate,
+  mockWhereNull,
+  setupMockDb
+} from '../__mocks__/mockKnex.js';
 
-// db(table) query builder
-const qb = {
-  first: mockFirst,
-  del: mockDel,
-  insert: mockInsert,
-  whereNull: mockWhereNull,
-  update: mockUpdate,
-};
-
-// trx(table) should return same interface
-const trxFactory = () => jest.fn(() => qb);
-const mockTrx = trxFactory();
-
-const mockDb = jest.fn((table) => qb);
-const mockTransaction = jest.fn(async (callback) => {
-  return await callback(mockTrx);
-});
-
-jest.mock("../../../db/knex.js", () => ({
-  db: Object.assign((table) => mockDb(table), {
-    transaction: (cb) => mockTransaction(cb),
-  }),
+jest.mock('../../../db/knex.js', () => ({
+  db: jest.fn(),
 }));
 
-describe("equipmentParametersDao", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+beforeEach(() => {
+  setupMockDb(db);
+});
 
-  describe("insertEquipmentParameters", () => {
-    it("replaces row and preserves existing case_machine_weight when present", async () => {
+describe('equipmentParametersDao', () => {
+  describe('insertEquipmentParameters', () => {
+    it('replaces row and preserves existing case_machine_weight when present', async () => {
       mockFirst.mockResolvedValueOnce({ case_machine_weight: 123 });
       mockDel.mockResolvedValueOnce(1);
       mockInsert.mockResolvedValueOnce([1]);
@@ -53,7 +36,7 @@ describe("equipmentParametersDao", () => {
         production_rate: 10,
       });
 
-      expect(mockTransaction).toHaveBeenCalled();
+      expect(db.transaction).toHaveBeenCalled();
       expect(mockFirst).toHaveBeenCalled();
       expect(mockDel).toHaveBeenCalled();
       expect(mockInsert).toHaveBeenCalledWith({
@@ -64,7 +47,7 @@ describe("equipmentParametersDao", () => {
       });
     });
 
-    it("replaces row and sets case_machine_weight to null when none exists", async () => {
+    it('replaces row and sets case_machine_weight to null when none exists', async () => {
       mockFirst.mockResolvedValueOnce(undefined);
       mockDel.mockResolvedValueOnce(1);
       mockInsert.mockResolvedValueOnce([1]);
@@ -84,28 +67,28 @@ describe("equipmentParametersDao", () => {
     });
   });
 
-  describe("updateCaseMachineWeight", () => {
-    it("updates weight only where null", async () => {
+  describe('updateCaseMachineWeight', () => {
+    it('updates weight only where null', async () => {
       mockWhereNull.mockReturnValueOnce({ update: mockUpdate });
       mockUpdate.mockResolvedValueOnce(1);
 
       const result = await updateCaseMachineWeight(250);
 
-      expect(mockWhereNull).toHaveBeenCalledWith("case_machine_weight");
+      expect(mockWhereNull).toHaveBeenCalledWith('case_machine_weight');
       expect(mockUpdate).toHaveBeenCalledWith({ case_machine_weight: 250 });
       expect(result).toBe(1);
     });
   });
 
-  describe("getCaseMachineWeight", () => {
-    it("returns the numeric weight when present", async () => {
+  describe('getCaseMachineWeight', () => {
+    it('returns the numeric weight when present', async () => {
       mockFirst.mockResolvedValueOnce({ case_machine_weight: 321 });
 
       const result = await getCaseMachineWeight();
       expect(result).toBe(321);
     });
 
-    it("returns null when no row or field is present", async () => {
+    it('returns null when no row or field is present', async () => {
       mockFirst.mockResolvedValueOnce(undefined);
 
       const result = await getCaseMachineWeight();
@@ -113,8 +96,8 @@ describe("equipmentParametersDao", () => {
     });
   });
 
-  describe("getEquipmentParameters", () => {
-    it("returns the first row of parameters", async () => {
+  describe('getEquipmentParameters', () => {
+    it('returns the first row of parameters', async () => {
       const row = {
         plastic_ratio: 0.4,
         aluminium_ratio: 0.6,

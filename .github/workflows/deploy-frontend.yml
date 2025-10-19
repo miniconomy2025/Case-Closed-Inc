@@ -51,8 +51,20 @@ jobs:
         run: |
           aws s3 sync ./dist/ s3://case-supplier-s3-cloudfront-distribution-bucket/ --delete --exact-timestamps
 
-      - name: Invalidate CloudFront cache
+      - name: Invalidate CloudFront Cache
         run: |
-          # Get CloudFront distribution ID for frontend
-          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[0]=='case-supplier.projects.bbdgrad.com'].Id" --output text)
-          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          # Get Distribution ID where origin matches your bucket
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+            --query "DistributionList.Items[?contains(Origins.Items[0].DomainName, 'case-supplier-s3-cloudfront-distribution-bucket')].Id | [0]" \
+            --output text)
+
+          echo "Found Distribution ID: $DISTRIBUTION_ID"
+
+          if [ "$DISTRIBUTION_ID" = "None" ] || [ -z "$DISTRIBUTION_ID" ]; then
+            echo "Could not find CloudFront Distribution for this bucket."
+            exit 1
+          fi
+
+          aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --paths "/*"
