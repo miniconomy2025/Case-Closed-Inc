@@ -29,8 +29,9 @@ describe("stockController", () => {
     };
     next = jest.fn();
     jest.clearAllMocks();
+  });
 
-    describe("getCaseStockInformation", () => {
+  describe("getCaseStockInformation", () => {
       it("should return stock information with calculated price", async () => {
         const mockStock = { available_units: 5000 };
         const mockEquipment = {
