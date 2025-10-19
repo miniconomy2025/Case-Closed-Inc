@@ -50,25 +50,18 @@ jobs:
           echo "dbhost=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
 
-  setup-nginx:
-    name: Setup Nginx + SSL
+  setup-ec2:
+    name: Setup EC2 (Node.js, PM2, Nginx, Certbot)
     runs-on: ubuntu-latest
     needs: terraform
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install Nginx + Certbot and Configure Proxy
+      - name: Prepare EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -77,12 +70,26 @@ jobs:
           port: 22
           script: |
             set -e
-            echo "=== Installing Nginx and Certbot ==="
-            sudo apt-get update -y
-            sudo apt-get install -y nginx certbot python3-certbot-nginx
 
-            echo "=== Creating Nginx config ==="
-            sudo tee /etc/nginx/sites-enabled/default > /dev/null <<'NGINX_CONF'
+            echo "=== Updating system ==="
+            sudo dnf update -y
+
+            echo "=== Installing Node.js 22 ==="
+            curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+            sudo dnf install -y nodejs
+            node -v
+            npm -v
+
+            echo "=== Installing PM2 ==="
+            sudo npm install -g pm2
+
+            echo "=== Installing Nginx and Certbot ==="
+            sudo dnf install -y nginx certbot python3-certbot-nginx
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+
+            echo "=== Configuring Nginx for API ==="
+            sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
                 server_name bbd-grad-program-2025.online www.bbd-grad-program-2025.online;
@@ -105,40 +112,29 @@ jobs:
             }
             NGINX_CONF
 
-            echo "=== Testing and Reloading Nginx ==="
             sudo nginx -t
             sudo systemctl reload nginx
 
-            echo "=== Requesting SSL Certificate via Certbot ==="
+            echo "=== Requesting SSL certificates ==="
             sudo certbot --nginx -d bbd-grad-program-2025.online -d www.bbd-grad-program-2025.online \
               --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online
-
-            echo "=== Enabling auto-renewal ==="
             sudo systemctl enable certbot.timer
             sudo systemctl start certbot.timer
 
   deploy-api:
-    name: Build & Deploy to EC2
+    name: Deploy API to EC2
     runs-on: ubuntu-latest
-    needs: terraform
+    needs: 
+      - terraform
+      - setup-ec2
     defaults:
       run:
         working-directory: ./server
-
     steps:
-      # === Code Checkout ===
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # === Setup Node.js ===
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-
-      - name: Fetch Parameters
+      - name: Fetch AWS Parameters + Terraform outputs
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -148,64 +144,42 @@ jobs:
         run: |
           echo "POSTGRES_USER=$(aws ssm get-parameter --name '/db_config/db_username' --query 'Parameter.Value' --output text)" >> $GITHUB_ENV
           echo "POSTGRES_PASS=$(aws ssm get-parameter --name '/db_config/db_password' --query 'Parameter.Value' --output text)" >> $GITHUB_ENV
-          # Strip port from Terraform output
           RAW_DB_HOST="${{ needs.terraform.outputs.dbhost }}"
           CLEAN_DB_HOST=$(echo "$RAW_DB_HOST" | cut -d':' -f1)
           echo "POSTGRES_HOST=$CLEAN_DB_HOST" >> $GITHUB_ENV
           EC2_HOST="${{ needs.terraform.outputs.ec2host }}"
           echo "API_HOST=$EC2_HOST" >> $GITHUB_ENV
-      # === Install Dependencies ===
-      - name: Install Root Dependencies
-        run: npm install
 
-      # === Build Project ===
-      - name: Build Root App
-        run: npm run build
-
-      # === Package Deployment Artifacts ===
-      - name: Create Deployment Package
+      - name: Package API
         run: |
           mkdir -p ../build-server
           cp -r ./dist ../build-server/
           cp ./package.json ./package-lock.json ../build-server/
           tar -czf ../deploy.tar.gz -C .. build-server
-          ls -la ../build-server
           rm -rf ../build-server
-          
-      # === Transfer Package to EC2 ===
-      - name: Copy Files to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ needs.terraform.outputs.ec2host }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "deploy.tar.gz"
-          target: "/home/ec2-user/"
 
-      # === Deploy on EC2 ===
-      - name: Deploy to EC2
+      - name: Copy & Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: POSTGRES_USER,POSTGRES_PASS, POSTGRES_HOST, API_HOST
+          envs: POSTGRES_USER,POSTGRES_PASS,POSTGRES_HOST,API_HOST
           port: 22
           script: |
             set -e
             DEPLOY_DIR="/home/ec2-user/case-supplier-app"
             PACKAGE="/home/ec2-user/deploy.tar.gz"
-            # Prepare deployment directory
+
             rm -rf $DEPLOY_DIR
             mkdir -p $DEPLOY_DIR
             cd $DEPLOY_DIR
-            # Extract package and clean up
             tar -xzf $PACKAGE
             rm -f $PACKAGE
-            # Install production dependencies
+
             cd build-server
             npm i
+
             cat <<EOF > dist/.env
             DB_USER=$POSTGRES_USER
             DB_PASSWORD=$POSTGRES_PASS
@@ -215,20 +189,15 @@ jobs:
             ENV=production
             API_PORT=3000
             API_HOST=$API_HOST
-            BANK_API_URL=https://commercial-bank-api.projects.bbdgrad.com/api
+            BANK_API_URL=https://commercial-bank-api.subspace.site/
             THOH_API_URL=https://thoh-api.projects.bbdgrad.com/
             RAW_MATERIALS_API_URL=https://thoh-api.projects.bbdgrad.com/
             BULK_LOGISTICS_API_URL=https:/bulk-logistics-api.projects.bbdgrad.com/
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             EOF
-            # Restart the app with PM2
+
             pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd dist
-            # Save PM2 process list and enable on reboot and reload nginx
             pm2 save
             sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
-            
-            # Create SSL directory
-            sudo mkdir -p ../../etc/ssl/casesupplier/
-            
