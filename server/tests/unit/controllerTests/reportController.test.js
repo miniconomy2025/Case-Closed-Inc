@@ -22,3 +22,20 @@ jest.mock("../../../daos/reportDao.js", () => ({
   getCaseOrders: jest.fn(),
   getOrderStats: jest.fn(),
 }));
+
+jest.mock("../../../daos/stockDao.js", () => ({
+  getAvailableCaseStock: jest.fn(),
+}));
+
+jest.mock("../../../controllers/simulationController.js", () => ({
+  default: {
+    getDate: jest.fn(),
+    getDaysOfSimulation: jest.fn(),
+  },
+}));
+
+jest.mock("../../../clients/BankClient.js", () => ({
+  default: {
+    getBalance: jest.fn(),
+  },
+}));
