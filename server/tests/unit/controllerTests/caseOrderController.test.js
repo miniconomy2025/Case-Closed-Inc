@@ -44,3 +44,22 @@ jest.mock("../../../clients/index.js", () => ({
     makePayment: jest.fn(),
   },
 }));
+
+import {
+  getCaseOrderById,
+  createCaseOrder,
+  updateCaseOrderStatus,
+  getCasePrice,
+} from "../../../daos/caseOrdersDao.js";
+import {
+  getAvailableCaseStock,
+  decrementStockByName,
+} from "../../../daos/stockDao.js";
+import {
+  getOrderStatusByName,
+  getOrderStatusById,
+} from "../../../daos/orderStatusesDao.js";
+import { getAccountNumber } from "../../../daos/bankDetailsDao.js";
+import { getEquipmentParameters } from "../../../daos/equipmentParametersDao.js";
+import simulationTimer from "../../../controllers/simulationController.js";
+import { BankClient } from "../../../clients/index.js";
