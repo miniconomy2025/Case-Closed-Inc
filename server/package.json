@@ -8,7 +8,9 @@
     "dev": "nodemon",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "load:run": "artillery run --output report.json tests/load/test.yml",
+    "load:report": "artillery run tests/load/test.yml --record --key a9_qdjokd2lj74sbcbzbb3381vyn3no5tg9"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
+    "artillery": "^2.0.26",
     "babel-jest": "^30.2.0",
     "copy-webpack-plugin": "^13.0.0",
     "jest": "^30.2.0",

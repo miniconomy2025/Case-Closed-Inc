@@ -18,6 +18,14 @@ app.use(express.json());
 
 app.use('/api', routes);
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),          
+    timestamp: new Date().toISOString() 
+  });
+});
+
 app.use(errorHandler);
 
 const startServer = async () => {
