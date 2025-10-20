@@ -1,0 +1,14 @@
+config:
+  target: "http://localhost:3000"   # or your deployed API
+  phases:
+    - duration: 60                  # test runs for 60 seconds
+      arrivalRate: 10               # 10 new users (requests) per second
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Basic load test"
+    flow:
+      - get:
+          url: "/api/health"
