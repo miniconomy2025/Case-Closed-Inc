@@ -198,5 +198,5 @@ jobs:
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
             EOF
             pm2 delete case-supplier-app || true
-            pm2 start dist/server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server/dist"
+            pm2 start server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server/dist"
             pm2 save
