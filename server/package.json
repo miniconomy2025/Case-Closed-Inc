@@ -10,7 +10,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "load:run": "artillery run --output report.json tests/load/test.yml",
-    "load:report": "artillery run tests/load/test.yml --record --key a9_qdjokd2lj74sbcbzbb3381vyn3no5tg9"
+    "load:report": "artillery run tests/load/test.yml --record --key a9_qdjokd2lj74sbcbzbb3381vyn3no5tg9",
+    "test:integration": "jest --config jest.integration.config.cjs",
+    "test:all": "npm run test && npm run test:integration"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +41,7 @@
     "copy-webpack-plugin": "^13.0.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
+    "supertest": "^7.1.4",
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1",
     "webpack-node-externals": "^3.0.0"
