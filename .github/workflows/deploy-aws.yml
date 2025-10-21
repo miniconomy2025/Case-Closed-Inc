@@ -197,7 +197,7 @@ jobs:
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
             EOF
-            # pm2 stop case-supplier-app || true
-            # pm2 delete case-supplier-app || true
-            # pm2 start server.js --name "case-supplier-app" --cwd dist
-            # pm2 save
+            pm2 stop case-supplier-app || true
+            pm2 delete case-supplier-app || true
+            pm2 start server.js --name "case-supplier-app" --cwd dist
+            pm2 save
