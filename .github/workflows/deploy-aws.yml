@@ -78,6 +78,8 @@ jobs:
           script: |
             set -e
             echo "=== Configuring Nginx for API ==="
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
             sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
