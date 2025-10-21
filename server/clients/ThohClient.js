@@ -1,5 +1,10 @@
 import axios from "axios";
+import https from "https";
 import { insertEquipmentParameters } from "../daos/equipmentParametersDao.js";
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 const thohApi = axios.create({
   baseURL: process.env.THOH_API_URL || "http://localhost:3002",
@@ -7,6 +12,7 @@ const thohApi = axios.create({
   headers: {
     'Client-Id': 'case-supplier',
   },
+  httpsAgent,
 });
 
 const ThohClient = {
