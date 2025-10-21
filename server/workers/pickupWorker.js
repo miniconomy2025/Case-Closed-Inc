@@ -46,10 +46,12 @@ async function pollQueue() {
             items
           );
 
+          console.log("Pickup request created:", pickupRequest);
+
           console.log("Pickup request sent");
           await BankClient.makePayment(
             pickupRequest.accountNumber,
-            pickupRequest.cost,
+            parseInt(pickupRequest.cost),
             pickupRequest.paymentReferenceId
           );
           console.log("bank request sent");
