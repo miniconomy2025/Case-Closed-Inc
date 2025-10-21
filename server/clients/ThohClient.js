@@ -33,9 +33,9 @@ const ThohClient = {
     }
 
     await insertEquipmentParameters({
-      plastic_ratio: caseMachine.machineDetails?.inputRatio?.plastic ?? 0,
-      aluminium_ratio: caseMachine.machineDetails?.inputRatio?.aluminium ?? 0,
-      production_rate: caseMachine.machineDetails?.productionRate ?? 0,
+      plastic_ratio: caseMachine.inputRatio?.plastic ?? 0,
+      aluminium_ratio: caseMachine.inputRatio?.aluminium ?? 0,
+      production_rate: caseMachine.productionRate ?? 0,
     });
     return true;
   },
