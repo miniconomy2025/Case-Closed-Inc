@@ -180,16 +180,16 @@ jobs:
             tar -xzf $PACKAGE
             rm -f $PACKAGE
             cd build-server
-            npm i
-            cat <<EOF > dist/.env
-            DB_USER=$POSTGRES_USER
-            DB_PASSWORD=$POSTGRES_PASS
-            DB_HOST=$POSTGRES_HOST
+            npm ci --omit=dev
+            cat > dist/.env <<EOF
+            DB_USER=${POSTGRES_USER}
+            DB_PASSWORD=${POSTGRES_PASS}
+            DB_HOST=${POSTGRES_HOST}
             DB_NAME=casesupplierdb
             DB_PORT=5432
             ENV=production
             API_PORT=3000
-            API_HOST=$API_HOST
+            API_HOST=${API_HOST}
             BANK_API_URL=https://commercial-bank-api.subspace.site/api
             THOH_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
             RAW_MATERIALS_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
@@ -197,7 +197,6 @@ jobs:
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
             EOF
-            # pm2 stop case-supplier-app || true
             # pm2 delete case-supplier-app || true
-            # pm2 start server.js --name "case-supplier-app" --cwd dist
+            # pm2 start dist/server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server"
             # pm2 save
