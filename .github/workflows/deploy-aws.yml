@@ -68,7 +68,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install Node.js, PM2, Nginx & Certbot
+      - name: Configuring Nginx for API
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ needs.terraform.outputs.ec2host }}
@@ -77,24 +77,9 @@ jobs:
           port: 22
           script: |
             set -e
-            echo "=== Updating system ==="
-            sudo dnf update -y
-
-            echo "=== Installing Node.js 22 ==="
-            curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
-            sudo dnf install -y nodejs
-            node -v
-            npm -v
-
-            echo "=== Installing PM2 ==="
-            sudo npm install -g pm2
-
-            echo "=== Installing Nginx and Certbot ==="
-            sudo dnf install -y nginx certbot python3-certbot-nginx
+            echo "=== Configuring Nginx for API ==="
             sudo systemctl enable nginx
             sudo systemctl start nginx
-
-            echo "=== Configuring Nginx for API ==="
             sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
             server {
                 listen 80;
@@ -197,16 +182,16 @@ jobs:
             tar -xzf $PACKAGE
             rm -f $PACKAGE
             cd build-server
-            npm i
-            cat <<EOF > dist/.env
-            DB_USER=$POSTGRES_USER
-            DB_PASSWORD=$POSTGRES_PASS
-            DB_HOST=$POSTGRES_HOST
+            npm ci --omit=dev
+            cat > dist/.env <<EOF
+            DB_USER=${POSTGRES_USER}
+            DB_PASSWORD=${POSTGRES_PASS}
+            DB_HOST=${POSTGRES_HOST}
             DB_NAME=casesupplierdb
             DB_PORT=5432
             ENV=production
             API_PORT=3000
-            API_HOST=$API_HOST
+            API_HOST=${API_HOST}
             BANK_API_URL=https://commercial-bank-api.subspace.site/api
             THOH_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
             RAW_MATERIALS_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
@@ -214,8 +199,6 @@ jobs:
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
             EOF
-            pm2 stop case-supplier-app || true
             pm2 delete case-supplier-app || true
-            pm2 start server.js --name "case-supplier-app" --cwd dist
+            pm2 start server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server/dist"
             pm2 save
-            sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
