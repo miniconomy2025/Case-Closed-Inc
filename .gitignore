@@ -5,3 +5,6 @@ docker-compose.yml
 *logs
 
 *.vscode
+
+.terraform
+.terraform.lock.hcl
