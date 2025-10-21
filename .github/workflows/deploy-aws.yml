@@ -50,71 +50,64 @@ jobs:
           echo "dbhost=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
           echo "ec2host=$(terraform output -raw ec2_ip)" >> $GITHUB_OUTPUT
 
-  setup-nginx:
-    name: Setup Node.js, Nginx & SSL
-    runs-on: ubuntu-latest
-    needs: terraform
-    permissions:
-      id-token: write
-      contents: read
+  # setup-nginx:
+  #   name: Setup Node.js, Nginx & SSL
+  #   runs-on: ubuntu-latest
+  #   needs: terraform
+  #   permissions:
+  #     id-token: write
+  #     contents: read
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install Nginx & Certbot
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ needs.terraform.outputs.ec2host }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            set -e
-            echo "=== Updating system ==="
-            sudo dnf update -y
-            echo "=== Installing Nginx and Certbot ==="
-            sudo dnf install -y nginx certbot python3-certbot-nginx
-            sudo systemctl enable nginx
-            sudo systemctl start nginx
+  #     - name: Install Nginx & Certbot
+  #       uses: appleboy/ssh-action@v1.0.0
+  #       with:
+  #         host: ${{ needs.terraform.outputs.ec2host }}
+  #         username: ${{ secrets.EC2_USER }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         port: 22
+  #         script: |
+  #           set -e
+  #           echo "=== Configuring Nginx for API ==="
+  #           sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
+  #           server {
+  #               listen 80;
+  #               server_name bbd-grad-program-2025.online www.bbd-grad-program-2025.online;
 
-            echo "=== Configuring Nginx for API ==="
-            sudo tee /etc/nginx/conf.d/casesupplier.conf > /dev/null <<'NGINX_CONF'
-            server {
-                listen 80;
-                server_name bbd-grad-program-2025.online www.bbd-grad-program-2025.online;
+  #               location /.well-known/acme-challenge/ {
+  #                   root /var/www/html;
+  #               }
 
-                location /.well-known/acme-challenge/ {
-                    root /var/www/html;
-                }
+  #               location /api/ {
+  #                 proxy_pass http://localhost:3000/api/; 
+  #                 proxy_http_version 1.1;
+  #                 proxy_set_header Host $host;
+  #                 proxy_set_header X-Real-IP $remote_addr;
+  #                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  #                 proxy_set_header X-Forwarded-Proto $scheme;
 
-                location /api/ {
-                  proxy_pass http://localhost:3000/api/; 
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
+  #                 add_header 'Access-Control-Allow-Origin' '*' always;
+  #                 add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+  #                 add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
+  #               }
+  #           }
+  #           NGINX_CONF
 
-                  add_header 'Access-Control-Allow-Origin' '*' always;
-                  add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
-                  add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
-                }
-            }
-            NGINX_CONF
+  #           sudo nginx -t
+  #           sudo systemctl reload nginx
 
-            sudo nginx -t
-            sudo systemctl reload nginx
-
-            echo "=== Requesting SSL certificates ==="
-            sudo certbot --nginx -d bbd-grad-program-2025.online -d www.bbd-grad-program-2025.online \
-              --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online
+  #           echo "=== Requesting SSL certificates ==="
+  #           sudo certbot --nginx -d bbd-grad-program-2025.online -d www.bbd-grad-program-2025.online \
+  #             --non-interactive --agree-tos -m admin@bbd-grad-program-2025.online
 
   deploy-api:
     name: Build & Deploy to EC2
@@ -204,7 +197,7 @@ jobs:
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
             EOF
-            pm2 stop case-supplier-app || true
-            pm2 delete case-supplier-app || true
-            pm2 start server.js --name "case-supplier-app" --cwd dist
-            pm2 save
+            # pm2 stop case-supplier-app || true
+            # pm2 delete case-supplier-app || true
+            # pm2 start server.js --name "case-supplier-app" --cwd dist
+            # pm2 save
