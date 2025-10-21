@@ -57,7 +57,8 @@ async function pollQueue() {
           console.log("bank request sent");
           await updateShipmentReference(
             originalExternalOrderId,
-            pickupRequest.paymentReferenceId
+            // pickupRequest.paymentReferenceId UPDATED TO BELOW LINE @ 23:12
+            pickupRequest.pickupRequestId
           );
           console.log("shipment reference updated");
           // Success: delete message from queue
