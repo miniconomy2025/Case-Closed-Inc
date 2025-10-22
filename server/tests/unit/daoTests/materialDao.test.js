@@ -9,14 +9,27 @@ beforeEach(() => {
 });
 
 describe('materialDao', () => {
-  it('increaseMaterialStock calls where and increment with correct values', async () => {
-    mockIncrement.mockResolvedValueOnce(1);
+  describe('increaseMaterialStock', () => {
+    it('returns 1 when material is updated successfully', async () => {
+      mockIncrement.mockResolvedValueOnce(1);
 
-    const result = await increaseMaterialStock(3, 50);
+      const result = await increaseMaterialStock(3, 50);
 
-    expect(db).toHaveBeenCalledWith('materials');       // correct table
-    expect(mockWhere).toHaveBeenCalledWith({ id: 3 }); // correct WHERE
-    expect(mockIncrement).toHaveBeenCalledWith('stock_kg', 50); // correct column and value
-    expect(result).toBe(1);
+      expect(result).toBe(1);
+    });
+
+    it('increases stock by positive quantity', async () => {
+      mockIncrement.mockResolvedValueOnce(1);
+
+      await increaseMaterialStock(3, 100.5);
+
+      expect(mockWhere).toHaveBeenCalledWith({ id: 3 });
+      expect(mockIncrement).toHaveBeenCalledWith('stock_kg', 100.5);
+    });
+
+    it('throws error for negative quantity', async () => {
+        await expect(increaseMaterialStock(3, -50))
+            .rejects.toThrow('Quantity must be positive');
+    });
   });
 });
