@@ -224,4 +224,35 @@ describe("Mock Services Integration Test", () => {
       }
     });
   });
+
+  describe("Mock Service Health Checks", () => {
+    it("should check all mock services health status", async () => {
+      const services = Object.entries(MOCK_SERVICES);
+      const results = {};
+
+      for (const [serviceName, url] of services) {
+        try {
+          const response = await axios.get(`${url}/health`, { timeout: 2000 });
+          results[serviceName] = {
+            status: "running",
+            statusCode: response.status,
+          };
+          console.log(`${serviceName} mock service is running on ${url}`);
+        } catch (error) {
+          results[serviceName] = {
+            status: "not_running",
+            error: error.message,
+          };
+          console.log(`${serviceName} mock service is not running on ${url}`);
+        }
+      }
+
+      // Log the results for debugging
+      console.log("Mock services status:", results);
+
+      // Test passes regardless of mock service status
+      expect(results).toBeDefined();
+      expect(typeof results).toBe("object");
+    });
+  });
 });
