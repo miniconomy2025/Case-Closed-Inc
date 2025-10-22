@@ -4,7 +4,7 @@ import { app } from "../../server.js";
 
 describe("Logistics Integration Test", () => {
   it("should handle logistics delivery requests", async () => {
-    // Test logistics delivery request
+    // Test delivery request
     const deliveryData = {
       type: "DELIVERY",
       quantity: 100,
@@ -15,7 +15,7 @@ describe("Logistics Integration Test", () => {
       .post("/api/logistics")
       .send(deliveryData);
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.CREATED,
@@ -37,7 +37,7 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should handle logistics pickup requests", async () => {
-    // Test logistics pickup request
+    // Test pickup request
     const pickupData = {
       type: "PICKUP",
       orderId: 1,
@@ -46,7 +46,7 @@ describe("Logistics Integration Test", () => {
 
     const response = await request(app).post("/api/logistics").send(pickupData);
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.CREATED,
@@ -69,7 +69,7 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should handle invalid logistics requests gracefully", async () => {
-    // Test invalid logistics request (missing required fields)
+    // Test invalid request with missing fields
     const invalidData = {
       // Missing required fields
     };
@@ -83,7 +83,7 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should handle malformed logistics requests", async () => {
-    // Test malformed JSON request
+    // Test malformed JSON
     const response = await request(app)
       .post("/api/logistics")
       .set("Content-Type", "application/json")
@@ -94,7 +94,7 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should handle logistics with machine delivery", async () => {
-    // Test logistics delivery with machine
+    // Test machine delivery
     const machineDeliveryData = {
       type: "DELIVERY",
       quantity: 1,
@@ -105,7 +105,7 @@ describe("Logistics Integration Test", () => {
       .post("/api/logistics")
       .send(machineDeliveryData);
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.CREATED,
@@ -127,7 +127,7 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should handle logistics endpoint availability", async () => {
-    // Test that the logistics endpoint exists and responds
+    // Test endpoint availability
     const response = await request(app).get("/api/logistics");
 
     // Should return 404 for GET request (only POST is supported)

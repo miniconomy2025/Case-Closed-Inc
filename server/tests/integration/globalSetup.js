@@ -1,12 +1,11 @@
 // Global setup for integration tests
-// This runs once before all integration tests
 
 import { db } from "../../db/knex.js";
 
 export default async function globalSetup() {
   console.log("Global setup for integration tests...");
 
-  // Set test environment variables
+  // Set test environment
   process.env.NODE_ENV = "test";
   process.env.DB_NAME = "case_closed_test_db";
   process.env.DB_HOST = "localhost";
@@ -15,7 +14,7 @@ export default async function globalSetup() {
   process.env.DB_PASSWORD = "password";
 
   try {
-    // Run migrations on test database using the same connection as tests
+    // Run migrations on test database
     console.log("Running migrations on test database...");
     await db.migrate.latest();
     console.log("Migrations completed successfully.");
