@@ -119,10 +119,9 @@ const BankClient = {
           return await this.takeLoan(newAmount);
         }
 
-        console.log(error);
         return{
             success: false,
-            message: 'Bank down'
+            message: `Bank down - ${error.response?.data?.error}`
         }
     }
   },

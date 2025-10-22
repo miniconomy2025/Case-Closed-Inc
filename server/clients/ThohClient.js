@@ -19,7 +19,7 @@ const ThohClient = {
     async getSimulationDate() {
         try{
             const res = await thohApi.get('/current-simulation-time');
-            if(res.data?.error){
+            if(res.data?.error || !res.data.simulationDate){
                 return '0000-00-00';
             }else{
                 return res.data.simulationDate; 
@@ -29,22 +29,33 @@ const ThohClient = {
         }
     },
 
-  async syncCaseMachineToEquipmentParameters() {
-    const response = await thohApi.get("/machines");
-    const { machines } = response.data || {};
+    async syncCaseMachineToEquipmentParameters() {
+      let caseMachine = null;
 
-    const caseMachine = machines.find((m) => m.machineName === "case_machine");
-    if (!caseMachine) {
-      throw new Error("No 'case_machine' found in machines list");
-    }
+      try {
+        const response = await thohApi.get("/machines");
+        const { machines } = response.data || {};
 
-    await insertEquipmentParameters({
-      plastic_ratio: caseMachine.inputRatio?.plastic ?? 0,
-      aluminium_ratio: caseMachine.inputRatio?.aluminium ?? 0,
-      production_rate: caseMachine.productionRate ?? 0,
-    });
-    return true;
-  },
+        if (Array.isArray(machines)) {
+          caseMachine = machines.find((m) => m.machineName === "case_machine");
+          if (!caseMachine) {
+            console.log("[ThohClient] No 'case_machine' found in machines list. Using default machine parameters.");
+          }
+        } else {
+          console.log("[ThohClient] No machines returned. Using default machine parameters.");
+        }
+      } catch (err) {
+        console.log("[ThohClient] Thoh Down. Using default machine parameters.", err?.message);
+      }
+
+      await insertEquipmentParameters({
+        plastic_ratio: caseMachine?.inputRatio?.plastic ?? 4,
+        aluminium_ratio: caseMachine?.inputRatio?.aluminium ?? 7,
+        production_rate: caseMachine?.productionRate ?? 200,
+      });
+
+      return true;
+    },
 };
 
 export default ThohClient;
