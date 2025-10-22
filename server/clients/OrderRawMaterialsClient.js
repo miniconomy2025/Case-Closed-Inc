@@ -93,13 +93,15 @@ const OrderRawMaterialsClient = {
       let rawOrder;
       try {
         if (vendor === 'thoh') {
-          rawOrder = await ThohClient.createRawMaterialsOrder(name, quantity);
           var { success } = await BankClient.handPayment(rawOrder.price, rawOrder.orderId);
         } else {
           rawOrder = await RecyclerClient.createRawMaterialsOrder('electronics_supplier', [
             { rawMaterialName: name, quantityInKg: quantity }
           ]);
-          var { success } = await BankClient.handPayment(rawOrder.total, rawOrder.orderNumber);
+
+          // use recycler’s account number for payment
+          const toAccount = rawOrder.accountNumber;
+          var { success } = await BankClient.makePayment(toAccount, rawOrder.total, rawOrder.orderNumber);
         }
       } catch (err) {
         logger.warn(`[OrderRawMaterialsClient] Failed to order from ${vendor}: ${err.message}`);
@@ -115,7 +117,9 @@ const OrderRawMaterialsClient = {
               rawOrder = await RecyclerClient.createRawMaterialsOrder('electronics_supplier', [
                 { rawMaterialName: name, quantityInKg: quantity }
               ]);
-              var { success } = await BankClient.handPayment(rawOrder.total, rawOrder.orderNumber);
+
+              const toAccount = rawOrder.accountNumber;
+              var { success } = await BankClient.makePayment(toAccount, rawOrder.total, rawOrder.orderNumber);
             }
             vendor = fallbackVendor; // switch vendor
           } catch (err2) {
