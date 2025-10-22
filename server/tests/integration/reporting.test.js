@@ -4,10 +4,10 @@ import { app } from "../../server.js";
 
 describe("Reporting Integration Test", () => {
   it("should handle bank balance reports", async () => {
-    // Test getting bank balance report
+    // Test bank balance report
     const response = await request(app).get("/api/reports/bank/balance");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -25,10 +25,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle stock reports", async () => {
-    // Test getting stock reports
+    // Test stock reports
     const response = await request(app).get("/api/reports/stock");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -46,10 +46,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle orders reports", async () => {
-    // Test getting orders reports
+    // Test orders reports
     const response = await request(app).get("/api/reports/orders");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -67,10 +67,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle shipments reports", async () => {
-    // Test getting shipments reports
+    // Test shipments reports
     const response = await request(app).get("/api/reports/shipments");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -88,10 +88,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle transactions reports", async () => {
-    // Test getting transactions reports
+    // Test transactions reports
     const response = await request(app).get("/api/reports/transactions");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -109,10 +109,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle cases reports", async () => {
-    // Test getting cases reports
+    // Test cases reports
     const response = await request(app).get("/api/reports/cases");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -130,10 +130,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle sales reports", async () => {
-    // Test getting sales reports
+    // Test sales reports
     const response = await request(app).get("/api/reports/sales");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -151,10 +151,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle case orders reports", async () => {
-    // Test getting case orders reports
+    // Test case orders reports
     const response = await request(app).get("/api/reports/case-orders");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -172,10 +172,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle case orders stats reports", async () => {
-    // Test getting case orders stats reports
+    // Test case orders stats reports
     const response = await request(app).get("/api/reports/case-orders/stats");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -193,10 +193,10 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle simulation date reports", async () => {
-    // Test getting simulation date
+    // Test simulation date
     const response = await request(app).get("/api/reports/simulation");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([
       StatusCodes.OK,
       StatusCodes.INTERNAL_SERVER_ERROR,
@@ -214,7 +214,7 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle invalid report requests gracefully", async () => {
-    // Test invalid report endpoint
+    // Test invalid endpoint
     const response = await request(app)
       .get("/api/reports/invalid-report")
       .expect(StatusCodes.NOT_FOUND);
@@ -223,7 +223,7 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle reports endpoint structure", async () => {
-    // Test that reports base endpoint exists but returns 404 (no specific route)
+    // Test base endpoint returns 404
     const response = await request(app)
       .get("/api/reports")
       .expect(StatusCodes.NOT_FOUND);
@@ -232,12 +232,12 @@ describe("Reporting Integration Test", () => {
   });
 
   it("should handle POST requests to reports gracefully", async () => {
-    // Test that POST requests to reports return appropriate error
+    // Test POST requests return 404
     const response = await request(app)
       .post("/api/reports/stock")
       .send({ test: "data" });
 
-    // Should return 404 for POST request (only GET is supported for reports)
+    // Only GET supported for reports
     expect(response.status).toBe(StatusCodes.NOT_FOUND);
   });
 });

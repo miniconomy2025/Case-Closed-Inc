@@ -4,17 +4,17 @@ import { app } from "../../server.js";
 
 describe("Stock Management Integration Test", () => {
   it("should handle case stock information requests", async () => {
-    // Test getting case stock information
+    // Test case stock information
     const response = await request(app).get("/api/cases");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(
       response.status
     );
 
     if (response.status === StatusCodes.OK) {
       expect(response.body).toBeDefined();
-      // Verify the response structure if successful
+      // Verify response structure if successful
       if (Array.isArray(response.body)) {
         expect(response.body.length).toBeGreaterThanOrEqual(0);
       }
@@ -26,17 +26,17 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle stock reports requests", async () => {
-    // Test getting stock reports
+    // Test stock reports
     const response = await request(app).get("/api/reports/stock");
 
-    // The response might be 500 due to database issues, but we can test the API structure
+    // Handle various response scenarios
     expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(
       response.status
     );
 
     if (response.status === StatusCodes.OK) {
       expect(response.body).toBeDefined();
-      // Verify the response structure if successful
+      // Verify response structure if successful
       if (Array.isArray(response.body)) {
         expect(response.body.length).toBeGreaterThanOrEqual(0);
       }
@@ -48,7 +48,7 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle invalid stock requests gracefully", async () => {
-    // Test invalid stock endpoint
+    // Test invalid endpoint
     const response = await request(app)
       .get("/api/stock/invalid-endpoint")
       .expect(StatusCodes.NOT_FOUND);
@@ -57,10 +57,10 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle reports endpoint structure", async () => {
-    // Test that reports endpoint exists and responds
+    // Test reports endpoint
     const response = await request(app).get("/api/reports");
 
-    // Should return 404 for base reports endpoint (no specific route)
+    // Base endpoint returns 404
     expect(response.status).toBe(StatusCodes.NOT_FOUND);
   });
 });

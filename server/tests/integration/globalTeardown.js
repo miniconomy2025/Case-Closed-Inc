@@ -1,5 +1,4 @@
 // Global teardown for integration tests
-// This runs once after all integration tests
 
 import { db } from "../../db/knex.js";
 
@@ -7,11 +6,10 @@ export default async function globalTeardown() {
   console.log("Global teardown for integration tests...");
 
   try {
-    // Clean up test database
+    // Clean up database
     console.log("Cleaning up test database...");
 
-    // Don't truncate tables here - let individual tests handle their own cleanup
-    // This prevents the "tables don't exist" error
+    // Skip cleanup to prevent table errors
     console.log(
       "Test database cleanup skipped - individual tests handle their own cleanup"
     );

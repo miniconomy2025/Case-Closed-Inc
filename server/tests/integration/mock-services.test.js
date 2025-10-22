@@ -4,6 +4,7 @@ import { app } from "../../server.js";
 import axios from "axios";
 
 describe("Mock Services Integration Test", () => {
+  // Mock service endpoints for testing
   const MOCK_SERVICES = {
     commercialBank: "http://localhost:3001",
     hand: "http://localhost:3002",
@@ -22,13 +23,13 @@ describe("Mock Services Integration Test", () => {
         console.log(
           "Commercial Bank mock service not available - this is expected if not started"
         );
-        // Don't fail the test if mock service isn't running
+        // Skip test if service not running
         expect(error.code).toBeDefined();
       }
     });
 
     it("should handle payment requests through our API", async () => {
-      // Test payment endpoint that would use the commercial bank mock
+      // Test payment endpoint integration
       const paymentData = {
         orderId: 1,
         amount: 1000,
@@ -39,7 +40,7 @@ describe("Mock Services Integration Test", () => {
         .post("/api/payment")
         .send(paymentData);
 
-      // The response might be 500 due to database issues, but we can test the API structure
+      // Handle various response scenarios
       expect([
         StatusCodes.OK,
         StatusCodes.CREATED,
@@ -72,17 +73,16 @@ describe("Mock Services Integration Test", () => {
         console.log(
           "Hand mock service not available - this is expected if not started"
         );
-        // Don't fail the test if mock service isn't running
+        // Skip test if service not running
         expect(error.code).toBeDefined();
       }
     });
 
     it("should handle hand service requests through our API", async () => {
-      // Test any endpoint that would interact with the hand service
-      // This could be machine operations or other hand-related functionality
+      // Test machine endpoint that uses hand service
       const response = await request(app).get("/api/machines");
 
-      // The response might be 500 due to database issues, but we can test the API structure
+      // Handle various response scenarios
       expect([
         StatusCodes.OK,
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -112,13 +112,13 @@ describe("Mock Services Integration Test", () => {
         console.log(
           "Bulk Logistics mock service not available - this is expected if not started"
         );
-        // Don't fail the test if mock service isn't running
+        // Skip test if service not running
         expect(error.code).toBeDefined();
       }
     });
 
     it("should handle logistics requests that use bulk logistics", async () => {
-      // Test logistics endpoint that would interact with bulk logistics
+      // Test logistics endpoint integration
       const logisticsData = {
         type: "DELIVERY",
         quantity: 100,
@@ -129,7 +129,7 @@ describe("Mock Services Integration Test", () => {
         .post("/api/logistics")
         .send(logisticsData);
 
-      // The response might be 500 due to database issues, but we can test the API structure
+      // Handle various response scenarios
       expect([
         StatusCodes.OK,
         StatusCodes.CREATED,
@@ -155,10 +155,10 @@ describe("Mock Services Integration Test", () => {
 
   describe("End-to-End Integration with Mock Services", () => {
     it("should handle complete order workflow with mock services", async () => {
-      // Test a complete workflow that would involve multiple mock services
+      // Test end-to-end order workflow
       const orderData = { quantity: 1000 };
 
-      // Step 1: Create order
+      // Create order first
       const orderResponse = await request(app)
         .post("/api/orders")
         .send(orderData);
@@ -172,7 +172,7 @@ describe("Mock Services Integration Test", () => {
       if (orderResponse.status === StatusCodes.CREATED) {
         console.log("Order creation works in end-to-end workflow");
 
-        // Step 2: Process payment (would use commercial bank mock)
+        // Process payment using bank mock
         const paymentData = {
           orderId: orderResponse.body.id,
           amount: orderResponse.body.total_price,
@@ -204,10 +204,10 @@ describe("Mock Services Integration Test", () => {
     });
 
     it("should handle simulation requests that might use mock services", async () => {
-      // Test simulation endpoint that might interact with various mock services
+      // Test simulation endpoint
       const response = await request(app).get("/api/simulation");
 
-      // The response might be 500 due to database issues, but we can test the API structure
+      // Handle various response scenarios
       expect([
         StatusCodes.OK,
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -247,10 +247,10 @@ describe("Mock Services Integration Test", () => {
         }
       }
 
-      // Log the results for debugging
+      // Log service status for debugging
       console.log("Mock services status:", results);
 
-      // Test passes regardless of mock service status
+      // Test passes regardless of service status
       expect(results).toBeDefined();
       expect(typeof results).toBe("object");
     });
