@@ -47,7 +47,29 @@ export default class DecisionEngine {
     const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 0;
     const minThreshold = this.thresholds[`${material}Min`];
 
-    return (inventory[material] < minThreshold && demandRatio > this.thresholds.demandThreshold) || ( balance > this.thresholds.excessCashThreshold);
+    // only consider buying if stock low or balance is high
+    const shouldBuy = (inventory[material] < minThreshold && demandRatio > this.thresholds.demandThreshold) || (balance > this.thresholds.excessCashThreshold);
+
+    if (!shouldBuy) {
+        return false;
+    }
+
+    // calculate the quantity needed to reach threshold
+    const neededQuantity = minThreshold - inventory[material];
+    if (neededQuantity <= 0) {
+        return false;
+    }
+
+    // round down to nearest 1000 units (simulation constraint)
+    const orderQuantity = Math.floor(neededQuantity / 1000) * 1000;
+    if (orderQuantity <= 0) {
+        return false;
+    }
+
+    // store quantity in state for run()
+    state.materialOrderQuantity = orderQuantity;
+
+    return true;
   }
 
   async buyMachine(state) {
@@ -56,90 +78,88 @@ export default class DecisionEngine {
     return (inventory.machine < this.thresholds.machineMin) || (balance > this.thresholds.excessCashThreshold);
   }
 
-    async run() {
-        let have_account = false;
-        try{
-            const { accountNumber } = await BankClient.getMyAccount();
-            if (accountNumber) {
-                have_account = true;
-            }
-            
-        }catch {
-            have_account = false;
+  async run() {
+    let have_account = false;
+    try{
+        const { accountNumber } = await BankClient.getMyAccount();
+        if (accountNumber) {
+            have_account = true;
         }
-
-        if(have_account){
-            const state = await this.getState();
-            if(state.balance < 2000){
-                try {
-                    const { message } = await BankClient.takeLoan(10000);
-                    logger.info(`[DecisionEngine]: ${message}`);
-                } catch {
-                    logger.info(`[DecisionEngine]: Failed to take loan`);
-                }                
-            }else{
-                if (await this.buyMaterial(state, "plastic")) {
-                try {
-                logger.info("[DecisionEngine]: Plastic stock low!  Buying 1000 units");
-                        await OrderRawMaterialsClient.processOrderFlow({
-                            name: 'plastic',
-                            quantity: 1000
-                        });
-                    } catch {
-                        logger.info("[DecisionEngine]: Failed to buy machine");
-                    }
-                } else {
-                    logger.info("[DecisionEngine]: Plastic stock good!");
-                }
-
-                if (await this.buyMaterial(state, "aluminium")) {
-                    try {
-                        logger.info("[DecisionEngine]: Aluminium stock low! Buying 1000 units");
-                        await OrderRawMaterialsClient.processOrderFlow({
-                            name: 'aluminium',
-                            quantity: 1000
-                        });
-                    } catch {
-                        logger.info("[DecisionEngine]: Failed to buy machine");
-                    }
-                } else {
-                    logger.info("[DecisionEngine]: Aluminium stock good!");
-                }
-
-                if (await this.buyMachine(state)) {
-                    try {
-                        logger.info("[DecisionEngine]: Can buy machine");
-                        await OrderMachineClient.processOrderFlow(1);
-                    } catch {
-                        logger.info("[DecisionEngine]: Failed to buy machine");
-                    }
-                } else {
-                    logger.info("[DecisionEngine]: Do not buy machine");
-                }
-            }
-        }else{
-            try {
-                const { accountNumber } = await BankClient.createAccount({
-                    notification_url: process.env.BANK_PAYMENT_URL,
-                });
-                // Store our account number
-                await updateAccount(accountNumber, 0);
-                logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
-            } catch {
-                logger.info(`[DecisionEngine]: Failed to create account`);
-            }
-
-            // Get loan
-            try {
-                try {
-                    const { message } = await BankClient.takeLoan(500000);
-                    logger.info(`[DecisionEngine]: ${message}`);
-                } catch {
-                    logger.info(`[DecisionEngine]: Failed to take loan`);
-                } 
-            } catch {
-                logger.info(`[DecisionEngine]: Failed to take loan`);
-            }
-        }
+        
+    }catch {
+        have_account = false;
     }
+
+    if(have_account){
+      const state = await this.getState();
+      if(state.balance < 2000){
+        try {
+          const { message } = await BankClient.takeLoan(10000);
+          logger.info(`[DecisionEngine]: ${message}`);
+        } catch {
+          logger.info(`[DecisionEngine]: Failed to take loan`);
+        }
+      }else{
+        if (await this.buyMaterial(state, "plastic")) {
+          try {
+            logger.info("[DecisionEngine]: Plastic stock low! Buying stock");
+            await OrderRawMaterialsClient.processOrderFlow({
+              name: 'plastic',
+              quantity: state.materialOrderQuantity
+            });
+          } catch {
+            logger.info("[DecisionEngine]: Failed to buy plastic");
+          }
+        } else {
+          logger.info("[DecisionEngine]: Plastic stock good!");
+        }
+
+        // handle aluminium
+        if (await this.buyMaterial(state, "aluminium")) {
+          try {
+            logger.info("[DecisionEngine]: Aluminium stock low! Buying stock");
+            await OrderRawMaterialsClient.processOrderFlow({
+              name: 'aluminium',
+              quantity: state.materialOrderQuantity
+            });
+          } catch {
+            logger.info("[DecisionEngine]: Failed to buy aluminium");
+          }
+        } else {
+          logger.info("[DecisionEngine]: Aluminium stock good!");
+        }
+
+        // handle machine
+        if (await this.buyMachine(state)) {
+          try {
+            logger.info("[DecisionEngine]: Can buy machine");
+            await OrderMachineClient.processOrderFlow(1);
+          } catch {
+            logger.info("[DecisionEngine]: Failed to buy machine");
+          }
+        } else {
+          logger.info("[DecisionEngine]: Do not buy machine");
+        }
+      }
+    } else {
+      // create bank account
+      try {
+        const { accountNumber } = await BankClient.createAccount({
+          notification_url: process.env.BANK_PAYMENT_URL,
+        });
+        await updateAccount(accountNumber, 0);
+        logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
+      } catch {
+        logger.info(`[DecisionEngine]: Failed to create account`);
+      }
+
+      // get loan
+      try {
+        const { message } = await BankClient.takeLoan(10000);
+        logger.info(`[DecisionEngine]: ${message}`);
+      } catch {
+        logger.info(`[DecisionEngine]: Failed to take loan`);
+      }
+    }
+  }
 }

@@ -1,19 +1,44 @@
+import axios from 'axios';
+import https from 'https';
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
+const recyclerApi = axios.create({
+  baseURL: process.env.RECYCLER_API_URL,
+  timeout: 5000,
+  headers: {
+    'Client-Id': 'case-supplier',
+  },
+  httpsAgent
+});
+
 const RecyclerClient = {
-  async getAvailableMaterials() {
-    return [
-      { id: 1, name: "aluminium", available_quantity_in_kg: 2, price: 5.0 },
-      { id: 2, name: "plastic", available_quantity_in_kg: 3, price: 2.5 },
-    ];
+  async getRawMaterials() {
+    const res = await recyclerApi.get('/materials');
+    // map to consistent format with ThohClient
+    return res.data.map(m => ({
+      name: m.name.toLowerCase(),
+      quantityAvailable: m.availableQuantityInKg,
+      pricePerKg: m.pricePerKg
+    }));
   },
 
-  async placeOrder(item) {
-    return {
-      orderNumber: "mock-recycler-order-uuid-1234",
-      status: "created",
-      materialId: item.materialId,
-      quantity: item.quantity,
+  async createRawMaterialsOrder(companyName, orderItems) {
+    const requestData = {
+      companyName,
+      orderItems
     };
+
+    const res = await recyclerApi.post('/orders', requestData);
+    return res.data.data;
   },
+
+  async getOrder(orderNumber) {
+    const res = await recyclerApi.get(`/orders/${orderNumber}`);
+    return res.data.data;
+  }
 };
 
 export default RecyclerClient;
