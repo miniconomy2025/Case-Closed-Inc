@@ -81,4 +81,15 @@ describe("Logistics Integration Test", () => {
     // Should return 400 for invalid request
     expect(response.status).toBe(StatusCodes.BAD_REQUEST);
   });
+
+  it("should handle malformed logistics requests", async () => {
+    // Test malformed JSON request
+    const response = await request(app)
+      .post("/api/logistics")
+      .set("Content-Type", "application/json")
+      .send("invalid json data");
+
+    // Should return 400 for malformed JSON
+    expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+  });
 });
