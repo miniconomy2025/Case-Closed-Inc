@@ -67,4 +67,18 @@ describe("Logistics Integration Test", () => {
       );
     }
   });
+
+  it("should handle invalid logistics requests gracefully", async () => {
+    // Test invalid logistics request (missing required fields)
+    const invalidData = {
+      // Missing required fields
+    };
+
+    const response = await request(app)
+      .post("/api/logistics")
+      .send(invalidData);
+
+    // Should return 400 for invalid request
+    expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+  });
 });
