@@ -198,6 +198,7 @@ jobs:
             BULK_LOGISTICS_API_URL=https://team7-todo.xyz/api
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
+            RECYCLER_API_URL=https://api.recycler.susnet.co.za
             EOF
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server/dist"
