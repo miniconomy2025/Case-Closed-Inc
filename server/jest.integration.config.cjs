@@ -1,6 +1,10 @@
 module.exports = {
-  // Extend the base Jest config
-  ...require("./jest.config.cjs"),
+  // Transform configuration for ES modules
+  transform: {
+    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
+  },
+  moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node"],
+  testEnvironment: "node",
 
   // Integration test specific settings
   testMatch: ["<rootDir>/tests/integration/**/*.test.js"],
