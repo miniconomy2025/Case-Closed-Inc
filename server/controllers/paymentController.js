@@ -5,6 +5,7 @@ import BankClient from '../clients/BankClient.js';
 
 export const handlePayment = async (req, res, next) => {
     try {
+        console.log("Payment notification received:", req.body);
         const { description, from, amount, status } = req.body;
 
         if (status == "success") {
