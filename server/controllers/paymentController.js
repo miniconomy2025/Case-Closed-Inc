@@ -19,7 +19,7 @@ export const handlePayment = async (req, res, next) => {
 
             const cancelledStatus = await getOrderStatusByName('order_cancelled');
 
-            if (order.order_status_id === cancelledStatus) {
+            if (order.order_status_id === cancelledStatus.id) {
                 await BankClient.makePayment(from, amount * 0.8, `Order already cancelled, refunding 80% of order ID: ${description}`);
                 return res
                     .status(StatusCodes.OK)
