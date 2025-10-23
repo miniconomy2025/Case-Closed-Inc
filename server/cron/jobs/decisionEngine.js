@@ -18,7 +18,7 @@ export default class DecisionEngine {
       machineMin: 10,
       caseProductionBuffer: 100,
       demandThreshold: 0.5,
-      excessCashThreshold: 200000
+      excessCashThreshold: 50000
     };
   }
 
