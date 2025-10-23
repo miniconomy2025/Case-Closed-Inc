@@ -15,7 +15,7 @@ export default class CancelUnpaidOrdersJob {
             const expiredOrders = [];
 
             for (const order of unpaidOrders) {
-                if (this.simulationTimer.getDaysPassed(order.ordered_at) > 7) {
+                if (this.simulationTimer.getDaysPassed(order.ordered_at) > 200) {
                     expiredOrders.push(order);
                 }
             }
