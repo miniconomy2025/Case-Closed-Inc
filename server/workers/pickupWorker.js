@@ -15,7 +15,7 @@ const sqs = new SQSClient({ region: process.env.AWS_REGION || "af-south-1" });
 
 const PICKUP_QUEUE_URL = process.env.PICKUP_QUEUE_URL;
 
-async function pollQueue() {
+export async function pollQueue() {
   while (true) {
     const { Messages } = await sqs.send(
       new ReceiveMessageCommand({
@@ -33,7 +33,7 @@ async function pollQueue() {
         } = JSON.parse(msg.Body);
         try {
           // Debug log for payload
-          console.log("Pickup request payload:", {
+          console.log("DEQUEUED MESSAGE: Pickup request payload:", {
             originalExternalOrderId,
             originCompany,
             destinationCompany: "case-supplier",
@@ -77,4 +77,3 @@ async function pollQueue() {
     }
   }
 }
-pollQueue();

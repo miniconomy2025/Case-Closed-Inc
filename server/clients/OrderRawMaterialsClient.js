@@ -34,8 +34,8 @@ const OrderRawMaterialsClient = {
       }
 
       // find the material info from both vendors
-      const thohMaterial = thohMaterials.find((m) => m.name.toLowerCase() === name.toLowerCase());
-      const recyclerMaterial = recyclerMaterials.find((m) => m.rawMaterialName.toLowerCase() === name.toLowerCase());
+      const thohMaterial = thohMaterials.find((m) => m.rawMaterialName.toLowerCase() === name.toLowerCase());
+      const recyclerMaterial = recyclerMaterials.find((m) => m.name.toLowerCase() === name.toLowerCase());
 
       if (!thohMaterial && !recyclerMaterial) {
         throw new Error(`Material ${name} not found in market.`);

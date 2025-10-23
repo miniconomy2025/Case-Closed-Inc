@@ -3,7 +3,7 @@ import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import routes from './routes/index.js';
-import './workers/pickupWorker.js';
+import { pollQueue } from './workers/pickupWorker.js';
 
 import cors from 'cors';
 import { resumeSimulation } from './controllers/simulationController.js';
@@ -35,6 +35,7 @@ const startServer = async () => {
             logger.info(`Server running on http://${HOST}:${PORT}`);
         });
         resumeSimulation();
+        pollQueue();
     } catch (err) {
         logger.error('Migrations failed', { error: err });
         logger.error('Server startup failed — exiting.');
