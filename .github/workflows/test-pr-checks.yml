@@ -126,27 +126,3 @@ jobs:
           name: unit-test-coverage
           path: server/coverage/
           retention-days: 7
-
-  lint:
-    name: Lint Code
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: server/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ./server
-        run: npm ci
-
-      - name: Run linter (if configured)
-        working-directory: ./server
-        run: npm run lint --if-present
-        continue-on-error: true
