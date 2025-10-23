@@ -28,12 +28,12 @@ const OrderMachineClient = {
       const totalMachineCost = pricePerUnit * quantity;
 
       // estimate logistics cost with fake order
-      const fakeItems = [{ itemName: "case_machine", quantity }];
-      const pickupPreview = await BulkLogisticsClient.createPickupRequest(
-        'preview-order',
-        'thoh',
-        fakeItems
-      );
+      // const fakeItems = [{ itemName: "case_machine", quantity: quantity }];
+      // const pickupPreview = await BulkLogisticsClient.createPickupRequest(
+      //   'preview-order',
+      //   'thoh',
+      //   fakeItems
+      // );
 
       const logisticsCost = parseFloat(pickupPreview.cost);
       const { balance } = await BankClient.getBalance();
