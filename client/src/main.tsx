@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import App from './App';
-import { DashboardPage, OrdersPage } from './pages';
+import { DashboardPage, ExternalOrdersPage, OrdersPage } from './pages';
 import Layout from './layouts/dashboard';
 
 import {
@@ -28,6 +28,10 @@ const router = createBrowserRouter([
           {
             path: 'orders',
             Component: OrdersPage,
+          },
+          {
+            path: 'external-orders',
+            Component: ExternalOrdersPage,
           },
         ],
       },

@@ -5,7 +5,9 @@ import {
     getAllShipments,
     getSalesReport,
     getCaseOrders,
-    getOrderStats
+    getOrderStats,
+    getExternalOrders,
+    getExternalOrderStats
 } from "../daos/reportDao.js";
 
 import {
@@ -144,6 +146,35 @@ export const getCaseOrdersStatsReport = async (req, res, next) => {
     next(error);
   }
 
+}
+
+
+export const getExternalOrdersReport = async (req, res, next) => {
+    try {
+    const externalOrders = await getExternalOrders();
+
+    if(externalOrders){
+        res.status(StatusCodes.OK).json(externalOrders);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No external orders found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
+
+}
+export const getExternalOrderStatsReport = async (req, res, next) => {
+    try {
+    const externalOrdersStats = await getExternalOrderStats();
+
+    if(externalOrdersStats){
+        res.status(StatusCodes.OK).json(externalOrdersStats);
+    }else {
+        res.status(StatusCodes.NOT_FOUND).json({message: "No external orders stats found"})
+    }    
+  } catch (error) {
+    next(error);
+  }
 }
 
 export const getSimulationDate = async (req, res, next) => {
