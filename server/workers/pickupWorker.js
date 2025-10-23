@@ -11,11 +11,19 @@ import BulkLogisticsClient from "../clients/BulkLogisticsClient.js";
 import BankClient from "../clients/BankClient.js";
 import { updateShipmentReference } from "../daos/externalOrdersDao.js";
 
-const sqs = new SQSClient({ region: process.env.AWS_REGION || "af-south-1" });
+// Only initialize SQS in production or when explicitly configured
+const sqs = process.env.PICKUP_QUEUE_URL
+  ? new SQSClient({ region: process.env.AWS_REGION || "af-south-1" })
+  : null;
 
 const PICKUP_QUEUE_URL = process.env.PICKUP_QUEUE_URL;
 
 async function pollQueue() {
+  if (!sqs || !PICKUP_QUEUE_URL) {
+    console.log("SQS not configured, skipping pickup worker");
+    return;
+  }
+
   while (true) {
     const { Messages } = await sqs.send(
       new ReceiveMessageCommand({
@@ -26,11 +34,9 @@ async function pollQueue() {
     );
     if (Messages) {
       for (const msg of Messages) {
-        const {
-          originalExternalOrderId,
-          originCompany,
-          items,
-        } = JSON.parse(msg.Body);
+        const { originalExternalOrderId, originCompany, items } = JSON.parse(
+          msg.Body
+        );
         try {
           // Debug log for payload
           console.log("Pickup request payload:", {
