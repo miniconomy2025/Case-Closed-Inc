@@ -37,7 +37,7 @@ export default function StockLevelsBarChart({
       }}
     >
       <Typography
-        sx={{ color: "#304074", mt: 1, fontWeight: 700 }}
+        sx={{ color: "#304074", mt: 1, fontWeight: 700, pt: 2 }}
         variant="h5"
       >
         Raw Materials Stock
