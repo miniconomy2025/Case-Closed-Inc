@@ -13,6 +13,10 @@
     "load:run": "artillery run --output report.json tests/load/test.yml",
     "load:report": "artillery run tests/load/test.yml --record --key a9_qdjokd2lj74sbcbzbb3381vyn3no5tg9",
     "test:integration": "cross-env NODE_ENV=test DB_NAME=case_closed_test_db DB_HOST=localhost DB_PORT=5433 DB_USER=postgres DB_PASSWORD=password NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.cjs --forceExit",
+    "test:sqs": "cross-env NODE_ENV=test AWS_ENDPOINT_URL=http://localhost:4566 AWS_REGION=us-east-1 NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.cjs --forceExit tests/integration/aws-sqs.test.js",
+    "localstack:start": "docker-compose -f localstack-config.yml up -d",
+    "localstack:stop": "docker-compose -f localstack-config.yml down",
+    "localstack:logs": "docker-compose -f localstack-config.yml logs -f",
     "test:all": "npm run test:unit && npm run test:integration"
   },
   "keywords": [],
