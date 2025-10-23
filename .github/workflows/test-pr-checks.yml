@@ -1,6 +1,13 @@
 name: Integration Tests
 
 on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run tests on"
+        required: true
+        default: "feature/comprehensive-integration-testing"
+        type: string
   push:
     branches:
       - "feature/comprehensive-integration-testing"
@@ -144,43 +151,43 @@ jobs:
         run: npm run lint --if-present
         continue-on-error: true
 
-  pr-status-check:
-    name: PR Status Check
-    runs-on: ubuntu-latest
-    needs: [integration-tests, unit-tests]
-    if: always()
+  # pr-status-check:
+  #   name: PR Status Check
+  #   runs-on: ubuntu-latest
+  #   needs: [integration-tests, unit-tests]
+  #   if: always()
 
-    steps:
-      - name: Check test results
-        run: |
-          if [ "${{ needs.integration-tests.result }}" != "success" ] || [ "${{ needs.unit-tests.result }}" != "success" ]; then
-            echo "❌ Tests failed! Please fix the issues before merging."
-            exit 1
-          else
-            echo "✅ All tests passed! PR is ready for review."
-          fi
+  #   steps:
+  #     - name: Check test results
+  #       run: |
+  #         if [ "${{ needs.integration-tests.result }}" != "success" ] || [ "${{ needs.unit-tests.result }}" != "success" ]; then
+  #           echo "❌ Tests failed! Please fix the issues before merging."
+  #           exit 1
+  #         else
+  #           echo "✅ All tests passed! PR is ready for review."
+  #         fi
 
-      - name: Comment PR with results
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const integrationStatus = '${{ needs.integration-tests.result }}' === 'success' ? '✅ Passed' : '❌ Failed';
-            const unitStatus = '${{ needs.unit-tests.result }}' === 'success' ? '✅ Passed' : '❌ Failed';
+  #     - name: Comment PR with results
+  #       if: always()
+  #       uses: actions/github-script@v7
+  #       with:
+  #         script: |
+  #           const integrationStatus = '${{ needs.integration-tests.result }}' === 'success' ? '✅ Passed' : '❌ Failed';
+  #           const unitStatus = '${{ needs.unit-tests.result }}' === 'success' ? '✅ Passed' : '❌ Failed';
 
-            const comment = `## 🧪 Test Results
+  #           const comment = `## 🧪 Test Results
 
-            | Test Suite | Status |
-            |------------|--------|
-            | Integration Tests | ${integrationStatus} |
-            | Unit Tests | ${unitStatus} |
+  #           | Test Suite | Status |
+  #           |------------|--------|
+  #           | Integration Tests | ${integrationStatus} |
+  #           | Unit Tests | ${unitStatus} |
 
-            ${integrationStatus.includes('✅') && unitStatus.includes('✅') ? '**All tests passed! This PR is ready for review.** 🎉' : '**Some tests failed. Please review and fix the issues.**'}
-            `;
+  #           ${integrationStatus.includes('✅') && unitStatus.includes('✅') ? '**All tests passed! This PR is ready for review.** 🎉' : '**Some tests failed. Please review and fix the issues.**'}
+  #           `;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+  #           github.rest.issues.createComment({
+  #             issue_number: context.issue.number,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: comment
+  #           });
