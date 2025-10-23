@@ -31,18 +31,30 @@ export default async function globalSetup() {
     // Seed test-specific data that's required by controllers but not part of production migrations
     console.log("Seeding test-specific configuration data...");
 
-    // Insert equipment_parameters (required for case order calculations)
-    await testDb("equipment_parameters").insert({
-      plastic_ratio: 3,
-      aluminium_ratio: 5,
-      production_rate: 150,
-      case_machine_weight: 100,
-    });
+    // Insert equipment_parameters if not exists (required for case order calculations)
+    const equipmentExists = await testDb("equipment_parameters").first();
+    if (!equipmentExists) {
+      await testDb("equipment_parameters").insert({
+        plastic_ratio: 3,
+        aluminium_ratio: 5,
+        production_rate: 150,
+        case_machine_weight: 100,
+      });
+      console.log("Equipment parameters seeded.");
+    } else {
+      console.log("Equipment parameters already exist.");
+    }
 
-    // Insert bank_details (required for case order creation)
-    await testDb("bank_details").insert({
-      account_number: "1234567890",
-    });
+    // Insert bank_details if not exists (required for case order creation)
+    const bankExists = await testDb("bank_details").first();
+    if (!bankExists) {
+      await testDb("bank_details").insert({
+        account_number: "1234567890",
+      });
+      console.log("Bank details seeded.");
+    } else {
+      console.log("Bank details already exist.");
+    }
 
     console.log("Test data seeded successfully.");
   } catch (error) {
