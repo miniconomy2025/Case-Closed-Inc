@@ -1,13 +1,13 @@
 name: Integration Tests
 
 on:
-  pull_request:
+  push:
     branches:
-      - "**" # Runs on PRs to any branch
+      - "feature/comprehensive-integration-testing"
     paths:
       - "server/**"
       - "mock/**"
-      - ".github/workflows/integration-tests.yml"
+      - ".github/workflows/test-pr-checks.yml"
 
 jobs:
   integration-tests:
