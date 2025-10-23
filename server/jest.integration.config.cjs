@@ -10,6 +10,9 @@ module.exports = {
   testMatch: ["<rootDir>/tests/integration/**/*.test.js"],
   testTimeout: 30000, // Longer timeout for integration tests
 
+  // Run tests sequentially to avoid database conflicts
+  maxWorkers: 1,
+
   // Setup files for integration tests
   setupFilesAfterEnv: ["<rootDir>/tests/integration/setup.js"],
 
