@@ -7,8 +7,10 @@ describe("Orders CRUD Integration Test", () => {
   let testOrderId;
 
   beforeEach(async () => {
-    // Clean up test orders
-    await testDb("case_orders").where("ordered_at", "2050-01-01").del();
+    // Clean up ALL pending test orders (from all tests) to ensure clean state
+    await testDb("case_orders")
+      .whereIn("order_status_id", [1, 2]) // payment_pending, pickup_pending
+      .del();
 
     // Ensure we have sufficient case stock for testing
     await testDb("stock")
