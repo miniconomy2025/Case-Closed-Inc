@@ -193,11 +193,12 @@ jobs:
             API_PORT=3000
             API_HOST=${API_HOST}
             BANK_API_URL=https://commercial-bank-api.subspace.site/api
-            THOH_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
-            RAW_MATERIALS_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/
+            THOH_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/api
+            RAW_MATERIALS_API_URL=https://ec2-13-244-65-62.af-south-1.compute.amazonaws.com/api
             BULK_LOGISTICS_API_URL=https://team7-todo.xyz/api
             PICKUP_QUEUE_URL=https://sqs.af-south-1.amazonaws.com/263883060207/pickup-queue.fifo
             BANK_PAYMENT_URL=https://bbd-grad-program-2025.online/api/payment
+            RECYCLER_API_URL=https://api.recycler.susnet.co.za
             EOF
             pm2 delete case-supplier-app || true
             pm2 start server.js --name "case-supplier-app" --cwd "$DEPLOY_DIR/build-server/dist"

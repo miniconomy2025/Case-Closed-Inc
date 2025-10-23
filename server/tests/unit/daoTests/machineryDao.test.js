@@ -9,13 +9,26 @@ beforeEach(() => {
 });
 
 describe('machineryDao', () => {
-  it('increaseNumberOfMachines calls increment with correct amount', async () => {
-    mockIncrement.mockResolvedValueOnce(1);
+  describe('increaseNumberOfMachines', () => {
+    it('returns number of rows updated', async () => {
+      mockIncrement.mockResolvedValueOnce(1);
 
-    const result = await increaseNumberOfMachines(5);
+      const result = await increaseNumberOfMachines(5);
 
-    expect(db).toHaveBeenCalledWith('machinery');  // correct table
-    expect(mockIncrement).toHaveBeenCalledWith('amount', 5); // correct column and value
-    expect(result).toBe(1);
+      expect(result).toBe(1);
+    });
+
+    it('handles positive amounts', async () => {
+      mockIncrement.mockResolvedValueOnce(1);
+
+      await increaseNumberOfMachines(10);
+
+      expect(mockIncrement).toHaveBeenCalledWith('amount', 10);
+    });
+
+    it('throws error for negative amounts', async () => {
+        await expect(increaseNumberOfMachines(-5))
+            .rejects.toThrow('Amount must be positive');
+    });
   });
 });

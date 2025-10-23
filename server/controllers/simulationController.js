@@ -192,6 +192,6 @@ export const resumeSimulation = async () => {
     }
 
   } catch (error) {
-    logger.info(`[Simulation]: No active simulation date`);
+    logger.info(`[Simulation]: ${error.message}`);
   }
 };

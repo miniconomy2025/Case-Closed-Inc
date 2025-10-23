@@ -14,7 +14,7 @@ const bankApi = axios.create({
 const BankClient = {
   async createAccount(notificationUrl) {
     try {
-      const res = await bankApi.post('/account', { callbackURL: notificationUrl });
+      const res = await bankApi.post('/account', { notification_url: notificationUrl });
       return { accountNumber: res.data.account_number };
     } catch {
       logger.warn('create bank account call failed')
@@ -84,32 +84,44 @@ const BankClient = {
   },
 
   async takeLoan(amount) {
-    try{
+      try{
         const response = await bankApi.post('/loan', { amount });
         if(response.data.success == true){
-            const { account_number }  = await getAccountNumber();
-            await updateBalance(amount, account_number);
-            return {
-                success: response.data.success,
-                message: 'Loan approved',
-                loanNumber: response.data.loan_number,                
-            }
+          const { account_number }  = await getAccountNumber();
+          await updateBalance(amount, account_number);
+          return {
+            success: response.data.success,
+            message: 'Loan approved',
+            loanNumber: response.data.loan_number,
+          }
         }else{
             try{
                 const validAmount = parseFloat(response.data.amount_remaining);
                 return await this.takeLoan(validAmount);
-            }catch{
-                return{
-                    success: false,
-                    message: 'Loan Rejected'                    
-                }
+          }catch{
+            return{
+              success: false,
+              message: 'Loan Rejected'                    
             }
+          }
         }
-    }catch (error) {
-      console.log(error);
+      }catch (error) {
+        if (error.response?.status === 422) {
+          const newAmount = amount / 2;
+          const minThreshold = 1000;
+          if (newAmount < minThreshold) {
+            return {
+              success: false,
+              message: `Loan rejected: minimum retry threshold reached (amount < ${minThreshold})`,
+            };
+          }
+          logger.warn(`Loan amount too large (${amount}), retrying with ${newAmount}`);
+          return await this.takeLoan(newAmount);
+        }
+
         return{
             success: false,
-            message: 'Bank down'
+            message: `Bank down - ${error.response?.data?.error}`
         }
     }
   },
