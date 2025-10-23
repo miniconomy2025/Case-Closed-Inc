@@ -1,12 +1,13 @@
 // Global setup for integration tests
 
+import dotenv from "dotenv";
 import { testDb } from "./testDb.js";
 
 export default async function globalSetup() {
   console.log("Global setup for integration tests...");
-
-  // Set test environment
-  process.env.NODE_ENV = "test";
+  console.log(
+    `Using test database: ${process.env.DB_NAME} on port ${process.env.DB_PORT}`
+  );
 
   try {
     // Check database connection
