@@ -155,7 +155,7 @@ export default class DecisionEngine {
 
       // get loan
       try {
-        const { message } = await BankClient.takeLoan(10000);
+        const { message } = await BankClient.takeLoan(100000);
         logger.info(`[DecisionEngine]: ${message}`);
       } catch {
         logger.info(`[DecisionEngine]: Failed to take loan`);
