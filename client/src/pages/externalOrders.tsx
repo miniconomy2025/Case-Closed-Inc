@@ -89,10 +89,6 @@ const ExternalOrdersTable: React.FC = () => {
             <p style={valueStyle}>{stats.totalExternalOrders}</p>
           </div>
           <div style={cardStyle}>
-            <h3 style={{ color: '#4caf50' }}>Delivered</h3>
-            <p style={valueStyle}>{stats.delivered}</p>
-          </div>
-          <div style={cardStyle}>
             <h3 style={{ color: '#2196f3' }}>Material Orders</h3>
             <p style={valueStyle}>{stats.material_order}</p>
           </div>
@@ -118,7 +114,7 @@ const ExternalOrdersTable: React.FC = () => {
               <th style={thStyle}>Total Cost</th>
               <th style={thStyle}>Shipment Ref</th>
               <th style={thStyle}>Ordered At</th>
-              <th style={thStyle}>Received At</th>
+             
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
@@ -135,7 +131,7 @@ const ExternalOrdersTable: React.FC = () => {
                 </td>
                 <td style={tdStyle}>{order.shipment_reference || 'N/A'}</td>
                 <td style={tdStyle}>{formatDate(order.ordered_at)}</td>
-                <td style={tdStyle}>{formatDate(order.received_at)}</td>
+                
                 <td style={tdStyle}>
                   <button
                     onClick={() => {
@@ -166,7 +162,7 @@ const ExternalOrdersTable: React.FC = () => {
               <p><strong>Total Cost:</strong> Ð {selectedOrder.total_cost.toFixed(2)}</p>
               <p><strong>Shipment Ref:</strong> {selectedOrder.shipment_reference || 'N/A'}</p>
               <p><strong>Ordered At:</strong> {formatDate(selectedOrder.ordered_at)}</p>
-              <p><strong>Received At:</strong> {formatDate(selectedOrder.received_at)}</p>
+              
             </div>
             <div style={{ textAlign: 'right' }}>
               <button onClick={() => setShowModal(false)} style={closeButtonStyle}>
