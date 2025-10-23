@@ -93,6 +93,7 @@ const OrderRawMaterialsClient = {
       let rawOrder;
       try {
         if (vendor === 'thoh') {
+          rawOrder = await ThohClient.createRawMaterialsOrder(name, quantity);
           var { success } = await BankClient.handPayment(rawOrder.price, rawOrder.orderId);
         } else {
           rawOrder = await RecyclerClient.createRawMaterialsOrder('electronics_supplier', [
