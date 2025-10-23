@@ -23,6 +23,10 @@ export async function up(knex) {
       (3, 10, 0),    -- machine
       (4, 120, 0);   -- case
 
+    -- insert equipment parameters (single row configuration)
+    INSERT INTO "equipment_parameters" ("plastic_ratio", "aluminium_ratio", "production_rate", "case_machine_weight")
+    VALUES (3, 5, 150, 100);
+
     -- insert order types
     INSERT INTO "order_types" ("name")
     VALUES
@@ -71,6 +75,9 @@ export async function down(knex) {
 
     -- delete stock
     DELETE FROM "stock";
+
+    -- delete equipment parameters
+    DELETE FROM "equipment_parameters";
 
     -- delete order types
     DELETE FROM "order_types"
