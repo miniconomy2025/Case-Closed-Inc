@@ -44,7 +44,7 @@ export default class DecisionEngine {
 
   async buyMaterial(state, material) {
     const { inventory, balance } = state;
-    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 0;
+    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 1;
     const minThreshold = this.thresholds[`${material}Min`];
 
     // only consider buying if stock low or balance is high
@@ -94,7 +94,7 @@ export default class DecisionEngine {
       const state = await this.getState();
       if(state.balance < 2000){
         try {
-          const { message } = await BankClient.takeLoan(10000);
+          const { message } = await BankClient.takeLoan(100000);
           logger.info(`[DecisionEngine]: ${message}`);
         } catch {
           logger.info(`[DecisionEngine]: Failed to take loan`);
@@ -155,7 +155,7 @@ export default class DecisionEngine {
 
       // get loan
       try {
-        const { message } = await BankClient.takeLoan(10000);
+        const { message } = await BankClient.takeLoan(100000);
         logger.info(`[DecisionEngine]: ${message}`);
       } catch {
         logger.info(`[DecisionEngine]: Failed to take loan`);
