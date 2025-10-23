@@ -1,15 +1,19 @@
 // Dedicated Knex instance for integration tests
 import knex from "knex";
+import dotenv from "dotenv";
 
-// Hardcoded test database configuration
+// Load environment variables
+dotenv.config();
+
+// Test database configuration from environment variables
 const testDbConfig = {
   client: "pg",
   connection: {
-    host: "localhost",
-    port: 5433,
-    user: "postgres",
-    password: "password",
-    database: "case_closed_test_db",
+    host: process.env.TEST_DB_HOST || "localhost",
+    port: parseInt(process.env.TEST_DB_PORT || "5433"),
+    user: process.env.TEST_DB_USER || "postgres",
+    password: process.env.TEST_DB_PASSWORD || "password",
+    database: process.env.TEST_DB_NAME || "case_closed_test_db",
     ssl: false,
   },
   migrations: {
