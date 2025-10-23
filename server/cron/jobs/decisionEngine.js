@@ -44,7 +44,7 @@ export default class DecisionEngine {
 
   async buyMaterial(state, material) {
     const { inventory, balance } = state;
-    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 0;
+    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 1;
     const minThreshold = this.thresholds[`${material}Min`];
 
     // only consider buying if stock low or balance is high
