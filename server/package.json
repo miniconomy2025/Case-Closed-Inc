@@ -7,12 +7,13 @@
     "build": "webpack --config webpack.config.js",
     "dev": "nodemon",
     "test": "jest",
+    "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "load:run": "artillery run --output report.json tests/load/test.yml",
     "load:report": "artillery run tests/load/test.yml --record --key a9_qdjokd2lj74sbcbzbb3381vyn3no5tg9",
-    "test:integration": "jest --config jest.integration.config.cjs",
-    "test:all": "npm run test && npm run test:integration"
+    "test:integration": "cross-env NODE_ENV=test DB_NAME=case_closed_test_db DB_HOST=localhost DB_PORT=5433 DB_USER=postgres DB_PASSWORD=password NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.cjs --forceExit",
+    "test:all": "npm run test:unit && npm run test:integration"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "artillery": "^2.0.26",
     "babel-jest": "^30.2.0",
     "copy-webpack-plugin": "^13.0.0",
+    "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.4",

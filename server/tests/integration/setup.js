@@ -1,23 +1,15 @@
-// Integration test setup
-// This runs before each test file
+// Integration test setup - runs before each test file
 
 import { jest } from "@jest/globals";
 
-// Set up test environment
-process.env.NODE_ENV = "test";
-
-// You can add global test setup here
-// For example:
-// - Database connection setup
-// - Test data seeding
-// - Mock external services
+// Note: Environment variables are set via cross-env in package.json
+// before Node.js starts, so knex.js uses test DB from the beginning
 
 beforeAll(async () => {
-  // Global setup for all integration tests
   console.log("Setting up integration test environment...");
+  console.log(`Test DB: ${process.env.DB_NAME}:${process.env.DB_PORT}`);
 });
 
 afterAll(async () => {
-  // Global cleanup for all integration tests
   console.log("Cleaning up integration test environment...");
 });

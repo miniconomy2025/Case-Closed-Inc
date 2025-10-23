@@ -10,7 +10,11 @@ import { updateShipmentReference } from "../daos/externalOrdersDao.js";
 
 dotenv.config({ path: "../.env" });
 
-const sqs = new SQSClient({ region: process.env.AWS_REGION || "af-south-1" });
+// Only initialize SQS in production or when explicitly configured
+const sqs = process.env.PICKUP_QUEUE_URL
+  ? new SQSClient({ region: process.env.AWS_REGION || "af-south-1" })
+  : null;
+
 const PICKUP_QUEUE_URL = process.env.PICKUP_QUEUE_URL;
 
 // Helper sleep function
@@ -18,6 +22,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function pollQueue() {
   console.log("[PickupWorker] Starting queue polling...");
+
+  if (!sqs || !PICKUP_QUEUE_URL) {
+    console.log("SQS not configured, skipping pickup worker");
+    return;
+  }
 
   while (true) {
     try {
@@ -91,3 +100,4 @@ export async function pollQueue() {
     }
   }
 }
+pollQueue();

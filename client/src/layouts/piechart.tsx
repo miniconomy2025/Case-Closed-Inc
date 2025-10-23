@@ -35,7 +35,7 @@ export default function ReservedAvailablePieChart({
       }}
     >
       <Typography
-        sx={{ color: "#304074", mt: 1, fontWeight: 700 }}
+        sx={{ color: "#304074", mt: 1, fontWeight: 700, pt:2 }}
         variant="h5"
       >
         Cases: Reserved vs Available
@@ -51,9 +51,7 @@ export default function ReservedAvailablePieChart({
             outerRadius={100}
             innerRadius={60}
             isAnimationActive={false}
-            label={({ name, percent }) =>
-              `${name}: ${(percent * 100).toFixed(0)}%`
-            }
+            
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index]} />
