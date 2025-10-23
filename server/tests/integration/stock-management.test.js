@@ -145,29 +145,45 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle stock depletion after order", async () => {
-    // Get initial case stock
+    // Clean up pending orders first
+    await testDb("case_orders").whereIn("order_status_id", [1, 2]).del();
+
+    // Set known stock value first
+    await testDb("stock")
+      .where({ stock_type_id: 4 })
+      .update({ total_units: 500, ordered_units: 0 });
+
+    // Get initial case stock (should be 500 now since we cleaned up)
     const initialResponse = await request(app).get("/api/cases");
     expect(initialResponse.status).toBe(StatusCodes.OK);
-    const initialCaseStock = initialResponse.body.available_units;
+    const initialStock = initialResponse.body.available_units;
 
     // Manually decrement stock to simulate order fulfillment
     await testDb("stock")
       .where({ stock_type_id: 4 }) // case
       .decrement("total_units", 10);
 
-    // Verify stock decreased
+    // Verify stock decreased by exactly 10
     const updatedResponse = await request(app).get("/api/cases");
     expect(updatedResponse.status).toBe(StatusCodes.OK);
-    expect(updatedResponse.body.available_units).toBe(initialCaseStock - 10);
+    expect(updatedResponse.body.available_units).toBe(initialStock - 10);
 
     console.log("✅ Stock depletion verified - decreased by 10 units");
   });
 
   it("should calculate available units correctly with reserved orders", async () => {
+    // Set known stock value first
+    await testDb("stock")
+      .where({ stock_type_id: 4 })
+      .update({ total_units: 1000, ordered_units: 0 });
+
+    // Clean up any existing pending orders
+    await testDb("case_orders").whereIn("order_status_id", [1, 2]).del();
+
     // Get initial available stock
     const initialResponse = await request(app).get("/api/cases");
     expect(initialResponse.status).toBe(StatusCodes.OK);
-    const initialAvailable = initialResponse.body.available_units;
+    expect(initialResponse.body.available_units).toBe(1000);
 
     // Create a pending order (this reserves stock)
     await testDb("case_orders").insert({
@@ -182,7 +198,7 @@ describe("Stock Management Integration Test", () => {
     // Available stock should decrease by reserved amount
     const updatedResponse = await request(app).get("/api/cases");
     expect(updatedResponse.status).toBe(StatusCodes.OK);
-    expect(updatedResponse.body.available_units).toBe(initialAvailable - 20);
+    expect(updatedResponse.body.available_units).toBe(980);
 
     console.log("✅ Reserved stock calculation verified");
   });
@@ -202,10 +218,13 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle low stock scenario", async () => {
+    // Clean up any pending orders first
+    await testDb("case_orders").whereIn("order_status_id", [1, 2]).del();
+
     // Set case stock to very low
     await testDb("stock")
       .where({ stock_type_id: 4 })
-      .update({ total_units: 5 });
+      .update({ total_units: 5, ordered_units: 0 });
 
     const response = await request(app).get("/api/cases");
 
@@ -215,10 +234,13 @@ describe("Stock Management Integration Test", () => {
   });
 
   it("should handle zero stock scenario", async () => {
+    // Clean up any pending orders first
+    await testDb("case_orders").whereIn("order_status_id", [1, 2]).del();
+
     // Set case stock to zero
     await testDb("stock")
       .where({ stock_type_id: 4 })
-      .update({ total_units: 0 });
+      .update({ total_units: 0, ordered_units: 0 });
 
     const response = await request(app).get("/api/cases");
 
