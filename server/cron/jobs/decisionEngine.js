@@ -4,6 +4,7 @@ import logger from "../../utils/logger.js";
 import OrderRawMaterialsClient from "../../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
+import ThohClient from "../../clients/ThohClient.js";
 
 import {
   updateAccount,
@@ -44,7 +45,7 @@ export default class DecisionEngine {
 
   async buyMaterial(state, material) {
     const { inventory, balance } = state;
-    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 0;
+    const demandRatio = inventory.casesAvailable > 0 ? inventory.casesReserved / inventory.casesAvailable : 1;
     const minThreshold = this.thresholds[`${material}Min`];
 
     // only consider buying if stock low or balance is high
@@ -94,12 +95,19 @@ export default class DecisionEngine {
       const state = await this.getState();
       if(state.balance < 2000){
         try {
-          const { message } = await BankClient.takeLoan(10000);
+          const { message } = await BankClient.takeLoan(100000);
           logger.info(`[DecisionEngine]: ${message}`);
         } catch {
           logger.info(`[DecisionEngine]: Failed to take loan`);
         }
       }else{
+
+        try {
+          await ThohClient.syncCaseMachineToEquipmentParameters();
+        } catch {
+          logger.info(`[DecisionEngine]: Failed to sync case machine parameters`);
+        };
+
         if (await this.buyMaterial(state, "plastic")) {
           try {
             logger.info("[DecisionEngine]: Plastic stock low! Buying stock");
@@ -155,7 +163,7 @@ export default class DecisionEngine {
 
       // get loan
       try {
-        const { message } = await BankClient.takeLoan(10000);
+        const { message } = await BankClient.takeLoan(100000);
         logger.info(`[DecisionEngine]: ${message}`);
       } catch {
         logger.info(`[DecisionEngine]: Failed to take loan`);

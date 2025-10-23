@@ -5,7 +5,8 @@ import BankClient from '../clients/BankClient.js';
 
 export const handlePayment = async (req, res, next) => {
     try {
-        const { description, from, amount, status } = req.body;
+        console.log("Payment notification received:", req.body);
+        const { description = "", from, amount, status } = req.body;
 
         if (status == "success") {
             let order = await getCaseOrderById(description);
@@ -18,7 +19,7 @@ export const handlePayment = async (req, res, next) => {
 
             const cancelledStatus = await getOrderStatusByName('order_cancelled');
 
-            if (order.order_status_id === cancelledStatus) {
+            if (order.order_status_id === cancelledStatus.id) {
                 await BankClient.makePayment(from, amount * 0.8, `Order already cancelled, refunding 80% of order ID: ${description}`);
                 return res
                     .status(StatusCodes.OK)

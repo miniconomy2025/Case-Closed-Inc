@@ -9,6 +9,8 @@ import {
     getSales,
     getCaseOrdersReport,
     getCaseOrdersStatsReport,
+    getExternalOrderStatsReport,
+    getExternalOrdersReport,
     getSimulationDate
 } from '../controllers/reportConroller.js'
 
@@ -24,4 +26,6 @@ router.get('/cases', getCases);
 router.get('/sales', getSales);
 router.get('/case/orders', getCaseOrdersReport);
 router.get('/case/orders/stats', getCaseOrdersStatsReport);
+router.get('/external-orders', getExternalOrdersReport);
+router.get('/external-orders/stats', getExternalOrderStatsReport);
 export default router;

@@ -1,7 +1,11 @@
 import axios from 'axios';
 import logger from '../utils/logger.js';
+import https from "https";
 import { getAccountNumber, updateBalance, updateAccount } from '../daos/bankDetailsDao.js';
 
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 const bankApi = axios.create({
   baseURL: process.env.BANK_API_URL || "http://localhost:3003/",
@@ -9,6 +13,7 @@ const bankApi = axios.create({
   headers: {
     'Client-Id': 'case-supplier',
   },
+  httpsAgent
 });
 
 const BankClient = {

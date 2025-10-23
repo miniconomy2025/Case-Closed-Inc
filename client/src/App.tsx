@@ -25,6 +25,11 @@ const NAVIGATION: Navigation = [
     title: '📱 Case Orders',
     icon: <ShoppingCartIcon/>
   },
+  {
+    segment: 'external-orders',
+    title: '📱 External Orders',
+    icon: <ShoppingCartIcon/>
+  },
 ];
 
 const BRANDING = {

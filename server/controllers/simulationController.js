@@ -163,6 +163,7 @@ export const handleSimulationStart = async (req, res, next) => {
 export const handleSimulationEnd = async (req, res, next) => {
   try {
     logger.info("=================== Simulation Stoped ===================");
+    // await purgeQueue();
     simulationTimer.reset();
     return res
       .status(StatusCodes.OK)

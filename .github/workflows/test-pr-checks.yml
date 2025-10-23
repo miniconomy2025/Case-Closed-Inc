@@ -8,6 +8,13 @@ on:
         required: true
         default: "feature/comprehensive-integration-testing"
         type: string
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run tests on"
+        required: true
+        default: "feature/comprehensive-integration-testing"
+        type: string
   push:
     branches:
       - "feature/comprehensive-integration-testing"

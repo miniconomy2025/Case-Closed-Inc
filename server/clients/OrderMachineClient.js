@@ -28,7 +28,7 @@ const OrderMachineClient = {
       const totalMachineCost = pricePerUnit * quantity;
 
       // estimate logistics cost with fake order
-      const fakeItems = [{ itemName: "case_machine", quantity }];
+      const fakeItems = [{ itemName: "case_machine", quantity: quantity * machineInfo.weight }];
       const pickupPreview = await BulkLogisticsClient.createPickupRequest(
         'preview-order',
         'thoh',

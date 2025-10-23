@@ -3,10 +3,15 @@ import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import { runMigrations } from './db/knex.js';
 import routes from './routes/index.js';
-import './workers/pickupWorker.js';
+import { pollQueue } from './workers/pickupWorker.js';
 
-import cors from 'cors';
-import { resumeSimulation } from './controllers/simulationController.js';
+import cors from "cors";
+import { resumeSimulation } from "./controllers/simulationController.js";
+
+// Only import worker if not in test environment
+if (process.env.NODE_ENV !== "test") {
+  await import("./workers/pickupWorker.js");
+}
 
 const PORT = process.env.API_PORT || 3000;
 const HOST = process.env.API_HOST || "localhost";
@@ -16,13 +21,13 @@ const app = express();
 // app.use(cors());
 app.use(express.json());
 
-app.use('/api', routes);
+app.use("/api", routes);
 
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
-    status: 'ok',
-    uptime: process.uptime(),          
-    timestamp: new Date().toISOString() 
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -35,6 +40,7 @@ const startServer = async () => {
             logger.info(`Server running on http://${HOST}:${PORT}`);
         });
         resumeSimulation();
+        pollQueue();
     } catch (err) {
         logger.error('Migrations failed', { error: err });
         logger.error('Server startup failed — exiting.');
@@ -42,4 +48,10 @@ const startServer = async () => {
     };
 };
 
-startServer();
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
+
+// Export app for testing
+export { app };
