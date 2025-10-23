@@ -11,7 +11,7 @@ import { purgeQueue } from "../utils/sqsClient.js";
 
 let schedule = null;
 
-class SimulationTimer {
+export class SimulationTimer {
   constructor() {
     if (SimulationTimer.instance) {
       return SimulationTimer.instance;
@@ -192,6 +192,6 @@ export const resumeSimulation = async () => {
     }
 
   } catch (error) {
-    logger.info(`[Simulation]: No active simulation date`);
+    logger.info(`[Simulation]: ${error.message}`);
   }
 };

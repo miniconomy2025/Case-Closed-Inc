@@ -26,17 +26,17 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_acm_certificate" "main" {
-  provider                   = aws.us_east_1
-  domain_name                = "case-supplier.projects.bbdgrad.com"
-  subject_alternative_names = ["case-supplier-api.projects.bbdgrad.com"]
-  validation_method          = "DNS"
+# resource "aws_acm_certificate" "main" {
+#   provider                   = aws.us_east_1
+#   domain_name                = "case-supplier.projects.bbdgrad.com"
+#   subject_alternative_names = ["case-supplier-api.projects.bbdgrad.com"]
+#   validation_method          = "DNS"
 
-  lifecycle {
-    create_before_destroy = true
-  }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
 
-  tags = {
-    Name = "case-supplier-certificate"
-  }
-}
+#   tags = {
+#     Name = "case-supplier-certificate"
+#   }
+# }

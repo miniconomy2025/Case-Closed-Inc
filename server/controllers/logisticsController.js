@@ -14,6 +14,8 @@ export const handleLogistics = async (req, res, next) => {
     try {
         const { id, type, items } = req.body; 
 
+        console.log("Logistics request received:", req.body);
+
         if (!items || items.length !== 1) {
         return res
             .status(StatusCodes.BAD_REQUEST)

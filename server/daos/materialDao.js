@@ -3,7 +3,8 @@ import { db } from '../db/knex.js';
 const TABLE_NAME = 'materials';
 
 export async function increaseMaterialStock(id, quantity_kg) {
+    if (quantity_kg < 0) throw new Error('Quantity must be positive');
     return await db(TABLE_NAME)
-        .where({ id: id })
+        .where({ id })
         .increment('stock_kg', quantity_kg);
-};
+}
