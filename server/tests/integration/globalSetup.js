@@ -31,7 +31,7 @@ export default async function globalSetup() {
     // Seed test-specific data required by controllers (not in production migrations)
     console.log("Seeding test-specific configuration data...");
 
-    // Insert equipment_parameters if not exists
+    // Insert equipment_parameters if not exists, or update if missing case_machine_weight
     const equipmentExists = await testDb("equipment_parameters").first();
     if (!equipmentExists) {
       await testDb("equipment_parameters").insert({
@@ -41,6 +41,11 @@ export default async function globalSetup() {
         case_machine_weight: 100,
       });
       console.log("Equipment parameters seeded.");
+    } else if (equipmentExists.case_machine_weight === null) {
+      await testDb("equipment_parameters").update({
+        case_machine_weight: 100,
+      });
+      console.log("Equipment parameters updated with case_machine_weight.");
     } else {
       console.log("Equipment parameters already exist.");
     }
