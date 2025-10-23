@@ -99,6 +99,28 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should successfully handle pickup of case orders", async () => {
+    // Recreate order if it was deleted by another test's cleanup
+    let order = await testDb("case_orders").where({ id: testOrderId }).first();
+
+    if (!order) {
+      // Order was deleted, create a new one
+      const [newOrder] = await testDb("case_orders")
+        .insert({
+          order_status_id: 2, // pickup_pending
+          quantity: 100,
+          quantity_delivered: 0,
+          total_price: 5000,
+          amount_paid: 5000,
+          ordered_at: "2050-01-01",
+        })
+        .returning("*");
+      testOrderId = newOrder.id;
+      order = newOrder;
+    }
+
+    expect(order).toBeDefined();
+    expect(order.order_status_id).toBe(2); // pickup_pending
+
     const pickupData = {
       id: testOrderId,
       type: "PICKUP",
@@ -194,6 +216,22 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should reject pickup when order is not in pickup_pending status", async () => {
+    // Ensure order exists first
+    let order = await testDb("case_orders").where({ id: testOrderId }).first();
+    if (!order) {
+      const [newOrder] = await testDb("case_orders")
+        .insert({
+          order_status_id: 2,
+          quantity: 100,
+          quantity_delivered: 0,
+          total_price: 5000,
+          amount_paid: 5000,
+          ordered_at: "2050-01-01",
+        })
+        .returning("*");
+      testOrderId = newOrder.id;
+    }
+
     // Update order to a different status
     await testDb("case_orders")
       .where({ id: testOrderId })
@@ -213,6 +251,27 @@ describe("Logistics Integration Test", () => {
   });
 
   it("should reject pickup when quantity exceeds order quantity", async () => {
+    // Ensure order exists first
+    let order = await testDb("case_orders").where({ id: testOrderId }).first();
+    if (!order) {
+      const [newOrder] = await testDb("case_orders")
+        .insert({
+          order_status_id: 2,
+          quantity: 100,
+          quantity_delivered: 0,
+          total_price: 5000,
+          amount_paid: 5000,
+          ordered_at: "2050-01-01",
+        })
+        .returning("*");
+      testOrderId = newOrder.id;
+    }
+
+    // Reset order back to pickup_pending status (previous test changed it)
+    await testDb("case_orders")
+      .where({ id: testOrderId })
+      .update({ order_status_id: 2, quantity_delivered: 0 });
+
     const pickupData = {
       id: testOrderId,
       type: "PICKUP",
