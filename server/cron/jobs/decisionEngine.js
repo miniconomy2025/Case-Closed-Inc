@@ -4,6 +4,7 @@ import logger from "../../utils/logger.js";
 import OrderRawMaterialsClient from "../../clients/OrderRawMaterialsClient.js";
 import OrderMachineClient from "../../clients/OrderMachineClient.js";
 import BankClient from "../../clients/BankClient.js";
+import ThohClient from "../../clients/ThohClient.js";
 
 import {
   updateAccount,
@@ -100,6 +101,13 @@ export default class DecisionEngine {
           logger.info(`[DecisionEngine]: Failed to take loan`);
         }
       }else{
+
+        try {
+          await ThohClient.syncCaseMachineToEquipmentParameters();
+        } catch {
+          logger.info(`[DecisionEngine]: Failed to sync case machine parameters`);
+        };
+
         if (await this.buyMaterial(state, "plastic")) {
           try {
             logger.info("[DecisionEngine]: Plastic stock low! Buying stock");
