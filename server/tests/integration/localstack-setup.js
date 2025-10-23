@@ -3,7 +3,14 @@ import {
   CreateQueueCommand,
   GetQueueUrlCommand,
   DeleteQueueCommand,
+  ListQueuesCommand,
 } from "@aws-sdk/client-sqs";
+import {
+  S3Client,
+  CreateBucketCommand,
+  DeleteBucketCommand,
+  ListBucketsCommand,
+} from "@aws-sdk/client-s3";
 
 // LocalStack configuration
 const LOCALSTACK_ENDPOINT =
@@ -21,12 +28,27 @@ export const sqsClient = new SQSClient({
   forcePathStyle: true,
 });
 
+// Create S3 client for LocalStack
+export const s3Client = new S3Client({
+  endpoint: LOCALSTACK_ENDPOINT,
+  region: AWS_REGION,
+  credentials: {
+    accessKeyId: "test",
+    secretAccessKey: "test",
+  },
+  forcePathStyle: true,
+});
+
 // Test queue configuration
 export const TEST_QUEUE_NAME = "test-pickup-queue.fifo";
 export const TEST_QUEUE_URL = `${LOCALSTACK_ENDPOINT}/000000000000/${TEST_QUEUE_NAME}`;
 
+// Test bucket configuration
+export const TEST_BUCKET_NAME = `test-case-documents-${Date.now()}`;
+
 /**
- * Setup LocalStack SQS queue for testing
+ * Sets up a test SQS queue for LocalStack.
+ * @returns {Promise<string>} The URL of the created queue.
  */
 export async function setupTestQueue() {
   try {
@@ -59,7 +81,7 @@ export async function setupTestQueue() {
 }
 
 /**
- * Clean up LocalStack SQS queue after testing
+ * Cleans up the test SQS queue.
  */
 export async function cleanupTestQueue() {
   try {
@@ -78,7 +100,8 @@ export async function cleanupTestQueue() {
 }
 
 /**
- * Get queue URL for testing
+ * Gets the URL of the test queue.
+ * @returns {Promise<string>} The queue URL.
  */
 export async function getQueueUrl() {
   try {
@@ -95,7 +118,53 @@ export async function getQueueUrl() {
 }
 
 /**
- * Check if LocalStack is running
+ * Sets up a test S3 bucket for LocalStack.
+ * @returns {Promise<string>} The name of the created bucket.
+ */
+export async function setupTestBucket() {
+  try {
+    console.log("Setting up LocalStack S3 test bucket...");
+
+    const createCommand = new CreateBucketCommand({
+      Bucket: TEST_BUCKET_NAME,
+    });
+
+    await s3Client.send(createCommand);
+    console.log(`✅ Test bucket created: ${TEST_BUCKET_NAME}`);
+
+    return TEST_BUCKET_NAME;
+  } catch (error) {
+    if (error.name === "BucketAlreadyExists") {
+      console.log(`✅ Test bucket already exists: ${TEST_BUCKET_NAME}`);
+      return TEST_BUCKET_NAME;
+    }
+    console.error("❌ Failed to create test bucket:", error);
+    throw error;
+  }
+}
+
+/**
+ * Cleans up the test S3 bucket.
+ */
+export async function cleanupTestBucket() {
+  try {
+    console.log("Cleaning up LocalStack S3 test bucket...");
+
+    const deleteCommand = new DeleteBucketCommand({
+      Bucket: TEST_BUCKET_NAME,
+    });
+
+    await s3Client.send(deleteCommand);
+    console.log(`✅ Test bucket deleted: ${TEST_BUCKET_NAME}`);
+  } catch (error) {
+    console.error("❌ Failed to delete test bucket:", error);
+    // Don't throw - cleanup failures shouldn't fail tests
+  }
+}
+
+/**
+ * Checks if LocalStack is running and healthy.
+ * @returns {Promise<boolean>} True if LocalStack is healthy.
  */
 export async function checkLocalStackHealth() {
   try {
