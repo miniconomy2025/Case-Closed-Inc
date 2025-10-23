@@ -81,5 +81,46 @@ export async function getOrderStats() {
   return row;
 }
 
+export async function getExternalOrders() {
+  const orders = await db('external_orders')
+    .leftJoin('order_types', 'external_orders.order_type_id', 'order_types.id')
+    .select(
+      'external_orders.id as order_id',
+      'external_orders.order_reference',
+      'external_orders.total_cost',
+      'external_orders.shipment_reference',
+      'external_orders.ordered_at',
+      'external_orders.received_at',
+      'order_types.id as type_id',
+      'order_types.name as type_name'
+    )
+    .orderBy('external_orders.ordered_at', 'asc');
+
+  return orders;
+}
+
+export async function getExternalOrderStats() {
+  const [row] = await db
+    .select(db.raw(`
+      COUNT(*) AS "totalExternalOrders",
+
+      -- Breakdown by delivery status
+      COUNT(*) FILTER (WHERE eo.received_at IS NULL) AS "pending_delivery",
+      COUNT(*) FILTER (WHERE eo.received_at IS NOT NULL) AS "delivered",
+
+      -- Breakdown by order type
+      COUNT(*) FILTER (WHERE ot.name = 'material_order') AS "material_order",
+      COUNT(*) FILTER (WHERE ot.name = 'machine_order') AS "machine_order",
+
+      -- Cost metrics
+      COALESCE(SUM(eo.total_cost), 0) AS "totalCost"
+    `))
+    .from('external_orders as eo')
+    .join('order_types as ot', 'eo.order_type_id', 'ot.id');
+  
+  return row;
+}
+
+
 
 

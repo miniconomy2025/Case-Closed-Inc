@@ -7,13 +7,11 @@ export default async function globalTeardown() {
   console.log("Global teardown for integration tests...");
 
   try {
-    // Clean up database
+    // Clean up test-specific configuration data
     console.log("Cleaning up test database...");
 
-    // Skip cleanup to prevent table errors
-    console.log(
-      "Test database cleanup skipped - individual tests handle their own cleanup"
-    );
+    await testDb("bank_details").del();
+    await testDb("equipment_parameters").del();
 
     console.log("Test database cleaned up successfully.");
   } catch (error) {
