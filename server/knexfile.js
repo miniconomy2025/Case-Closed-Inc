@@ -9,13 +9,20 @@ let knexEnv = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    ssl: {
-      rejectUnauthorized: false
-    },
+    // Explicitly disable SSL for local/test environments
+    // In production with RDS, this would be { rejectUnauthorized: false }
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? { rejectUnauthorized: false }
+        : false,
   },
   migrations: {
     directory: "./migrations",
     extension: "js",
+  },
+  pool: {
+    min: 2,
+    max: 10,
   },
 };
 

@@ -9,16 +9,23 @@ dotenv.config();
 const testDbConfig = {
   client: "pg",
   connection: {
-    host: process.env.TEST_DB_HOST || "localhost",
-    port: parseInt(process.env.TEST_DB_PORT || "5433"),
-    user: process.env.TEST_DB_USER || "postgres",
-    password: process.env.TEST_DB_PASSWORD || "password",
-    database: process.env.TEST_DB_NAME || "case_closed_test_db",
+    host: process.env.TEST_DB_HOST || process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.TEST_DB_PORT || process.env.DB_PORT || "5433"),
+    user: process.env.TEST_DB_USER || process.env.DB_USER || "postgres",
+    password:
+      process.env.TEST_DB_PASSWORD || process.env.DB_PASSWORD || "password",
+    database:
+      process.env.TEST_DB_NAME || process.env.DB_NAME || "case_closed_test_db",
+    // Explicitly disable SSL for test environments
     ssl: false,
   },
   migrations: {
     directory: "./migrations",
     extension: "js",
+  },
+  pool: {
+    min: 2,
+    max: 10,
   },
 };
 
