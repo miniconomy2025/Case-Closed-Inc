@@ -152,9 +152,7 @@ export default class DecisionEngine {
     } else {
       // create bank account
       try {
-        const { accountNumber } = await BankClient.createAccount({
-          notification_url: process.env.BANK_PAYMENT_URL,
-        });
+        const { accountNumber } = await BankClient.createAccount(process.env.BANK_PAYMENT_URL);
         await updateAccount(accountNumber, 0);
         logger.info(`[DecisionEngine]: Opened Bank Account: ${accountNumber}`);
       } catch {
